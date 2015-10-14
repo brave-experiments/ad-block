@@ -34,7 +34,9 @@ enum FilterOption {
   FOObjectSubrequest = 040,
   FOSubdocument = 0100,
   FODocument = 0200,
-  FOThirdParty = 01000,
+  FOOther = 0400,
+  FOElemHide = 01000,
+  FOThirdParty = 02000,
 };
 
 class Filter {

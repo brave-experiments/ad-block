@@ -191,7 +191,6 @@ TEST(x, y)
     {}
   ));
 
-#if 0
   CHECK(testFilter("||googlesyndication.com/safeframe/$third-party",
     hostAnchored,
     FOThirdParty,
@@ -201,5 +200,14 @@ TEST(x, y)
     },
     {}
   ));
-#endif
+
+  CHECK(testFilter("||googlesyndication.com/safeframe/$third-party,script",
+    hostAnchored,
+    static_cast<FilterOption>(FOThirdParty|FOScript),
+    "googlesyndication.com/safeframe/",
+    {
+      "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html#xpc=sf-gdn-exp-2&p=http%3A//slashdot.org;",
+    },
+    {}
+  ));
 }
