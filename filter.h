@@ -11,7 +11,7 @@ enum FilterType {
   comment = 0100,
 };
 
-enum FilterOption {
+enum ElementType {
   noFilterOption = 0,
   script = 01,
   image = 02,
@@ -22,6 +22,19 @@ enum FilterOption {
   subdocument = 0100,
   document = 0200,
   other = 0400,
+};
+
+enum FilterOption {
+  FONoFilterOption = 0,
+  FOScript = 01,
+  FOImage = 02,
+  FOStylesheet = 04,
+  FOObject = 010,
+  FOXmlHttpRequest = 020,
+  FOObjectSubrequest = 040,
+  FOSubdocument = 0100,
+  FODocument = 0200,
+  FOThirdParty = 01000,
 };
 
 class Filter {

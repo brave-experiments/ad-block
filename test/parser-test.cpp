@@ -11,9 +11,14 @@
 
 using namespace std;
 
-bool testFilter( const char *rawFilter, FilterType expectedFilterType, const char *expectedData, set<string> &&blocked, set<string> &&notBlocked) {
+bool testFilter( const char *rawFilter, FilterType expectedFilterType, FilterOption expectedFilterOption, const char *expectedData, set<string> &&blocked, set<string> &&notBlocked) {
   Filter filter;
   parseFilter(rawFilter, filter);
+
+  if (filter.filterOption != expectedFilterOption) {
+    cout << "Actual filter option: " << filter.filterOption << endl << "Expected: " << expectedFilterOption << endl;
+    return false;
+  }
 
   if (filter.filterType != expectedFilterType) {
     cout << "Actual filter type: " << filter.filterType << endl << "Expected: " << expectedFilterType << endl;
@@ -31,6 +36,7 @@ TEST(x, y)
 {
   CHECK(testFilter("/banner/*/img",
     noFilterType,
+    FONoFilterOption,
     "/banner/*/img",
     {
       "http://example.com/banner/foo/img",
@@ -46,6 +52,7 @@ TEST(x, y)
 
   CHECK(testFilter("/banner/*/img^",
     noFilterType,
+    FONoFilterOption,
     "/banner/*/img^",
     {
       "http://example.com/banner/foo/img",
@@ -60,6 +67,7 @@ TEST(x, y)
 
   CHECK(testFilter("||ads.example.com^",
     hostAnchored,
+    FONoFilterOption,
     "ads.example.com^",
     {
       "http://ads.example.com/foo.gif",
@@ -73,6 +81,7 @@ TEST(x, y)
 
   CHECK(testFilter("|http://example.com/|",
     static_cast<FilterType>(leftAnchored | rightAnchored),
+    FONoFilterOption,
     "http://example.com/",
     {
       "http://example.com/"
@@ -83,6 +92,7 @@ TEST(x, y)
   ));
   CHECK(testFilter("swf|",
     rightAnchored,
+    FONoFilterOption,
     "swf",
     {
       "http://example.com/annoyingflash.swf",
@@ -93,6 +103,7 @@ TEST(x, y)
   ));
   CHECK(testFilter("|http://baddomain.example/",
     leftAnchored,
+    FONoFilterOption,
     "http://baddomain.example/",
     {
      "http://baddomain.example/banner.gif",
@@ -103,6 +114,7 @@ TEST(x, y)
   ));
   CHECK(testFilter("||example.com/banner.gif",
     hostAnchored,
+    FONoFilterOption,
     "example.com/banner.gif",
     {
       "http://example.com/banner.gif",
@@ -118,6 +130,7 @@ TEST(x, y)
   ));
   CHECK(testFilter("http://example.com^",
     noFilterType,
+    FONoFilterOption,
     "http://example.com^",
     {
       "http://example.com/",
@@ -125,107 +138,68 @@ TEST(x, y)
     },
     {}
   ));
-#if 0
-  ["^example.com^", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: undefined,
-    leftAnchored: undefined,
-    rightAnchored: undefined,
-    options: {},
-    data: "^example.com^",
-    blocked: [
+  CHECK(testFilter("^example.com^",
+    noFilterType,
+    FONoFilterOption,
+    "^example.com^",
+    {
       "http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
-    ],
-    notBlocked: [],
-  }],
-  ["^%D1%82%D0%B5%D1%81%D1%82^", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: undefined,
-    leftAnchored: undefined,
-    rightAnchored: undefined,
-    options: {},
-    data: "^%D1%82%D0%B5%D1%81%D1%82^",
-    blocked: [
+    },
+    {}
+  ));
+  CHECK(testFilter("^%D1%82%D0%B5%D1%81%D1%82^",
+    noFilterType,
+    FONoFilterOption,
+    "^%D1%82%D0%B5%D1%81%D1%82^",
+    {
       "http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
-    ],
-    notBlocked: [
+    },
+    {
       "http://example.com:8000/foo.bar?a=12&b%D1%82%D0%B5%D1%81%D1%823",
-    ],
-  }],
-  ["^foo.bar^", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: undefined,
-    leftAnchored: undefined,
-    rightAnchored: undefined,
-    options: {},
-    data: "^foo.bar^",
-    blocked: [
+    }
+  ));
+  CHECK(testFilter("^foo.bar^",
+    noFilterType,
+    FONoFilterOption,
+    "^foo.bar^",
+    {
       "http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82"
-    ],
-    notBlocked: [
-    ],
-  }],
-  ["/banner\\d+/", {
-    isRegex: true,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: undefined,
-    leftAnchored: undefined,
-    rightAnchored: undefined,
-    options: {},
-    data: "banner\\d+",
-    blocked: [
+    },
+    {
+    }
+  ));
+  CHECK(testFilter("/banner\\d+/",
+    regex,
+    FONoFilterOption,
+    "banner\\d+",
+    {
       "banner123",
-      "testbanner1",
-    ],
-    notBlocked: [
+      "testbanner1"
+    },
+    {
       "banners",
       "banners123",
-    ],
-  }],
-  ["||static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: true,
-    leftAnchored: undefined,
-    rightAnchored: undefined,
-    options: {},
-    data: "static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
-    blocked: [
-      "http://static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
-    ],
-    notBlocked: [
-    ],
-  }],
-  ["||googlesyndication.com/safeframe/$third-party", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: true,
-    leftAnchored: undefined,
-    rightAnchored: undefined,
-    options: { "binaryOptions": ["third-party"] },
-    data: "googlesyndication.com/safeframe/",
-    blocked: [
+    }
+  ));
+  CHECK(testFilter("||static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
+    hostAnchored,
+    FONoFilterOption,
+    "static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
+    {
+      "http://static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg"
+    },
+    {}
+  ));
+
+#if 0
+  CHECK(testFilter("||googlesyndication.com/safeframe/$third-party",
+    hostAnchored,
+    FOThirdParty,
+    "googlesyndication.com/safeframe/",
+    {
       "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html#xpc=sf-gdn-exp-2&p=http%3A//slashdot.org;",
-    ],
-    notBlocked: [
-    ],
-  }],
+    },
+    {}
+  ));
 #endif
-
-
 }

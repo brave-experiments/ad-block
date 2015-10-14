@@ -2,8 +2,8 @@
 
 Filter::Filter() :
   filterType(noFilterType),
-  filterOption(noFilterOption),
-  antiFilterOption(noFilterOption),
+  filterOption(FONoFilterOption),
+  antiFilterOption(FONoFilterOption),
   data(nullptr) {
 }
 
