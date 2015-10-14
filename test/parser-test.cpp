@@ -71,42 +71,27 @@ TEST(x, y)
     }
   ));
 
-#if 0
-  ["|http://example.com/|", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: undefined,
-    leftAnchored: true,
-    rightAnchored: true,
-    options: {},
-    data: "http://example.com/",
-    blocked: [
+  CHECK(testFilter("|http://example.com/|",
+    static_cast<FilterType>(leftAnchored | rightAnchored),
+    "http://example.com/",
+    {
       "http://example.com/"
-    ],
-    notBlocked: [
+    }, {
       "http://example.com/foo.gif",
       "http://example.info/redirect/http://example.com/",
-    ],
-  }],
-  ["swf|", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: undefined,
-    leftAnchored: undefined,
-    rightAnchored: true,
-    options: {},
-    data: "swf",
-    blocked: [
+    }
+  ));
+  CHECK(testFilter("swf|",
+    rightAnchored,
+    "swf",
+    {
       "http://example.com/annoyingflash.swf",
-    ],
-    notBlocked: [
+    },
+    {
       "http://example.com/swf/index.html"
-    ],
-  }],
+    }
+  ));
+#if 0
   ["|http://baddomain.example/", {
     isRegex: false,
     isException: false,

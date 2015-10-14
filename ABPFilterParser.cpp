@@ -2,6 +2,8 @@
 #include <string.h>
 #include <iostream>
 
+using namespace std;
+
 const char *separatorCharacters = ":?/=^";
 const int maxLineLength = 2048;
 
@@ -9,7 +11,7 @@ enum FilterParseState {
   FPStart,
   FPPastWhitespace,
   FPOneBar,
-  FPContent,
+  FPData,
 };
 
 // Not currently multithreaded safe due to the static buffer named 'data'
@@ -25,6 +27,11 @@ void parseFilter(const char *input, Filter &f) {
       return;
     }
 
+    if (parseState == FPOneBar && *p != '|') {
+      parseState = FPData;
+      f.filterType = leftAnchored;
+    }
+
     switch (*p) {
       case '|':
         if (parseState == FPStart || parseState == FPPastWhitespace) {
@@ -32,8 +39,14 @@ void parseFilter(const char *input, Filter &f) {
           p++;
           continue;
         } else if (parseState == FPOneBar) {
+          parseState = FPOneBar;
           f.filterType = hostAnchored;
-          parseState = FPContent;
+          parseState = FPData;
+          p++;
+          continue;
+        } else {
+          f.filterType = static_cast<FilterType>(f.filterType | rightAnchored);
+          parseState = FPData;
           p++;
           continue;
         }
@@ -55,6 +68,9 @@ void parseFilter(const char *input, Filter &f) {
           p++;
           continue;
         }
+        break;
+      default:
+        parseState = FPData;
         break;
     }
 
