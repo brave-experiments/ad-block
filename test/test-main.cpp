@@ -1,6 +1,6 @@
 #include "CppUnitLite/TestHarness.h"
 #include <string>
-#include "test.h"
+#include "util.h"
 
 SimpleString StringFrom(const std::string& value)
 {

@@ -1,5 +1,5 @@
 CC=clang++
-CFLAGS=-c
+CFLAGS=-std=c++11 -c
 EXEC=run
 SOURCES = $(wildcard *.cpp)
 OBJECTS = $(SOURCES:.cpp=.o)

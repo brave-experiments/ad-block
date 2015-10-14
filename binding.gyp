@@ -4,8 +4,9 @@
     "type": "executable",
     "sources": [
       "test/test-main.cpp",
-      "test/test1.cpp",
-      "ABPFilterParser.cpp"
+      "parser-test.cpp",
+      "ABPFilterParser.cpp",
+      "filter.cpp",
     ],
     "include_dirs": [
       ".",
