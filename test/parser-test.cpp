@@ -91,62 +91,41 @@ TEST(x, y)
       "http://example.com/swf/index.html"
     }
   ));
-#if 0
-  ["|http://baddomain.example/", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: undefined,
-    leftAnchored: true,
-    rightAnchored: undefined,
-    options: {},
-    data: "http://baddomain.example/",
-    blocked: [
+  CHECK(testFilter("|http://baddomain.example/",
+    leftAnchored,
+    "http://baddomain.example/",
+    {
      "http://baddomain.example/banner.gif",
-    ],
-    notBlocked: [
+    },
+    {
       "http://gooddomain.example/analyze?http://baddomain.example",
-    ],
-  }],
-  ["||example.com/banner.gif", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: true,
-    leftAnchored: undefined,
-    rightAnchored: undefined,
-    options: {},
-    data: "example.com/banner.gif",
-    blocked: [
+    }
+  ));
+  CHECK(testFilter("||example.com/banner.gif",
+    hostAnchored,
+    "example.com/banner.gif",
+    {
       "http://example.com/banner.gif",
       "https://example.com/banner.gif",
       "http://www.example.com/banner.gif",
-    ],
-    notBlocked: [
+    },
+    {
       "http://badexample.com/banner.gif",
       "http://gooddomain.example/analyze?http://example.com/banner.gif",
       "http://example.com.au/banner.gif",
       "http://example.com/banner2.gif",
-    ],
-  }],
-  ["http://example.com^", {
-    isRegex: false,
-    isException: false,
-    elementHiding: undefined,
-    elementHidingException: undefined,
-    hostAnchored: undefined,
-    leftAnchored: undefined,
-    rightAnchored: undefined,
-    options: {},
-    data: "http://example.com^",
-    blocked: [
+    }
+  ));
+  CHECK(testFilter("http://example.com^",
+    noFilterType,
+    "http://example.com^",
+    {
       "http://example.com/",
       "http://example.com:8000/ ",
-    ],
-    notBlocked: [],
-  }],
+    },
+    {}
+  ));
+#if 0
   ["^example.com^", {
     isRegex: false,
     isException: false,
