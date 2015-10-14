@@ -69,6 +69,17 @@ void parseFilter(const char *input, Filter &f) {
           continue;
         }
         break;
+      case '/':
+        if ((parseState == FPStart || parseState == FPPastWhitespace) && input[strlen(input) -1] == '/') {
+          // Just copy out the whole regex and return early
+          int len = strlen(input) - i - 1;
+          f.data = new char[len];
+          f.data[len - 1] = '\0';
+          memcpy(f.data, input + i + 1, len - 1);
+          f.filterType = regex;
+          return;
+        }
+        break;
       default:
         parseState = FPData;
         break;
