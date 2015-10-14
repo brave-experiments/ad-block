@@ -16,5 +16,5 @@ test:
 	 node-gyp configure && node-gyp build && ./build/Release/test
 
 clean:
-	rm -Rf run build
+	rm -Rf run build *.o
 
