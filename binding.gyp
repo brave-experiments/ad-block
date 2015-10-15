@@ -5,6 +5,8 @@
     "sources": [
       "test/test-main.cpp",
       "parser-test.cpp",
+      "options-test.cpp",
+      "rule-types-test.cpp",
       "ABPFilterParser.cpp",
       "filter.cpp",
     ],

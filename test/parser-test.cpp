@@ -32,7 +32,7 @@ bool testFilter( const char *rawFilter, FilterType expectedFilterType, FilterOpt
   return true;
 }
 
-TEST(x, y)
+TEST(parser, test)
 {
   CHECK(testFilter("/banner/*/img",
     noFilterType,
