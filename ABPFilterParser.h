@@ -9,8 +9,6 @@ extern const char *separatorCharacters;
 void parseDomains(const char *input);
 int findFirstSeparatorChar(const char *input, int startingPos);
 void parseHTMLFilter(const char *input, int index, Filter *);
-void parseOptions(const char *input, FilterOption *filterOption, FilterOption *antiFilterOption);
-void parseOption(const char *input, int len, FilterOption *filterOption, FilterOption *antiFilterOption);
 void parseFilter(const char *input, Filter&);
 void parse(const char *input);
 int getDomainIndex(const char *input);

@@ -43,9 +43,14 @@ class Filter {
 public:
   Filter();
   ~Filter();
+  void parseOption(const char *input, int len);
+  void parseOptions(const char *input);
+  bool containsDomain(const char *domain, bool anti = false) const;
+  int getDomainCount(bool anti = false) const;
 
   FilterType filterType;
   FilterOption filterOption;
   FilterOption antiFilterOption;
   char *data;
+  char *domainList;
 };

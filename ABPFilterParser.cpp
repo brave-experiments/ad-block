@@ -14,56 +14,7 @@ enum FilterParseState {
   FPData
 };
 
-void parseOption(const char *input, int len, FilterOption *filterOption, FilterOption *antiFilterOption) {
-  FilterOption *pFilterOption = filterOption;
-  const char *pStart = input;
-  if (input[0] == '~') {
-    pFilterOption = antiFilterOption;
-    pStart++;
-    len --;
-  }
 
-  if (!memcmp(pStart, "script", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOScript);
-  } else if (!memcmp(pStart, "image", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOImage);
-  } else if (!memcmp(pStart, "stylesheet", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOStylesheet);
-  } else if (!memcmp(pStart, "object", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOObject);
-  } else if (!memcmp(pStart, "xmlhttprequest", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOXmlHttpRequest);
-  } else if (!memcmp(pStart, "object-subrequest", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOObjectSubrequest);
-  } else if (!memcmp(pStart, "subdocument", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOSubdocument);
-  } else if (!memcmp(pStart, "document", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FODocument);
-  } else if (!memcmp(pStart, "other", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOOther);
-  } else if (!memcmp(pStart, "elemhide", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOElemHide);
-  } else if (!memcmp(pStart, "third-party", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOThirdParty);
-  }
-  // Otherwise just ignore the option, maybe something new we don't support yet
-}
-
-void parseOptions(const char *input, FilterOption *filterOption, FilterOption *antiFilterOption) {
-  int start = 0;
-  int len = 0;
-  const char *p = input;
-  while (*p != '\0') {
-    if (*p == ',') {
-      parseOption(input + start, len, filterOption, antiFilterOption);
-      start = len + 1;
-      len = -1;
-    }
-    p++;
-    len++;
-  }
-  parseOption(input + start, len, filterOption, antiFilterOption);
-}
 
 // Not currently multithreaded safe due to the static buffer named 'data'
 void parseFilter(const char *input, Filter &f) {
@@ -132,7 +83,7 @@ void parseFilter(const char *input, Filter &f) {
         }
         break;
       case '$':
-        parseOptions(p + 1, &f.filterOption, &f.antiFilterOption);
+        f.parseOptions(p + 1);
         data[i] = '\0';
         f.data = new char[i];
         memcpy(f.data, data, i + 1);
