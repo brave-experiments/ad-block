@@ -11,7 +11,7 @@ enum FilterParseState {
   FPStart,
   FPPastWhitespace,
   FPOneBar,
-  FPData,
+  FPData
 };
 
 void parseOption(const char *input, int len, FilterOption *filterOption, FilterOption *antiFilterOption) {
@@ -137,6 +137,15 @@ void parseFilter(const char *input, Filter &f) {
         f.data = new char[i];
         memcpy(f.data, data, i + 1);
         return;
+      case '#':
+        if (*(p+1) == '#') {
+          // TODO
+          f.filterType = elementHiding;
+          return;
+        } else if (*(p+1) == '@') {
+          f.filterType = elementHidingException;
+          return;
+        }
       default:
         parseState = FPData;
         break;
