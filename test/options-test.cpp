@@ -17,30 +17,28 @@ void printSet(set<string> &domainSet) {
   });
 }
 
-bool testOptions(const char *rawOptions, FilterOption expectedOption, FilterOption expectedAntiOption, set<string> &&expectedDomains, set<string> &&expectedAntiDomains) {
-  Filter f;
-  f.parseOptions(rawOptions);
+bool testOptionsWithFilter(Filter &f, const char *input, FilterOption expectedOption, FilterOption expectedAntiOption, set<string> &expectedDomains, set<string> &expectedAntiDomains) {
   if (f.filterOption != expectedOption) {
-    cout << rawOptions << endl << "Actual options: " << f.filterOption  << endl << "Expected: " << expectedOption << endl;
+    cout << input << endl << "Actual options: " << f.filterOption  << endl << "Expected: " << expectedOption << endl;
     return false;
   }
   if (f.antiFilterOption != expectedAntiOption) {
-    cout << rawOptions << endl << "Actual anti options: " << f.antiFilterOption << endl << "Expected: " << expectedAntiOption << endl;
+    cout << input << endl << "Actual anti options: " << f.antiFilterOption << endl << "Expected: " << expectedAntiOption << endl;
     return false;
   }
   if (expectedDomains.size() != f.getDomainCount()) {
-    cout << rawOptions << endl << "Actual domain count: " << f.getDomainCount() << endl << "Expected: " << expectedDomains.size() << endl;
+    cout << input << endl << "Actual domain count: " << f.getDomainCount() << endl << "Expected: " << expectedDomains.size() << endl;
     return false;
   }
   if (expectedAntiDomains.size() != f.getDomainCount(true)) {
-    cout << rawOptions << endl << "Actual anti domain count: " << f.getDomainCount(false) << endl << "Expected: " << expectedAntiDomains.size() << endl;
+    cout << input << endl << "Actual anti domain count: " << f.getDomainCount(false) << endl << "Expected: " << expectedAntiDomains.size() << endl;
     return false;
   }
 
   bool ret = true;
-  std::for_each(expectedDomains.begin(), expectedDomains.end(), [&f, &expectedDomains, &ret, rawOptions](string const &s) {
+  std::for_each(expectedDomains.begin(), expectedDomains.end(), [&f, &expectedDomains, &ret, input](string const &s) {
     if (!f.containsDomain(s.c_str())) {
-      cout << rawOptions << endl << "Actual domains: " << (f.domainList ? f.domainList : "") << endl << "Expected: ";
+      cout << input << endl << "Actual domains: " << (f.domainList ? f.domainList : "") << endl << "Expected: ";
       printSet(expectedDomains);
       cout << endl;
       cout << "Not found: " << s.c_str() << endl;
@@ -51,9 +49,9 @@ bool testOptions(const char *rawOptions, FilterOption expectedOption, FilterOpti
     return false;
   }
 
-  std::for_each(expectedAntiDomains.begin(), expectedAntiDomains.end(), [&f, &expectedAntiDomains, &ret, rawOptions](string const &s) {
+  std::for_each(expectedAntiDomains.begin(), expectedAntiDomains.end(), [&f, &expectedAntiDomains, &ret, input](string const &s) {
     if (!f.containsDomain(s.c_str(), true)) {
-      cout << rawOptions << endl << "Actual anti domains: " << (f.domainList ? f.domainList : "") << endl << "Expected: ";
+      cout << input << endl << "Actual anti domains: " << (f.domainList ? f.domainList : "") << endl << "Expected: ";
       printSet(expectedAntiDomains);
       cout << endl;
       ret = false;
@@ -66,6 +64,19 @@ bool testOptions(const char *rawOptions, FilterOption expectedOption, FilterOpti
   return true;
 }
 
+bool testOptions(const char *rawOptions, FilterOption expectedOption, FilterOption expectedAntiOption, set<string> &&expectedDomains, set<string> &&expectedAntiDomains) {
+  Filter f;
+  f.parseOptions(rawOptions);
+  return testOptionsWithFilter(f, rawOptions, expectedOption, expectedAntiOption, expectedDomains, expectedAntiDomains);
+}
+
+bool testFilterOptions(const char *input, FilterOption expectedOption, FilterOption expectedAntiOption, set<string> &&expectedDomains, set<string> &&expectedAntiDomains) {
+  Filter f;
+  parseFilter(input, f);
+  return testOptionsWithFilter(f, input, expectedOption, expectedAntiOption, expectedDomains, expectedAntiDomains);
+}
+
+// Option parsing should split options properly
 TEST(options, splitOptions)
 {
   CHECK(testOptions("subdocument,third-party",
@@ -112,6 +123,7 @@ TEST(options, splitOptions)
   ));
 }
 
+// domain rule types should be properly parsed
 TEST(options, domainOptionStrings)
 {
   CHECK(testOptions("domain=example.com",
@@ -175,55 +187,46 @@ TEST(options, domainOptionStrings)
   ))
 }
 
-/*
-let parseOptionTests = new Map([
-  ["domain=foo.bar", [
-    undefined,
-    undefined,
-    undefined,
-  ]], ["+Ads/$~stylesheet", [
-    new Set(["~stylesheet"]),
-    undefined,
-    undefined,
-  ]], ["-advertising-$domain=~advertise.bingads.domain.com", [
-    new Set(),
-    [],
-    ["advertise.bingads.domain.com"],
-  ]], [".se/?placement=$script,third-party", [
-    new Set(["script", "third-party"]),
-    undefined,
-    undefined,
-  ]], ["||tst.net^$object-subrequest,third-party,domain=domain1.com|domain5.com", [
-    new Set(["object-subrequest", "third-party"]),
-    ["domain1.com", "domain5.com"],
-    [],
-  ]],
-]);
+// parseFilter for full rules properly extracts options
+TEST(options, optionsFromFilter)
+{
+  CHECK(testFilterOptions("domain=foo.bar",
+    FONoFilterOption,
+    FONoFilterOption,
+    { },
+    { }
+  ))
 
-describe("options#parseOptions()", function() {
-  it("Option parsing should split options properly", function() {
-    splitOptions.forEach(([expectedOptions, domains, skipDomains], optionsString) => {
-      let options = parseOptions(optionsString);
-      assert.equal(JSON.stringify(options.binaryOptions), JSON.stringify(expectedOptions));
-      assert.equal(JSON.stringify(options.domains), JSON.stringify(domains));
-      assert.equal(JSON.stringify(options.skipDomains), JSON.stringify(skipDomains));
-    });
-  });
-  it("domain rule types should be properly parsed", function() {
-    domainOptionStrings.forEach(([domains, skipDomains], optionsString) => {
-      let options = parseOptions(optionsString);
-      assert.equal(JSON.stringify(options.domains), JSON.stringify(domains));
-      assert.equal(JSON.stringify(options.skipDomains), JSON.stringify(skipDomains));
-    });
-  });
-  it("parseFilter for full rules properly extracts options", function() {
-    parseOptionTests.forEach(([expectedOptions, domains, skipDomains], filterString) => {
-      let parsedFilterOptions = {};
-      parseFilter(filterString, parsedFilterOptions);
-      assert.equal(JSON.stringify(parsedFilterOptions.options.binaryOptions), JSON.stringify(expectedOptions));
-      assert.equal(JSON.stringify(parsedFilterOptions.options.domains), JSON.stringify(domains));
-      assert.equal(JSON.stringify(parsedFilterOptions.options.skipDomains), JSON.stringify(skipDomains));
-    });
-  });
-});
-*/
+  CHECK(testFilterOptions("+Ads/$~stylesheet",
+    FONoFilterOption,
+    FOStylesheet,
+    { },
+    { }
+  ))
+
+  CHECK(testFilterOptions("-advertising-$domain=~advertise.bingads.domain.com",
+    FONoFilterOption,
+    FONoFilterOption,
+    { },
+    {
+      "advertise.bingads.domain.com"
+    }
+  ))
+
+  CHECK(testFilterOptions(".se/?placement=$script,third-party",
+    static_cast<FilterOption>(FOScript| FOThirdParty),
+    FONoFilterOption,
+    { },
+    { }
+  ))
+
+  CHECK(testFilterOptions("||tst.net^$object-subrequest,third-party,domain=domain1.com|domain5.com",
+    static_cast<FilterOption>(FOObjectSubrequest | FOThirdParty),
+    FONoFilterOption,
+    {
+      "domain1.com",
+      "domain5.com"
+    },
+    { }
+  ))
+}
