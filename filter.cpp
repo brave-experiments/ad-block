@@ -47,7 +47,7 @@ bool Filter::containsDomain(const char *domain, bool anti) const {
       if (isDomain(domainList + startOffset, len, domain, anti)) {
         return true;
       }
-      startOffset = len + 1;
+      startOffset += len + 1;
       len = -1;
     }
     p++;
@@ -119,6 +119,12 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOSubdocument);
   } else if (!memcmp(pStart, "document", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FODocument);
+  } else if (!memcmp(pStart, "xbl", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOXBL);
+  } else if (!memcmp(pStart, "collapse", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOCollapse);
+  } else if (!memcmp(pStart, "donottrack", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FODoNotTrack);
   } else if (!memcmp(pStart, "other", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOOther);
   } else if (!memcmp(pStart, "elemhide", len)) {

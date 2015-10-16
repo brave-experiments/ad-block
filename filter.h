@@ -35,8 +35,11 @@ enum FilterOption {
   FOSubdocument = 0100,
   FODocument = 0200,
   FOOther = 0400,
-  FOElemHide = 01000,
-  FOThirdParty = 02000,
+  FOXBL = 01000,
+  FOCollapse = 02000,
+  FODoNotTrack = 04000,
+  FOElemHide = 010000,
+  FOThirdParty = 020000
 };
 
 class Filter {

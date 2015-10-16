@@ -18,32 +18,32 @@ void printSet(set<string> &domainSet) {
 }
 
 bool testOptions(const char *rawOptions, FilterOption expectedOption, FilterOption expectedAntiOption, set<string> &&expectedDomains, set<string> &&expectedAntiDomains) {
-
   Filter f;
   f.parseOptions(rawOptions);
   if (f.filterOption != expectedOption) {
-    cout << "Actual options: " << f.filterOption  << endl << "Expected: " << expectedOption << endl;
+    cout << rawOptions << endl << "Actual options: " << f.filterOption  << endl << "Expected: " << expectedOption << endl;
     return false;
   }
   if (f.antiFilterOption != expectedAntiOption) {
-    cout << "Actual anti options: " << f.antiFilterOption << endl << "Expected: " << expectedAntiOption << endl;
+    cout << rawOptions << endl << "Actual anti options: " << f.antiFilterOption << endl << "Expected: " << expectedAntiOption << endl;
     return false;
   }
   if (expectedDomains.size() != f.getDomainCount()) {
-    cout << "Actual domain count: " << f.getDomainCount() << endl << "Expected: " << expectedDomains.size() << endl;
+    cout << rawOptions << endl << "Actual domain count: " << f.getDomainCount() << endl << "Expected: " << expectedDomains.size() << endl;
     return false;
   }
   if (expectedAntiDomains.size() != f.getDomainCount(true)) {
-    cout << "Actual anti domain count: " << f.getDomainCount(false) << endl << "Expected: " << expectedAntiDomains.size() << endl;
+    cout << rawOptions << endl << "Actual anti domain count: " << f.getDomainCount(false) << endl << "Expected: " << expectedAntiDomains.size() << endl;
     return false;
   }
 
   bool ret = true;
-  std::for_each(expectedDomains.begin(), expectedDomains.end(), [&f, &expectedDomains, &ret](string const &s) {
+  std::for_each(expectedDomains.begin(), expectedDomains.end(), [&f, &expectedDomains, &ret, rawOptions](string const &s) {
     if (!f.containsDomain(s.c_str())) {
-      cout << "Actual domains: " << (f.domainList ? f.domainList : "") << endl << "Expected: ";
+      cout << rawOptions << endl << "Actual domains: " << (f.domainList ? f.domainList : "") << endl << "Expected: ";
       printSet(expectedDomains);
       cout << endl;
+      cout << "Not found: " << s.c_str() << endl;
       ret = false;
     }
   });
@@ -51,10 +51,9 @@ bool testOptions(const char *rawOptions, FilterOption expectedOption, FilterOpti
     return false;
   }
 
-  std::for_each(expectedAntiDomains.begin(), expectedAntiDomains.end(), [&f, &expectedAntiDomains, &ret](string const &s) {
-    cout << "Checking " << s.c_str() << endl;
+  std::for_each(expectedAntiDomains.begin(), expectedAntiDomains.end(), [&f, &expectedAntiDomains, &ret, rawOptions](string const &s) {
     if (!f.containsDomain(s.c_str(), true)) {
-      cout << "Actual anti domains: " << (f.domainList ? f.domainList : "") << endl << "Expected: ";
+      cout << rawOptions << endl << "Actual anti domains: " << (f.domainList ? f.domainList : "") << endl << "Expected: ";
       printSet(expectedAntiDomains);
       cout << endl;
       ret = false;
@@ -63,8 +62,6 @@ bool testOptions(const char *rawOptions, FilterOption expectedOption, FilterOpti
   if (!ret) {
     return false;
   }
-
-
 
   return true;
 }
@@ -87,21 +84,27 @@ TEST(options, test)
       "www.nbcnews.com"
     }
   ));
+
+  CHECK(testOptions("~document,xbl,domain=~foo|bar|baz|foo.xbl|gar,~collapse",
+    FOXBL,
+    static_cast<FilterOption>(FODocument | FOCollapse),
+    {
+      "bar",
+      "baz",
+      "foo.xbl",
+      "gar"
+    },
+    {
+      "foo"
+    }
+  ));
 }
 
 /*
  *
 // Maps option strings to [set of binary options, domains, skipDomains]
 let splitOptions = new Map([
-,, ["object-subrequest,script,domain=~msnbc.msn.com|~www.nbcnews.com", [
-    new Set(["object-subrequest", "script"]),
-    [],
-    ["msnbc.msn.com", "www.nbcnews.com"]
-  ]], ["~document,xbl,domain=~foo|bar|baz,~collapse,domain=foo.xbl|bar", [
-    new Set(["~document", "xbl", "~collapse"]),
-    ["bar", "baz", "foo.xbl", "bar"],
-    ["foo"]
-  ]], ["domain=~example.com|foo.example.com,script", [
+,, , , ["domain=~example.com|foo.example.com,script", [
     new Set(["script"]),
     ["foo.example.com"],
     ["example.com"]
