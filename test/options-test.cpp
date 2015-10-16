@@ -66,7 +66,7 @@ bool testOptions(const char *rawOptions, FilterOption expectedOption, FilterOpti
   return true;
 }
 
-TEST(options, test)
+TEST(options, splitOptions)
 {
   CHECK(testOptions("subdocument,third-party",
     static_cast<FilterOption>(FOThirdParty | FOSubdocument),
@@ -98,51 +98,84 @@ TEST(options, test)
       "foo"
     }
   ));
+
+
+  CHECK(testOptions("domain=~example.com|foo.example.com,script",
+    FOScript,
+    FONoFilterOption,
+    {
+      "foo.example.com"
+    },
+    {
+      "example.com"
+    }
+  ));
+}
+
+TEST(options, domainOptionStrings)
+{
+  CHECK(testOptions("domain=example.com",
+    FONoFilterOption,
+    FONoFilterOption,
+    {
+      "example.com"
+    },
+    { }
+  ));
+
+  CHECK(testOptions("domain=example.com|example.net",
+    FONoFilterOption,
+    FONoFilterOption,
+    {
+      "example.com",
+      "example.net"
+    },
+    { }
+  ));
+
+  CHECK(testOptions("domain=~example.com",
+    FONoFilterOption,
+    FONoFilterOption,
+    { },
+    {
+      "example.com"
+    }
+  ));
+
+  CHECK(testOptions("domain=example.com|~foo.example.com",
+    FONoFilterOption,
+    FONoFilterOption,
+    {
+      "example.com",
+    },
+    {
+      "foo.example.com"
+    }
+  ));
+
+  CHECK(testOptions("domain=~foo.example.com|example.com",
+    FONoFilterOption,
+    FONoFilterOption,
+    {
+      "example.com",
+    },
+    {
+      "foo.example.com"
+    }
+  ));
+
+  CHECK(testOptions("domain=~msnbc.msn.com|~www.nbcnews.com",
+    FONoFilterOption,
+    FONoFilterOption,
+    { },
+    {
+      "msnbc.msn.com",
+      "www.nbcnews.com"
+    }
+  ))
 }
 
 /*
- *
-// Maps option strings to [set of binary options, domains, skipDomains]
-let splitOptions = new Map([
-,, , , ["domain=~example.com|foo.example.com,script", [
-    new Set(["script"]),
-    ["foo.example.com"],
-    ["example.com"]
-  ]],
-]);
-
-// Maps option strings to [domains, skipDomains]
-let domainOptionStrings = new Map([
-  ["domain=example.com", [
-    ["example.com"],
-    []
-  ]], ["domain=example.com|example.net", [
-    ["example.com", "example.net"],
-    []
-  ]], ["domain=~example.com", [
-    [],
-    ["example.com"],
-  ]], ["domain=example.com|~foo.example.com", [
-    ["example.com"],
-    ["foo.example.com"]
-  ]], ["domain=~foo.example.com|example.com", [
-    ["example.com"],
-    ["foo.example.com"],
-  ]],
-  ["domain=example.com|example.net", [
-    ["example.com", "example.net"],
-    [],
-  ]],
-  ["domain=example.com|~foo.example.com", [
-    ["example.com"],
-    ["foo.example.com"],
-  ]],
-  ["domain=~msnbc.msn.com|~www.nbcnews.com", [
-    [],
-    ["msnbc.msn.com", "www.nbcnews.com"],
-  ]],
-]);
-
 let parseOptionTests = new Map([
   ["domain=foo.bar", [
     undefined,
