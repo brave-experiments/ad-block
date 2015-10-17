@@ -153,6 +153,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/banner2.gif",
     }
   ));
+#endif
   CHECK(testFilter("http://example.com^",
     noFilterType,
     FONoFilterOption,
@@ -163,6 +164,8 @@ TEST(parser, parseFilterMatchesFilter)
     },
     {}
   ));
+
+#if 0
   CHECK(testFilter("^example.com^",
     noFilterType,
     FONoFilterOption,
