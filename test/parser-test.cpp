@@ -71,7 +71,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/img/banner/",
     }
   ));
-#if 0
+
   CHECK(testFilter("/banner/*/img^",
     noFilterType,
     FONoFilterOption,
@@ -86,6 +86,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/banner/foo/img.gif",
     }
   ));
+#if 0
 
   CHECK(testFilter("||ads.example.com^",
     hostAnchored,

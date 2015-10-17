@@ -21,6 +21,30 @@ Filter::~Filter() {
   }
 }
 
+
+static const char *separatorCharacters = ":?/=^";
+bool isSeparatorChar(char c) {
+  const char *p = separatorCharacters;
+  while (*p != 0) {
+    if (*p == c) {
+      return true;
+    }
+    ++p;
+  };
+  return false;
+}
+
+int findFirstSeparatorChar(const char *input) {
+  const char *p = input;
+  while (*p != '\0') {
+    if (isSeparatorChar(*p)) {
+      return p - input;
+    }
+    p++;
+  }
+  return -1;
+}
+
 bool isDomain(const char *input, int len, const char *domain, bool anti) {
   const char *p = input;
   if (anti) {
@@ -178,7 +202,7 @@ int indexOf(const char *source, const char *filterPartStart, const char *filterP
 
   while (*s != '\0') {
     if (fStart == filterPartEnd) {
-      return s - source;
+      return s - source - (filterPartEnd - filterPartStart);
     }
     if (*s != *fStart) {
       notCheckedSource++;
@@ -192,7 +216,7 @@ int indexOf(const char *source, const char *filterPartStart, const char *filterP
   }
 
   if (fStart == filterPartEnd) {
-    return s - source;
+    return s - source - (filterPartEnd - filterPartStart);
   }
 
   return -1;
@@ -203,8 +227,11 @@ int indexOf(const char *source, const char *filterPartStart, const char *filterP
  * extra consideration to some ABP filter rules like ^.
  */
 int indexOfFilter(const char* input, const char *filterPosStart, const char *filterPosEnd) {
+  bool prefixedSeparatorChar = false;
   int filterLen = filterPosEnd - filterPosStart;
   int inputLen = strlen(input);
+  int index = 0;
+  int beginIndex = -1;
   if (filterLen > inputLen) {
     return -1;
   }
@@ -215,17 +242,42 @@ int indexOfFilter(const char* input, const char *filterPosStart, const char *fil
     filterPartEnd = filterPosEnd;
   }
 
-  while (filterPartStart != filterPartEnd) {
-    int index = indexOf(input, filterPartStart, filterPartEnd);
-    if (index != -1) {
-      return index;
+  while (*(input + index) != '\0') {
+    if (filterPartStart == filterPartEnd) {
+      prefixedSeparatorChar = true;
+    }
+    int lastIndex = index;
+    index = indexOf(input + index, filterPartStart, filterPartEnd);
+    if (index == -1) {
+      return -1;
+    }
+    index += lastIndex;
+    if (beginIndex == -1) {
+      beginIndex = index;
+    }
+
+    index += (filterPartEnd - filterPartStart);
+
+    if (prefixedSeparatorChar) {
+      char testChar = *(input + index + (filterPartEnd - filterPartStart));
+      if (!isSeparatorChar(testChar)) {
+        return -1;
+      }
+    }
+
+    if (*filterPartEnd == '\0') {
+      break;
     }
     const char *temp = getNextPos(filterPartEnd + 1, '^');
     filterPartStart = filterPartEnd + 1;
     filterPartEnd = temp;
+    prefixedSeparatorChar = false;
+    if (filterPartEnd - filterPosEnd > 0) {
+      break;
+    }
   }
 
-  return -1;
+  return beginIndex;
 }
 
 bool Filter::matches(const char *input) {
@@ -288,15 +340,23 @@ bool Filter::matches(const char *input) {
   const char *filterPartEnd = getNextPos(data, '*');
   int index = 0;
   while (filterPartStart != filterPartEnd) {
+    int filterPartLen = filterPartEnd - filterPartStart;
     int newIndex = indexOfFilter(input + index, filterPartStart, filterPartEnd);
     if (newIndex == -1) {
       return false;
     }
     newIndex += index;
+
+    if (*filterPartEnd == '\0') {
+      break;
+    }
     const char *temp = getNextPos(filterPartEnd + 1, '*');
     filterPartStart = filterPartEnd + 1;
     filterPartEnd = temp;
-    index = newIndex;
+    index = newIndex + filterPartLen;
+    if (*(input + newIndex) == '\0') {
+      break;
+    }
   }
 
   return true;
