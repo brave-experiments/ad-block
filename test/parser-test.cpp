@@ -86,8 +86,8 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/banner/foo/img.gif",
     }
   ));
-#if 0
 
+#if 0
   CHECK(testFilter("||ads.example.com^",
     hostAnchored,
     FONoFilterOption,
@@ -101,6 +101,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/redirect/http://ads.example.com/",
     }
   ));
+#endif
 
   CHECK(testFilter("|http://example.com/|",
     static_cast<FilterType>(leftAnchored | rightAnchored),
@@ -135,6 +136,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://gooddomain.example/analyze?http://baddomain.example",
     }
   ));
+#if 0
   CHECK(testFilter("||example.com/banner.gif",
     hostAnchored,
     FONoFilterOption,
