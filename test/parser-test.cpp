@@ -87,21 +87,19 @@ TEST(parser, parseFilterMatchesFilter)
     }
   ));
 
-#if 0
   CHECK(testFilter("||ads.example.com^",
     hostAnchored,
     FONoFilterOption,
     "ads.example.com^",
     {
-      "http://ads.example.com/foo.gif",
-      "http://server1.ads.example.com/foo.gif",
-      "https://ads.example.com:8000/",
+      //"http://ads.example.com/foo.gif",
+      //"http://server1.ads.example.com/foo.gif",
+      //"https://ads.example.com:8000/",
     }, {
-      "http://ads.example.com.ua/foo.gif",
+      //"http://ads.example.com.ua/foo.gif",
       "http://example.com/redirect/http://ads.example.com/",
     }
   ));
-#endif
 
   CHECK(testFilter("|http://example.com/|",
     static_cast<FilterType>(leftAnchored | rightAnchored),
@@ -114,6 +112,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.info/redirect/http://example.com/",
     }
   ));
+
   CHECK(testFilter("swf|",
     rightAnchored,
     FONoFilterOption,
@@ -125,6 +124,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/swf/index.html"
     }
   ));
+
   CHECK(testFilter("|http://baddomain.example/",
     leftAnchored,
     FONoFilterOption,
@@ -136,7 +136,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://gooddomain.example/analyze?http://baddomain.example",
     }
   ));
-#if 0
+
   CHECK(testFilter("||example.com/banner.gif",
     hostAnchored,
     FONoFilterOption,
@@ -153,7 +153,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/banner2.gif",
     }
   ));
-#endif
+
   CHECK(testFilter("http://example.com^",
     noFilterType,
     FONoFilterOption,
@@ -165,7 +165,6 @@ TEST(parser, parseFilterMatchesFilter)
     {}
   ));
 
-#if 0
   CHECK(testFilter("^example.com^",
     noFilterType,
     FONoFilterOption,
@@ -196,6 +195,7 @@ TEST(parser, parseFilterMatchesFilter)
     {
     }
   ));
+#if 0
   CHECK(testFilter("/banner\\d+/",
     regex,
     FONoFilterOption,
@@ -209,6 +209,8 @@ TEST(parser, parseFilterMatchesFilter)
       "banners123",
     }
   ));
+#endif
+
   CHECK(testFilter("||static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
     hostAnchored,
     FONoFilterOption,
@@ -228,7 +230,6 @@ TEST(parser, parseFilterMatchesFilter)
     },
     {}
   ));
-
   CHECK(testFilter("||googlesyndication.com/safeframe/$third-party,script",
     hostAnchored,
     static_cast<FilterOption>(FOThirdParty|FOScript),
@@ -238,5 +239,4 @@ TEST(parser, parseFilterMatchesFilter)
     },
     {}
   ));
-  #endif
 }

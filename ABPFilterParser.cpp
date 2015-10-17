@@ -4,8 +4,8 @@
 
 using namespace std;
 
-const char *separatorCharacters = ":?/=^";
 const int maxLineLength = 2048;
+const char *separatorCharacters = ":?/=^";
 
 enum FilterParseState {
   FPStart,
@@ -14,7 +14,27 @@ enum FilterParseState {
   FPData
 };
 
+bool isSeparatorChar(char c) {
+  const char *p = separatorCharacters;
+  while (*p != 0) {
+    if (*p == c) {
+      return true;
+    }
+    ++p;
+  };
+  return false;
+}
 
+int findFirstSeparatorChar(const char *input) {
+  const char *p = input;
+  while (*p != '\0') {
+    if (isSeparatorChar(*p)) {
+      return p - input;
+    }
+    p++;
+  }
+  return -1;
+}
 
 // Not currently multithreaded safe due to the static buffer named 'data'
 void parseFilter(const char *input, Filter &f) {
@@ -45,6 +65,10 @@ void parseFilter(const char *input, Filter &f) {
           f.filterType = hostAnchored;
           parseState = FPData;
           p++;
+          int len = findFirstSeparatorChar(p);
+          f.domainList = new char[len + 1];
+          f.domainList[len] = '\0';
+          memcpy(f.domainList, p, len);
           continue;
         } else {
           f.filterType = static_cast<FilterType>(f.filterType | rightAnchored);
@@ -85,7 +109,7 @@ void parseFilter(const char *input, Filter &f) {
       case '$':
         f.parseOptions(p + 1);
         data[i] = '\0';
-        f.data = new char[i];
+        f.data = new char[i + 1];
         memcpy(f.data, data, i + 1);
         return;
       case '#':

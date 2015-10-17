@@ -17,3 +17,7 @@ bool filterDataContainsOption(Filter *);
 bool isThirdPartyHost(const char *input);
 void matches(const char *input);
 void getFingerprint(const char *input);
+bool isSeparatorChar(char c);
+int findFirstSeparatorChar(const char *input);
+
+

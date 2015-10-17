@@ -1,4 +1,5 @@
 #include "filter.h"
+#include "ABPFilterParser.h"
 #include <string.h>
 #include <iostream>
 
@@ -21,28 +22,22 @@ Filter::~Filter() {
   }
 }
 
-
-static const char *separatorCharacters = ":?/=^";
-bool isSeparatorChar(char c) {
-  const char *p = separatorCharacters;
-  while (*p != 0) {
-    if (*p == c) {
-      return true;
-    }
-    ++p;
-  };
-  return false;
-}
-
-int findFirstSeparatorChar(const char *input) {
+/**
+ * Finds the host within the passed in URL and returns its length
+ */
+const char * getUrlHost(const char *input, int &len) {
   const char *p = input;
-  while (*p != '\0') {
-    if (isSeparatorChar(*p)) {
-      return p - input;
-    }
+  while (*p != '\0' && *p != ':') {
     p++;
   }
-  return -1;
+  if (*p != '\0') {
+    p++;
+    while (*p != '\0' && *p == '/') {
+      p++;
+    }
+  }
+  len = findFirstSeparatorChar(p);
+  return p;
 }
 
 bool isDomain(const char *input, int len, const char *domain, bool anti) {
@@ -243,7 +238,7 @@ int indexOfFilter(const char* input, const char *filterPosStart, const char *fil
   }
 
   while (*(input + index) != '\0') {
-    if (filterPartStart == filterPartEnd) {
+    if (filterPartStart == filterPartEnd && filterPartStart != filterPosStart) {
       prefixedSeparatorChar = true;
     }
     int lastIndex = index;
@@ -278,6 +273,32 @@ int indexOfFilter(const char* input, const char *filterPosStart, const char *fil
   }
 
   return beginIndex;
+}
+
+bool endsWith(const char *input, const char *sub, int inputLen, int subLen) {
+  if (subLen > inputLen) {
+    return false;
+  }
+
+  int startCheckPos = inputLen - subLen;
+  const char *p = input + startCheckPos;
+  const char *q = sub;
+  while (*q != '\0') {
+    if (*(p++) != *(q++)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool isThirdPartyHost(const char *baseContextHost, const char *testHost, int testHostLen) {
+  int baseContextHostLen = strlen(baseContextHost);
+  if (!endsWith(testHost, baseContextHost, testHostLen, baseContextHostLen)) {
+    return true;
+  }
+
+  char c = testHost[testHostLen - baseContextHostLen - 1];
+  return c != '.' && testHostLen != baseContextHostLen;
 }
 
 bool Filter::matches(const char *input) {
@@ -324,15 +345,15 @@ bool Filter::matches(const char *input) {
 
   // Check for domain name anchored
   if (filterType & hostAnchored) {
-    /*
-  TODO
-    if (!cachedInputData.currentHost) {
-      cachedInputData.currentHost = getUrlHost(input);
-    }
 
-    return !isThirdPartyHost(parsedFilterData.host, cachedInputData.currentHost) &&
-      indexOfFilter(input, parsedFilterData.data) !== -1;
-    */
+    const char *filterPartEnd = data;
+    while (*filterPartEnd != '\0') {
+      filterPartEnd++;
+    }
+    int currentHostLen;
+    const char *currentHost = getUrlHost(input, currentHostLen);
+    return !isThirdPartyHost(domainList, currentHost, currentHostLen) &&
+      indexOfFilter(input, data, filterPartEnd) != -1;
   }
 
   // Wildcard match comparison
