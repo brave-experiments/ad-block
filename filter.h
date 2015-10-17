@@ -46,6 +46,8 @@ class Filter {
 public:
   Filter();
   ~Filter();
+  bool matches(const char *input);
+  bool matchesOptions(const char *input);
   void parseOption(const char *input, int len);
   void parseOptions(const char *input);
   bool containsDomain(const char *domain, bool anti = false) const;

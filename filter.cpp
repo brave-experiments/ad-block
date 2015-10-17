@@ -152,3 +152,152 @@ void Filter::parseOptions(const char *input) {
   }
   parseOption(input + startOffset, len);
 }
+
+// Determines if there's a match based on the options, this doesn't
+// mean that the filter rule should be accepted, just that the filter rule
+// should be considered given the current context.
+// By specifying context params, you can filter out the number of rules which are
+// considered.
+bool Filter::matchesOptions(const char *input) {
+  return true;
+}
+
+
+const char * getNextPos(const char *input, char separator) {
+  const char *p = input;
+  while (*p != '\0' && *p != separator) {
+    p++;
+  }
+  return p;
+}
+
+int indexOf(const char *source, const char *filterPartStart, const char *filterPartEnd) {
+  const char *s = source;
+  const char *fStart = filterPartStart;
+  const char *notCheckedSource = source;
+
+  while (*s != '\0') {
+    if (fStart == filterPartEnd) {
+      return s - source;
+    }
+    if (*s != *fStart) {
+      notCheckedSource++;
+      s = notCheckedSource;
+      fStart = filterPartStart;
+      continue;
+    }
+
+    fStart++;
+    s++;
+  }
+
+  if (fStart == filterPartEnd) {
+    return s - source;
+  }
+
+  return -1;
+}
+
+/**
+ * Similar to str1.indexOf(filter, startingPos) but with
+ * extra consideration to some ABP filter rules like ^.
+ */
+int indexOfFilter(const char* input, const char *filterPosStart, const char *filterPosEnd) {
+  int filterLen = filterPosEnd - filterPosStart;
+  int inputLen = strlen(input);
+  if (filterLen > inputLen) {
+    return -1;
+  }
+
+  const char *filterPartStart = filterPosStart;
+  const char *filterPartEnd = getNextPos(filterPosStart, '^');
+  if (filterPartEnd - filterPosEnd > 0) {
+    filterPartEnd = filterPosEnd;
+  }
+
+  while (filterPartStart != filterPartEnd) {
+    int index = indexOf(input, filterPartStart, filterPartEnd);
+    if (index != -1) {
+      return index;
+    }
+    const char *temp = getNextPos(filterPartEnd + 1, '^');
+    filterPartStart = filterPartEnd + 1;
+    filterPartEnd = temp;
+  }
+
+  return -1;
+}
+
+bool Filter::matches(const char *input) {
+  if (!matchesOptions(input)) {
+    return false;
+  }
+
+  if (!data) {
+    return false;
+  }
+  int dataLen = strlen(data);
+  int inputLen = strlen(input);
+
+  // Check for a regex match
+  if (filterType & regex) {
+    // TODO
+    /*
+    if (!parsedFilterData.regex) {
+      parsedFilterData.regex = new RegExp(parsedFilterData.data);
+    }
+    return parsedFilterData.regex.test(input);
+    */
+    return false;
+  }
+
+  // Check for both left and right anchored
+  if ((filterType & leftAnchored) && (filterType & rightAnchored)) {
+    return !strcmp(data, input);
+  }
+
+  // Check for right anchored
+  if (filterType & rightAnchored) {
+    if (dataLen > inputLen) {
+      return false;
+    }
+
+    return !strcmp(input + (inputLen - dataLen), data);
+  }
+
+  // Check for left anchored
+  if (filterType & leftAnchored) {
+    return !strncmp(data, input, dataLen);
+  }
+
+  // Check for domain name anchored
+  if (filterType & hostAnchored) {
+    /*
+  TODO
+    if (!cachedInputData.currentHost) {
+      cachedInputData.currentHost = getUrlHost(input);
+    }
+
+    return !isThirdPartyHost(parsedFilterData.host, cachedInputData.currentHost) &&
+      indexOfFilter(input, parsedFilterData.data) !== -1;
+    */
+  }
+
+  // Wildcard match comparison
+  const char *filterPartStart = data;
+  const char *filterPartEnd = getNextPos(data, '*');
+  int index = 0;
+  while (filterPartStart != filterPartEnd) {
+    int newIndex = indexOfFilter(input + index, filterPartStart, filterPartEnd);
+    if (newIndex == -1) {
+      return false;
+    }
+    newIndex += index;
+    const char *temp = getNextPos(filterPartEnd + 1, '*');
+    filterPartStart = filterPartEnd + 1;
+    filterPartEnd = temp;
+    index = newIndex;
+  }
+
+  return true;
+}
