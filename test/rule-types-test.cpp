@@ -14,7 +14,7 @@ using namespace std;
 bool testComment(const char *rawFilter) {
   Filter filter;
   parseFilter(rawFilter, filter);
-  return filter.filterType == comment;
+  return filter.filterType == FTComment;
 }
 
 TEST(ruleTypes, commentRules)
@@ -38,9 +38,9 @@ bool testElementHidingRule(const char *rawFilter, bool exception) {
   Filter filter;
   parseFilter(rawFilter, filter);
   if (exception) {
-    return filter.filterType == elementHidingException;
+    return filter.filterType == FTElementHidingException;
   }
-  return filter.filterType == elementHiding;
+  return filter.filterType == FTElementHiding;
 }
 
 TEST(ruleTypes, elementHidingRules)

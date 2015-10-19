@@ -9,6 +9,7 @@
       "rule-types-test.cpp",
       "ABPFilterParser.cpp",
       "filter.cpp",
+      "test/util.cpp",
     ],
     "include_dirs": [
       ".",

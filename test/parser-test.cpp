@@ -56,7 +56,7 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType, FilterOpti
 TEST(parser, parseFilterMatchesFilter)
 {
   CHECK(testFilter("/banner/*/img",
-    noFilterType,
+    FTNoFilterType,
     FONoFilterOption,
     "/banner/*/img",
     {
@@ -73,7 +73,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("/banner/*/img^",
-    noFilterType,
+    FTNoFilterType,
     FONoFilterOption,
     "/banner/*/img^",
     {
@@ -88,7 +88,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("||ads.example.com^",
-    hostAnchored,
+    FTHostAnchored,
     FONoFilterOption,
     "ads.example.com^",
     {
@@ -102,7 +102,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("|http://example.com/|",
-    static_cast<FilterType>(leftAnchored | rightAnchored),
+    static_cast<FilterType>(FTLeftAnchored | FTRightAnchored),
     FONoFilterOption,
     "http://example.com/",
     {
@@ -114,7 +114,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("swf|",
-    rightAnchored,
+    FTRightAnchored,
     FONoFilterOption,
     "swf",
     {
@@ -126,7 +126,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("|http://baddomain.example/",
-    leftAnchored,
+    FTLeftAnchored,
     FONoFilterOption,
     "http://baddomain.example/",
     {
@@ -138,7 +138,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("||example.com/banner.gif",
-    hostAnchored,
+    FTHostAnchored,
     FONoFilterOption,
     "example.com/banner.gif",
     {
@@ -155,7 +155,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("http://example.com^",
-    noFilterType,
+    FTNoFilterType,
     FONoFilterOption,
     "http://example.com^",
     {
@@ -166,7 +166,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("^example.com^",
-    noFilterType,
+    FTNoFilterType,
     FONoFilterOption,
     "^example.com^",
     {
@@ -175,7 +175,7 @@ TEST(parser, parseFilterMatchesFilter)
     {}
   ));
   CHECK(testFilter("^%D1%82%D0%B5%D1%81%D1%82^",
-    noFilterType,
+    FTNoFilterType,
     FONoFilterOption,
     "^%D1%82%D0%B5%D1%81%D1%82^",
     {
@@ -186,7 +186,7 @@ TEST(parser, parseFilterMatchesFilter)
     }
   ));
   CHECK(testFilter("^foo.bar^",
-    noFilterType,
+    FTNoFilterType,
     FONoFilterOption,
     "^foo.bar^",
     {
@@ -212,7 +212,7 @@ TEST(parser, parseFilterMatchesFilter)
 #endif
 
   CHECK(testFilter("||static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
-    hostAnchored,
+    FTHostAnchored,
     FONoFilterOption,
     "static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
     {
@@ -222,7 +222,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("||googlesyndication.com/safeframe/$third-party",
-    hostAnchored,
+    FTHostAnchored,
     FOThirdParty,
     "googlesyndication.com/safeframe/",
     {
@@ -231,7 +231,7 @@ TEST(parser, parseFilterMatchesFilter)
     {}
   ));
   CHECK(testFilter("||googlesyndication.com/safeframe/$third-party,script",
-    hostAnchored,
+    FTHostAnchored,
     static_cast<FilterOption>(FOThirdParty|FOScript),
     "googlesyndication.com/safeframe/",
     {
@@ -240,3 +240,79 @@ TEST(parser, parseFilterMatchesFilter)
     {}
   ));
 }
+
+TEST(parser, exceptionRules)
+{
+/*
+  let exceptionRules = new Map([
+  [`adv
+    @@advice.`, {
+    blocked: [
+      'http://example.com/advert.html',
+    ],
+    notBlocked: [
+      'http://example.com/advice.html',
+    ]
+  }],
+  [`@@advice.
+    adv`, {
+      blocked: [
+        'http://example.com/advert.html'
+      ],
+      notBlocked: [
+        'http://example.com/advice.html'
+      ],
+  }],
+  [`@@|http://example.com
+    @@advice.
+    adv
+    !foo`, {
+     blocked: [
+       'http://examples.com/advert.html',
+     ],
+     notBlocked: [
+       'http://example.com/advice.html',
+       'http://example.com/advert.html',
+       'http://examples.com/advice.html',
+       'http://examples.com/#!foo',
+     ],
+  }],
+]);
+*/
+}
+
+// Should parse EasyList without failing
+TEST(parser, parse)
+{
+  std::string &&fileContents = getFileContents("./test/data/easylist.txt");
+  ABPFilterParser parser;
+  parser.parse(fileContents.c_str());
+}
+
+
+/*
+      let parserData = {};
+      parse(data, parserData);
+      // Num lines minus (num empty lines + num comment lines)
+      assert.equal(parserData.htmlRuleFilters.length, 26465);
+      assert.equal(parserData.filters.length + parserData.noFingerprintFilters.length, 18096);
+      assert.equal(parserData.exceptionFilters.length, 2975);
+      cb();
+    });
+  });
+  it('Calling parse amongst 2 different lists should preserve both sets of rules', function() {
+    let parserData = {};
+    parse(`adv
+           @@test
+           ###test`, parserData);
+    parse(`adv2
+           @@test2
+           ###test2
+           adv3
+           @@test3
+           ###test3`, parserData);
+    assert.equal(parserData.htmlRuleFilters.length, 3);
+    assert.equal(parserData.filters.length, 0);
+    assert.equal(parserData.noFingerprintFilters.length, 3);
+    assert.equal(parserData.exceptionFilters.length, 3);
+    */

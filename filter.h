@@ -1,14 +1,15 @@
 #pragma once
 
 enum FilterType {
-  noFilterType = 0,
-  regex = 01,
-  elementHiding = 02,
-  elementHidingException = 04,
-  hostAnchored = 010,
-  leftAnchored = 020,
-  rightAnchored = 040,
-  comment = 0100,
+  FTNoFilterType = 0,
+  FTRegex = 01,
+  FTElementHiding = 02,
+  FTElementHidingException = 04,
+  FTHostAnchored = 010,
+  FTLeftAnchored = 020,
+  FTRightAnchored = 040,
+  FTComment = 0100,
+  FTException = 0200,
 };
 
 enum ElementType {

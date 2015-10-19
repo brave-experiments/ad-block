@@ -6,7 +6,7 @@
 using namespace std;
 
 Filter::Filter() :
-  filterType(noFilterType),
+  filterType(FTNoFilterType),
   filterOption(FONoFilterOption),
   antiFilterOption(FONoFilterOption),
   data(nullptr),
@@ -313,7 +313,7 @@ bool Filter::matches(const char *input) {
   int inputLen = strlen(input);
 
   // Check for a regex match
-  if (filterType & regex) {
+  if (filterType & FTRegex) {
     // TODO
     /*
     if (!parsedFilterData.regex) {
@@ -325,12 +325,12 @@ bool Filter::matches(const char *input) {
   }
 
   // Check for both left and right anchored
-  if ((filterType & leftAnchored) && (filterType & rightAnchored)) {
+  if ((filterType & FTLeftAnchored) && (filterType & FTRightAnchored)) {
     return !strcmp(data, input);
   }
 
   // Check for right anchored
-  if (filterType & rightAnchored) {
+  if (filterType & FTRightAnchored) {
     if (dataLen > inputLen) {
       return false;
     }
@@ -339,12 +339,12 @@ bool Filter::matches(const char *input) {
   }
 
   // Check for left anchored
-  if (filterType & leftAnchored) {
+  if (filterType & FTLeftAnchored) {
     return !strncmp(data, input, dataLen);
   }
 
   // Check for domain name anchored
-  if (filterType & hostAnchored) {
+  if (filterType & FTHostAnchored) {
 
     const char *filterPartEnd = data;
     while (*filterPartEnd != '\0') {

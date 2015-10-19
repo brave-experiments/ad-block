@@ -11,6 +11,7 @@ enum FilterParseState {
   FPStart,
   FPPastWhitespace,
   FPOneBar,
+  FPOneAt,
   FPData
 };
 
@@ -36,6 +37,26 @@ int findFirstSeparatorChar(const char *input) {
   return -1;
 }
 
+/*
+bool matches(const char *input) {
+  if (hasMatchingFilters(parserData.filters, parserData, input, contextParams, cachedInputData) ||
+      hasMatchingNoFingerprintFilters === true || hasMatchingNoFingerprintFilters === undefined &&
+      hasMatchingFilters(parserData.noFingerprintFilters, parserData, input, contextParams, cachedInputData)) {
+
+    // Check for exceptions only when there's a match because matches are
+    // rare compared to the volume of checks
+    let exceptionBloomFilterMiss = parserData.exceptionBloomFilter && !parserData.exceptionBloomFilter.substringExists(cleanedInput, fingerprintSize);
+    if (!exceptionBloomFilterMiss || hasMatchingFilters(parserData.exceptionFilters, parserData, input, contextParams, cachedInputData)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  return false;
+}
+*/
+
 // Not currently multithreaded safe due to the static buffer named 'data'
 void parseFilter(const char *input, Filter &f) {
   FilterParseState parseState = FPStart;
@@ -51,7 +72,7 @@ void parseFilter(const char *input, Filter &f) {
 
     if (parseState == FPOneBar && *p != '|') {
       parseState = FPData;
-      f.filterType = leftAnchored;
+      f.filterType = FTLeftAnchored;
     }
 
     switch (*p) {
@@ -62,7 +83,7 @@ void parseFilter(const char *input, Filter &f) {
           continue;
         } else if (parseState == FPOneBar) {
           parseState = FPOneBar;
-          f.filterType = hostAnchored;
+          f.filterType = FTHostAnchored;
           parseState = FPData;
           p++;
           int len = findFirstSeparatorChar(p);
@@ -71,7 +92,20 @@ void parseFilter(const char *input, Filter &f) {
           memcpy(f.domainList, p, len);
           continue;
         } else {
-          f.filterType = static_cast<FilterType>(f.filterType | rightAnchored);
+          f.filterType = static_cast<FilterType>(f.filterType | FTRightAnchored);
+          parseState = FPData;
+          p++;
+          continue;
+        }
+        break;
+      case '@':
+        if (parseState == FPStart || parseState == FPPastWhitespace) {
+          parseState = FPOneAt;
+          p++;
+          continue;
+        } else if (parseState == FPOneAt) {
+          parseState = FPOneBar;
+          f.filterType = FTException;
           parseState = FPData;
           p++;
           continue;
@@ -80,7 +114,7 @@ void parseFilter(const char *input, Filter &f) {
       case '!':
       case '[':
         if (parseState == FPStart || parseState == FPPastWhitespace) {
-          f.filterType = comment;
+          f.filterType = FTComment;
           // Wed don't care about comments right now
           return;
         }
@@ -102,7 +136,7 @@ void parseFilter(const char *input, Filter &f) {
           f.data = new char[len];
           f.data[len - 1] = '\0';
           memcpy(f.data, input + i + 1, len - 1);
-          f.filterType = regex;
+          f.filterType = FTRegex;
           return;
         }
         break;
@@ -115,10 +149,10 @@ void parseFilter(const char *input, Filter &f) {
       case '#':
         if (*(p+1) == '#') {
           // TODO
-          f.filterType = elementHiding;
+          f.filterType = FTElementHiding;
           return;
         } else if (*(p+1) == '@') {
-          f.filterType = elementHidingException;
+          f.filterType = FTElementHidingException;
           return;
         }
       default:
@@ -135,3 +169,51 @@ void parseFilter(const char *input, Filter &f) {
   f.data = new char[i];
   memcpy(f.data, data, i + 1);
 }
+
+
+ABPFilterParser::ABPFilterParser() : filters(nullptr),
+  htmlRuleFilters(nullptr),
+  exceptionFilters(nullptr),
+  noFingerprintFilters(nullptr),
+  numFilters(0),
+  numHtmlRuleFilters(0),
+  numExceptionFilters(0),
+  numNoFingerprintFilters(0) {
+}
+
+ABPFilterParser::~ABPFilterParser() {
+  if (filters) {
+    delete[] filters;
+  }
+  if( htmlRuleFilters) {
+    delete[] htmlRuleFilters;
+  }
+  if (exceptionFilters) {
+    delete[] exceptionFilters;
+  }
+  if (noFingerprintFilters) {
+   delete[] noFingerprintFilters;
+  }
+}
+
+// Parses the filter data into a few collections of filters and enables efficent querying
+bool ABPFilterParser::parse(const char *input) {
+  const char *p = input;
+  const char *lineStart = p;
+
+  // Parsing does 2 passes, one just to determine the type of information we'll need to setup.
+  while (*p != '\0') {
+    if (*p == '\n') {
+      Filter f;
+      parseFilter(lineStart, f);
+
+
+    }
+
+    p++;
+  };
+
+
+  return true;
+}
+

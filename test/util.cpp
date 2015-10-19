@@ -1,4 +1,6 @@
-#include <string>
+#include "CppUnitLite/TestHarness.h"
+#include <fstream>
+#include <sstream>
 #include "util.h"
 
 using namespace std;
