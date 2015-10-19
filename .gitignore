@@ -32,3 +32,6 @@ build
 node_modules
 
 run
+
+# ctags
+tags
