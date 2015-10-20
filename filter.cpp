@@ -17,9 +17,29 @@ Filter::~Filter() {
   if (data) {
     delete[] data;
   }
-  if (domainList) {
+ if (domainList) {
     delete[] domainList;
   }
+}
+
+void Filter::swap(Filter &other) {
+  FilterType tempFilterType = filterType;
+  FilterOption tempFilterOption = filterOption;
+  FilterOption tempAntiFilterOption = antiFilterOption;
+  char *tempData = data;
+  char *tempDomainList = domainList;
+
+  filterType = other.filterType;
+  filterOption = other.filterOption;
+  antiFilterOption = other.antiFilterOption;
+  data = other.data;
+  domainList = other.domainList;
+
+  other.filterType = tempFilterType;
+  other.filterOption = tempFilterOption;
+  other.antiFilterOption = tempAntiFilterOption;
+  other.data = tempData;
+  other.domainList = tempDomainList;
 }
 
 /**
@@ -160,7 +180,7 @@ void Filter::parseOptions(const char *input) {
   int startOffset = 0;
   int len = 0;
   const char *p = input;
-  while (*p != '\0') {
+  while (*p != '\0' && *p != '\n') {
     if (*p == ',') {
       parseOption(input + startOffset, len);
       startOffset += len + 1;

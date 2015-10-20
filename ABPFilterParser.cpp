@@ -37,34 +37,21 @@ int findFirstSeparatorChar(const char *input) {
   return -1;
 }
 
-/*
-bool matches(const char *input) {
-  if (hasMatchingFilters(parserData.filters, parserData, input, contextParams, cachedInputData) ||
-      hasMatchingNoFingerprintFilters === true || hasMatchingNoFingerprintFilters === undefined &&
-      hasMatchingFilters(parserData.noFingerprintFilters, parserData, input, contextParams, cachedInputData)) {
-
-    // Check for exceptions only when there's a match because matches are
-    // rare compared to the volume of checks
-    let exceptionBloomFilterMiss = parserData.exceptionBloomFilter && !parserData.exceptionBloomFilter.substringExists(cleanedInput, fingerprintSize);
-    if (!exceptionBloomFilterMiss || hasMatchingFilters(parserData.exceptionFilters, parserData, input, contextParams, cachedInputData)) {
-      return false;
-    }
-
-    return true;
-  }
-
-  return false;
+void parseFilter(const char *input, Filter &f) {
+  const char *end = input;
+  while (*end != '\0') end++;
+  parseFilter(input, end, f);
 }
-*/
 
 // Not currently multithreaded safe due to the static buffer named 'data'
-void parseFilter(const char *input, Filter &f) {
+void parseFilter(const char *input, const char *end, Filter &f) {
   FilterParseState parseState = FPStart;
   const char *p = input;
-  static char data[1024];
+  char data[maxLineLength];
   memset(data, 0, sizeof data);
   int i = 0;
-  while (*p != '\0') {
+
+  while (p != end) {
     // Check for the filter being too long
     if ((p - input) >= maxLineLength - 1) {
       return;
@@ -140,12 +127,14 @@ void parseFilter(const char *input, Filter &f) {
           return;
         }
         break;
+
       case '$':
         f.parseOptions(p + 1);
         data[i] = '\0';
         f.data = new char[i + 1];
         memcpy(f.data, data, i + 1);
         return;
+
       case '#':
         if (*(p+1) == '#') {
           // TODO
@@ -155,6 +144,7 @@ void parseFilter(const char *input, Filter &f) {
           f.filterType = FTElementHidingException;
           return;
         }
+
       default:
         parseState = FPData;
         break;
@@ -165,8 +155,13 @@ void parseFilter(const char *input, Filter &f) {
     p++;
   }
 
+  if (parseState == FPStart) {
+    f.filterType = FTEmpty;
+    return;
+  }
+
   data[i] = '\0';
-  f.data = new char[i];
+  f.data = new char[i + 1];
   memcpy(f.data, data, i + 1);
 }
 
@@ -196,23 +191,145 @@ ABPFilterParser::~ABPFilterParser() {
   }
 }
 
+bool ABPFilterParser::matches(const char *input) {
+/*
+  if (hasMatchingFilters(parserData.filters, parserData, input, contextParams, cachedInputData) ||
+      hasMatchingNoFingerprintFilters === true || hasMatchingNoFingerprintFilters === undefined &&
+      hasMatchingFilters(parserData.noFingerprintFilters, parserData, input, contextParams, cachedInputData)) {
+
+    // Check for exceptions only when there's a match because matches are
+    // rare compared to the volume of checks
+    let exceptionBloomFilterMiss = parserData.exceptionBloomFilter && !parserData.exceptionBloomFilter.substringExists(cleanedInput, fingerprintSize);
+    if (!exceptionBloomFilterMiss || hasMatchingFilters(parserData.exceptionFilters, parserData, input, contextParams, cachedInputData)) {
+      return false;
+    }
+
+    return true;
+  }
+*/
+
+  return false;
+}
+
 // Parses the filter data into a few collections of filters and enables efficent querying
 bool ABPFilterParser::parse(const char *input) {
   const char *p = input;
   const char *lineStart = p;
 
+  int newNumFilters = 0;
+  int newNumHtmlRuleFilters = 0;
+  int newNumExceptionFilters = 0;
+  int newNumNoFingerprintFilters = 0;
+
   // Parsing does 2 passes, one just to determine the type of information we'll need to setup.
-  while (*p != '\0') {
-    if (*p == '\n') {
+  // Note that the library will be used on a variety of builds so sometimes we won't even have STL
+  // So we can't use something like a vector here.
+  while (true) {
+    if (*p == '\n' || *p == '\0') {
       Filter f;
-      parseFilter(lineStart, f);
+      parseFilter(lineStart, p, f);
+      switch(f.filterType) {
+        case FTException:
+          newNumExceptionFilters++;
+          break;
+        case FTElementHiding:
+          newNumHtmlRuleFilters++;
+          break;
+        case FTElementHidingException:
+          newNumHtmlRuleFilters++;
+          break;
+        case FTEmpty:
+        case FTComment:
+          // No need to store comments
+          break;
+        default:
+          // TODO: check if no fingerprint and if so update numNoFingerprintFilters
+          newNumFilters++;
+          break;
+      }
+      lineStart = p + 1;
+    }
 
-
+    if (*p == '\0') {
+      break;
     }
 
     p++;
   };
 
+
+  Filter *newFilters = new Filter[newNumFilters + numFilters];
+  Filter *newHtmlRuleFilters = new Filter[newNumHtmlRuleFilters + numHtmlRuleFilters];
+  Filter *newExceptionFilters = new Filter[newNumExceptionFilters + numExceptionFilters];
+  Filter *newNoFingerprintFilters = new Filter[newNumNoFingerprintFilters + numNoFingerprintFilters];
+
+  memset(newFilters, 0, sizeof(Filter) * (newNumFilters + numFilters));
+  memset(newHtmlRuleFilters, 0, sizeof(Filter) * (newNumHtmlRuleFilters + numHtmlRuleFilters));
+  memset(newExceptionFilters, 0, sizeof(Filter) * (newNumExceptionFilters + numExceptionFilters));
+  memset(newNoFingerprintFilters, 0, sizeof(Filter) * (newNumNoFingerprintFilters + numNoFingerprintFilters));
+
+  Filter *curFilters = newFilters;
+  Filter *curHtmlRuleFilters = newHtmlRuleFilters;
+  Filter *curExceptionFilters = newExceptionFilters;
+  Filter *curNoFingerprintFilters = newNoFingerprintFilters;
+
+  // If we've had a parse before copy the old data into the new data structure
+  if (filters || htmlRuleFilters || exceptionFilters || noFingerprintFilters) {
+    // Copy the old data in
+    memcpy(newFilters, filters, sizeof(Filter) * numFilters);
+    memcpy(newHtmlRuleFilters, htmlRuleFilters, sizeof(Filter) * numHtmlRuleFilters);
+    memcpy(newExceptionFilters, exceptionFilters, sizeof(Filter) * numExceptionFilters);
+    memcpy(newNoFingerprintFilters, noFingerprintFilters, sizeof(Filter) * (numNoFingerprintFilters));
+
+    // Adjust the current pointers to be just after the copied in data
+    curFilters += numFilters;
+    curHtmlRuleFilters += numHtmlRuleFilters;
+    curExceptionFilters += numExceptionFilters;
+    curNoFingerprintFilters += numNoFingerprintFilters;
+  }
+
+  // And finally update with the new counts
+  numFilters += newNumFilters;
+  numHtmlRuleFilters += newNumHtmlRuleFilters;
+  numExceptionFilters += newNumExceptionFilters;
+  numNoFingerprintFilters += newNumNoFingerprintFilters;
+
+  p = input;
+  lineStart = p;
+
+  while (true) {
+    if (*p == '\n' || *p == '\0') {
+      Filter f;
+      parseFilter(lineStart, p, f);
+      switch(f.filterType) {
+        case FTException:
+          (*curExceptionFilters).swap(f);
+          curExceptionFilters++;
+          break;
+        case FTElementHiding:
+        case FTElementHidingException:
+          (*curHtmlRuleFilters).swap(f);
+          curHtmlRuleFilters++;
+          break;
+        case FTEmpty:
+        case FTComment:
+          // No need to store
+          break;
+        default:
+          // TODO: check if no fingerprint here and update noFingerprintFilters isntead
+          (*curFilters).swap(f);
+          curFilters++;
+          break;
+      }
+      lineStart = p + 1;
+    }
+
+    if (*p == '\0') {
+      break;
+    }
+
+    p++;
+  };
 
   return true;
 }

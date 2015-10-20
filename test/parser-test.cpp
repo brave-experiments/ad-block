@@ -1,4 +1,5 @@
 #include "CppUnitLite/TestHarness.h"
+#include "CppUnitLite/test.h"
 #include "ABPFilterParser.h"
 #include <fstream>
 #include <sstream>
@@ -241,6 +242,32 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 }
 
+bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlocked) {
+  ABPFilterParser parser;
+  parser.parse(rules);
+
+  bool ret = true;
+  std::string lastChecked;
+  std::for_each(blocked.begin(), blocked.end(), [&parser, &lastChecked, &ret](string const &s) {
+    ret = ret && parser.matches(s.c_str());
+    lastChecked = s;
+  });
+  if (!ret) {
+    cout << "Should match but did not: " << lastChecked.c_str() << endl;
+    return false;
+  }
+
+  std::for_each(notBlocked.begin(), notBlocked.end(), [&parser, &ret, &lastChecked](string const &s) {
+    ret = ret && parser.matches(s.c_str());
+    lastChecked = s;
+  });
+  if (!ret) {
+    cout << "Should NOT match but did: " << lastChecked.c_str() << endl;
+    return false;
+  }
+  return true;
+}
+
 TEST(parser, exceptionRules)
 {
 /*
@@ -281,38 +308,38 @@ TEST(parser, exceptionRules)
 */
 }
 
+
+
 // Should parse EasyList without failing
 TEST(parser, parse)
 {
   std::string &&fileContents = getFileContents("./test/data/easylist.txt");
   ABPFilterParser parser;
   parser.parse(fileContents.c_str());
+
+  // TODO: Compare to JS lib which says 18096 here for filters + nofingerprint
+  CHECK(compareNums(parser.numFilters, 21022));
+  // TODO: Compare to JS lib which says 26465 here
+  CHECK(compareNums(parser.numHtmlRuleFilters, 26455));
+  // TODO: Compare to JS lib which says 2975 here
+  CHECK(compareNums(parser.numExceptionFilters, 58));
 }
 
-
-/*
-      let parserData = {};
-      parse(data, parserData);
-      // Num lines minus (num empty lines + num comment lines)
-      assert.equal(parserData.htmlRuleFilters.length, 26465);
-      assert.equal(parserData.filters.length + parserData.noFingerprintFilters.length, 18096);
-      assert.equal(parserData.exceptionFilters.length, 2975);
-      cb();
-    });
-  });
-  it('Calling parse amongst 2 different lists should preserve both sets of rules', function() {
-    let parserData = {};
-    parse(`adv
-           @@test
-           ###test`, parserData);
-    parse(`adv2
-           @@test2
-           ###test2
-           adv3
-           @@test3
-           ###test3`, parserData);
-    assert.equal(parserData.htmlRuleFilters.length, 3);
-    assert.equal(parserData.filters.length, 0);
-    assert.equal(parserData.noFingerprintFilters.length, 3);
-    assert.equal(parserData.exceptionFilters.length, 3);
-    */
+// Calling parse amongst 2 different lists should preserve both sets of rules
+TEST(multipleParse, multipleParse2)
+{
+  ABPFilterParser parser;
+  parser.parse("adv\n"
+               "@@test\n"
+               "###test\n");
+  parser.parse("adv2\n"
+               "@@test2\n"
+               "###test2\n"
+               "adv3\n"
+               "@@test3\n"
+               "###test3");
+  // TODO: Should actually be: noFingerprintRules 3, numFilters: 0
+  CHECK(compareNums(parser.numFilters, 3));
+  CHECK(compareNums(parser.numHtmlRuleFilters, 3));
+  CHECK(compareNums(parser.numExceptionFilters, 3));
+}

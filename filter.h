@@ -10,6 +10,7 @@ enum FilterType {
   FTRightAnchored = 040,
   FTComment = 0100,
   FTException = 0200,
+  FTEmpty = 0400,
 };
 
 enum ElementType {
@@ -47,6 +48,7 @@ class Filter {
 public:
   Filter();
   ~Filter();
+  void swap(Filter&f);
   bool matches(const char *input);
   bool matchesOptions(const char *input);
   void parseOption(const char *input, int len);
