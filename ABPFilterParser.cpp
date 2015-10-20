@@ -59,7 +59,7 @@ void parseFilter(const char *input, const char *end, Filter &f) {
 
     if (parseState == FPOneBar && *p != '|') {
       parseState = FPData;
-      f.filterType = FTLeftAnchored;
+      f.filterType = static_cast<FilterType>(f.filterType | FTLeftAnchored);
     }
 
     switch (*p) {
@@ -93,7 +93,7 @@ void parseFilter(const char *input, const char *end, Filter &f) {
         } else if (parseState == FPOneAt) {
           parseState = FPOneBar;
           f.filterType = FTException;
-          parseState = FPData;
+          parseState = FPPastWhitespace;
           p++;
           continue;
         }
@@ -228,7 +228,7 @@ bool ABPFilterParser::parse(const char *input) {
     if (*p == '\n' || *p == '\0') {
       Filter f;
       parseFilter(lineStart, p, f);
-      switch(f.filterType) {
+      switch(f.filterType & FTListTypesMask) {
         case FTException:
           newNumExceptionFilters++;
           break;
@@ -307,7 +307,7 @@ bool ABPFilterParser::parse(const char *input) {
     if (*p == '\n' || *p == '\0') {
       Filter f;
       parseFilter(lineStart, p, f);
-      switch(f.filterType) {
+      switch(f.filterType & FTListTypesMask) {
         case FTException:
           (*curExceptionFilters).swap(f);
           curExceptionFilters++;

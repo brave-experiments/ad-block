@@ -54,7 +54,6 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType, FilterOpti
   return true;
 }
 
-#if 0
 TEST(parser, parseFilterMatchesFilter)
 {
   CHECK(testFilter("/banner/*/img",
@@ -242,7 +241,6 @@ TEST(parser, parseFilterMatchesFilter)
     {}
   ));
 }
-#endif
 
 bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlocked) {
   ABPFilterParser parser;
@@ -272,7 +270,6 @@ bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlock
 
 TEST(parser, exceptionRules)
 {
-
   CHECK(checkMatch("adv\n"
                    "@@advice.",
     {
@@ -282,44 +279,28 @@ TEST(parser, exceptionRules)
     }
   ));
 
-/*
-  [`adv
-    @@advice.`, {
-    blocked: [
-      'http://example.com/advert.html',
-    ],
-    notBlocked: [
-      'http://example.com/advice.html',
-    ]
-  }],
-  [`@@advice.
-    adv`, {
-      blocked: [
-        'http://example.com/advert.html'
-      ],
-      notBlocked: [
-        'http://example.com/advice.html'
-      ],
-  }],
-  [`@@|http://example.com
-    @@advice.
-    adv
-    !foo`, {
-     blocked: [
-       'http://examples.com/advert.html',
-     ],
-     notBlocked: [
-       'http://example.com/advice.html',
-       'http://example.com/advert.html',
-       'http://examples.com/advice.html',
-       'http://examples.com/#!foo',
-     ],
-  }],
-]);
-*/
+  CHECK(checkMatch("@@advice.\n"
+                   "adv",
+    {
+      "http://example.com/advert.html"
+    }, {
+      "http://example.com/advice.html"
+    }
+  ));
+  CHECK(checkMatch("@@|http://example.com\n"
+                   "@@advice.\n"
+                   "adv\n"
+                   "!foo",
+    {
+      "http://examples.com/advert.html",
+    }, {
+      "http://example.com/advice.html",
+      "http://example.com/advert.html",
+      "http://examples.com/advice.html",
+      "http://examples.com/#!foo",
+    }
+  ));
 }
-
-
 
 // Should parse EasyList without failing
 TEST(parser, parse)
@@ -329,11 +310,11 @@ TEST(parser, parse)
   parser.parse(fileContents.c_str());
 
   // TODO: Compare to JS lib which says 18096 here for filters + nofingerprint
-  CHECK(compareNums(parser.numFilters, 21022));
+  CHECK(compareNums(parser.numFilters, 20998));
   // TODO: Compare to JS lib which says 26465 here
   CHECK(compareNums(parser.numHtmlRuleFilters, 26455));
   // TODO: Compare to JS lib which says 2975 here
-  CHECK(compareNums(parser.numExceptionFilters, 58));
+  CHECK(compareNums(parser.numExceptionFilters, 82));
 }
 
 // Calling parse amongst 2 different lists should preserve both sets of rules

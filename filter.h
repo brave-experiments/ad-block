@@ -11,6 +11,7 @@ enum FilterType {
   FTComment = 0100,
   FTException = 0200,
   FTEmpty = 0400,
+  FTListTypesMask = FTException|FTElementHiding|FTElementHidingException|FTEmpty|FTComment,
 };
 
 enum ElementType {
