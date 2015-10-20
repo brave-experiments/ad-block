@@ -310,11 +310,11 @@ TEST(parser, parse)
   parser.parse(fileContents.c_str());
 
   // TODO: Compare to JS lib which says 18096 here for filters + nofingerprint
-  CHECK(compareNums(parser.numFilters, 20998));
+  CHECK(compareNums(parser.numFilters, 18105));
   // TODO: Compare to JS lib which says 26465 here
   CHECK(compareNums(parser.numHtmlRuleFilters, 26455));
   // TODO: Compare to JS lib which says 2975 here
-  CHECK(compareNums(parser.numExceptionFilters, 82));
+  CHECK(compareNums(parser.numExceptionFilters, 2975));
 }
 
 // Calling parse amongst 2 different lists should preserve both sets of rules

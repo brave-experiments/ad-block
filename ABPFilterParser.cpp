@@ -70,7 +70,7 @@ void parseFilter(const char *input, const char *end, Filter &f) {
           continue;
         } else if (parseState == FPOneBar) {
           parseState = FPOneBar;
-          f.filterType = FTHostAnchored;
+          f.filterType = static_cast<FilterType>(f.filterType | FTHostAnchored);
           parseState = FPData;
           p++;
           int len = findFirstSeparatorChar(p);
