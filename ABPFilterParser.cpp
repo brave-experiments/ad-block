@@ -191,23 +191,23 @@ ABPFilterParser::~ABPFilterParser() {
   }
 }
 
-bool ABPFilterParser::matches(const char *input) {
-/*
-  if (hasMatchingFilters(parserData.filters, parserData, input, contextParams, cachedInputData) ||
-      hasMatchingNoFingerprintFilters === true || hasMatchingNoFingerprintFilters === undefined &&
-      hasMatchingFilters(parserData.noFingerprintFilters, parserData, input, contextParams, cachedInputData)) {
+bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const char *input) {
+  for (int i = 0; i < numFilters; i++) {
+    if (filter->matches(input)) {
+      return true;
+    }
+    filter++;
+  }
+  return false;
+}
 
-    // Check for exceptions only when there's a match because matches are
-    // rare compared to the volume of checks
-    let exceptionBloomFilterMiss = parserData.exceptionBloomFilter && !parserData.exceptionBloomFilter.substringExists(cleanedInput, fingerprintSize);
-    if (!exceptionBloomFilterMiss || hasMatchingFilters(parserData.exceptionFilters, parserData, input, contextParams, cachedInputData)) {
+bool ABPFilterParser::matches(const char *input) {
+  if (hasMatchingFilters(filters, numFilters, input)) {
+    if (hasMatchingFilters(exceptionFilters, numExceptionFilters, input)) {
       return false;
     }
-
     return true;
   }
-*/
-
   return false;
 }
 
@@ -293,6 +293,12 @@ bool ABPFilterParser::parse(const char *input) {
   numHtmlRuleFilters += newNumHtmlRuleFilters;
   numExceptionFilters += newNumExceptionFilters;
   numNoFingerprintFilters += newNumNoFingerprintFilters;
+
+  // Adjust the new member list pointers
+  filters = newFilters;
+  htmlRuleFilters = newHtmlRuleFilters;
+  exceptionFilters = newExceptionFilters;
+  noFingerprintFilters = newNoFingerprintFilters;
 
   p = input;
   lineStart = p;

@@ -54,6 +54,7 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType, FilterOpti
   return true;
 }
 
+#if 0
 TEST(parser, parseFilterMatchesFilter)
 {
   CHECK(testFilter("/banner/*/img",
@@ -241,6 +242,7 @@ TEST(parser, parseFilterMatchesFilter)
     {}
   ));
 }
+#endif
 
 bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlocked) {
   ABPFilterParser parser;
@@ -258,7 +260,7 @@ bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlock
   }
 
   std::for_each(notBlocked.begin(), notBlocked.end(), [&parser, &ret, &lastChecked](string const &s) {
-    ret = ret && parser.matches(s.c_str());
+    ret = ret && !parser.matches(s.c_str());
     lastChecked = s;
   });
   if (!ret) {
@@ -270,8 +272,17 @@ bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlock
 
 TEST(parser, exceptionRules)
 {
+
+  CHECK(checkMatch("adv\n"
+                   "@@advice.",
+    {
+      "http://example.com/advert.html"
+    }, {
+      "http://example.com/advice.html",
+    }
+  ));
+
 /*
-  let exceptionRules = new Map([
   [`adv
     @@advice.`, {
     blocked: [

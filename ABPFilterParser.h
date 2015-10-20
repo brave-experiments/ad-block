@@ -19,6 +19,10 @@ public:
   int numHtmlRuleFilters;
   int numExceptionFilters;
   int numNoFingerprintFilters;
+
+protected:
+  bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input);
+
 };
 
 extern const char *separatorCharacters;
