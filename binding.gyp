@@ -3,13 +3,13 @@
     "target_name": "test",
     "type": "executable",
     "sources": [
-      "test/test-main.cpp",
-      "parser-test.cpp",
-      "options-test.cpp",
-      "rule-types-test.cpp",
+      "./test/test-main.cpp",
+      "./test/parser-test.cpp",
+      "./test/options-test.cpp",
+      "./test/rule-types-test.cpp",
+      "./test/util.cpp",
       "ABPFilterParser.cpp",
       "filter.cpp",
-      "test/util.cpp",
     ],
     "include_dirs": [
       ".",

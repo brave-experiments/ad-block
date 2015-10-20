@@ -12,8 +12,14 @@ $(EXEC): $(OBJECTS)
 %.o: %.cpp
 	$(CC) -c $(CC_FLAGS) $< -o $@
 
-test:
+test-release:
 	 node-gyp configure && node-gyp build && ./build/Release/test
+
+test:
+	 node-gyp configure -debug && node-gyp build && ./build/Debug/test
+
+xcode-proj:
+	node-gyp configure -- -f xcode
 
 clean:
 	rm -Rf run build *.o
