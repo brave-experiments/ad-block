@@ -57,6 +57,7 @@ public:
   FilterOption antiFilterOption;
   char *data;
   char *domainList;
+  char *host;
 
 protected:
   // Filters the domain list down to what's applicable for the context domain

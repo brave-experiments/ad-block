@@ -73,13 +73,16 @@ void parseFilter(const char *input, const char *end, Filter &f) {
           f.filterType = static_cast<FilterType>(f.filterType | FTHostAnchored);
           parseState = FPData;
           p++;
+
           int len = findFirstSeparatorChar(p, end);
           if (len == -1) {
             len = end - p;
           }
-          f.domainList = new char[len + 1];
-          f.domainList[len] = '\0';
-          memcpy(f.domainList, p, len);
+
+          f.host = new char[len + 1];
+          f.host[len] = '\0';
+          memcpy(f.host, p, len);
+
           continue;
         } else {
           f.filterType = static_cast<FilterType>(f.filterType | FTRightAnchored);
@@ -325,7 +328,7 @@ bool ABPFilterParser::parse(const char *input) {
           // No need to store
           break;
         default:
-          // TODO: check if no fingerprint here and update noFingerprintFilters isntead
+          // TODO: check if no fingerprint here and update noFingerprintFilters instead
           (*curFilters).swap(f);
           curFilters++;
           break;

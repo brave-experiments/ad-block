@@ -15,15 +15,19 @@ Filter::Filter() :
   filterOption(FONoFilterOption),
   antiFilterOption(FONoFilterOption),
   data(nullptr),
-  domainList(nullptr) {
+  domainList(nullptr),
+  host(nullptr) {
 }
 
 Filter::~Filter() {
   if (data) {
     delete[] data;
   }
- if (domainList) {
+  if (domainList) {
     delete[] domainList;
+  }
+  if (host) {
+    delete[] host;
   }
 }
 
@@ -33,18 +37,21 @@ void Filter::swap(Filter &other) {
   FilterOption tempAntiFilterOption = antiFilterOption;
   char *tempData = data;
   char *tempDomainList = domainList;
+  char *tempHost = host;
 
   filterType = other.filterType;
   filterOption = other.filterOption;
   antiFilterOption = other.antiFilterOption;
   data = other.data;
   domainList = other.domainList;
+  host = other.host;
 
   other.filterType = tempFilterType;
   other.filterOption = tempFilterOption;
   other.antiFilterOption = tempAntiFilterOption;
   other.data = tempData;
   other.domainList = tempDomainList;
+  other.host = tempHost;
 }
 
 /**
@@ -272,10 +279,10 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
 
   // If we're in the context of third-party site, then consider third-party option checks
   if (context & (FOThirdParty | FONotThirdParty)) {
-    if (filterOption & FOThirdParty) {
-      int hostLen;
-      const char *host = getUrlHost(input, hostLen);
-      bool inputHostIsThirdParty = isThirdPartyHost(domainList, strlen(domainList), host, hostLen);
+    if ((filterOption & FOThirdParty) && host) {
+      int inputHostLen;
+      const char *inputHost = getUrlHost(input, inputHostLen);
+      bool inputHostIsThirdParty = isThirdPartyHost(host, strlen(host), inputHost, inputHostLen);
       if (inputHostIsThirdParty || !(context & FOThirdParty)) {
         return false;
       }
@@ -429,8 +436,8 @@ bool Filter::matches(const char *input, FilterOption contextOption, const char *
     }
     int currentHostLen;
     const char *currentHost = getUrlHost(input, currentHostLen);
-    int domainListLen = strlen(domainList);
-    return !isThirdPartyHost(domainList, domainListLen, currentHost, currentHostLen) &&
+    int hostLen = strlen(host);
+    return !isThirdPartyHost(host, hostLen, currentHost, currentHostLen) &&
       indexOfFilter(input, data, filterPartEnd) != -1;
   }
 

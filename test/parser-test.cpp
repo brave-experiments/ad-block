@@ -483,3 +483,13 @@ TEST(multipleParse, multipleParse2)
   CHECK(compareNums(parser.numHtmlRuleFilters, 3));
   CHECK(compareNums(parser.numExceptionFilters, 3));
 }
+
+// Demo app test
+TEST(demoApp, demoApp2)
+{
+  ABPFilterParser parser;
+  parser.parse("||googlesyndication.com/safeframe/$third-party");
+  const char *urlToCheck = "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html";
+  const char *currentPageDomain = "slashdot.org";
+  CHECK(parser.matches(urlToCheck, FOScript, currentPageDomain));
+}
