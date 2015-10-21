@@ -461,7 +461,6 @@ bool Filter::matches(const char *input, FilterOption contextOption, const char *
   return true;
 }
 
-
 void Filter::filterDomainList(const char *domainList, char *destBuffer, const char *contextDomain, bool anti) {
   if (!domainList) {
     return;

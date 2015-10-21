@@ -21,19 +21,13 @@ public:
   int numNoFingerprintFilters;
 
 protected:
+  // Determines if a passed in array of filter pointers matches for any of the input
   bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, FilterOption contextOption, const char *contextDomain);
 
 };
 
 extern const char *separatorCharacters;
-void parseDomains(const char *input);
-void parseHTMLFilter(const char *input, int index, Filter *);
 void parseFilter(const char *input, const char *end, Filter&);
 void parseFilter(const char *input, Filter&);
-int getDomainIndex(const char *input);
-void getUrlHost(const char *input, char *hostBuffer);
-bool filterDataContainsOption(Filter *);
-bool isThirdPartyHost(const char *input);
-void getFingerprint(const char *input);
 bool isSeparatorChar(char c);
 int findFirstSeparatorChar(const char *input, const char *end);
