@@ -26,9 +26,9 @@ bool isSeparatorChar(char c) {
   return false;
 }
 
-int findFirstSeparatorChar(const char *input) {
+int findFirstSeparatorChar(const char *input, const char *end) {
   const char *p = input;
-  while (*p != '\0') {
+  while (p != end) {
     if (isSeparatorChar(*p)) {
       return p - input;
     }
@@ -73,7 +73,10 @@ void parseFilter(const char *input, const char *end, Filter &f) {
           f.filterType = static_cast<FilterType>(f.filterType | FTHostAnchored);
           parseState = FPData;
           p++;
-          int len = findFirstSeparatorChar(p);
+          int len = findFirstSeparatorChar(p, end);
+          if (len == -1) {
+            len = end - p;
+          }
           f.domainList = new char[len + 1];
           f.domainList[len] = '\0';
           memcpy(f.domainList, p, len);
@@ -191,9 +194,9 @@ ABPFilterParser::~ABPFilterParser() {
   }
 }
 
-bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const char *input) {
+bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const char *input, FilterOption contextOption, const char *contextDomain) {
   for (int i = 0; i < numFilters; i++) {
-    if (filter->matches(input)) {
+    if (filter->matches(input, contextOption, contextDomain)) {
       return true;
     }
     filter++;
@@ -201,9 +204,9 @@ bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const 
   return false;
 }
 
-bool ABPFilterParser::matches(const char *input) {
-  if (hasMatchingFilters(filters, numFilters, input)) {
-    if (hasMatchingFilters(exceptionFilters, numExceptionFilters, input)) {
+bool ABPFilterParser::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
+  if (hasMatchingFilters(filters, numFilters, input, contextOption, contextDomain)) {
+    if (hasMatchingFilters(exceptionFilters, numExceptionFilters, input, contextOption, contextDomain)) {
       return false;
     }
     return true;

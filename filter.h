@@ -42,7 +42,9 @@ enum FilterOption {
   FOCollapse = 02000,
   FODoNotTrack = 04000,
   FOElemHide = 010000,
-  FOThirdParty = 020000
+  FOThirdParty = 020000,
+  // both options because the not present case is reated as unknown
+  FONotThirdParty = 040000
 };
 
 class Filter {
@@ -50,8 +52,8 @@ public:
   Filter();
   ~Filter();
   void swap(Filter&f);
-  bool matches(const char *input);
-  bool matchesOptions(const char *input);
+  bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
+  bool matchesOptions(const char *input, FilterOption contextOption, const char *contextDomain = nullptr);
   void parseOption(const char *input, int len);
   void parseOptions(const char *input);
   bool containsDomain(const char *domain, bool anti = false) const;
@@ -62,4 +64,8 @@ public:
   FilterOption antiFilterOption;
   char *data;
   char *domainList;
+
+protected:
+  void filterDomainList(const char *domainList, char *destBuffer, const char *contextDomain, bool anti);
+  int getLeftoverDomainCount(const char *shouldBlockDomains, const char *shouldSkipDomains);
 };

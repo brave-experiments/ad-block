@@ -93,11 +93,11 @@ TEST(parser, parseFilterMatchesFilter)
     FONoFilterOption,
     "ads.example.com^",
     {
-      //"http://ads.example.com/foo.gif",
-      //"http://server1.ads.example.com/foo.gif",
-      //"https://ads.example.com:8000/",
+      "http://ads.example.com/foo.gif",
+      "http://server1.ads.example.com/foo.gif",
+      "https://ads.example.com:8000/",
     }, {
-      //"http://ads.example.com.ua/foo.gif",
+      "http://ads.example.com.ua/foo.gif",
       "http://example.com/redirect/http://ads.example.com/",
     }
   ));
@@ -298,6 +298,155 @@ TEST(parser, exceptionRules)
       "http://example.com/advert.html",
       "http://examples.com/advice.html",
       "http://examples.com/#!foo",
+    }
+  ));
+}
+
+struct OptionRuleData {
+  OptionRuleData(const char *testUrl, FilterOption context, const char *contextDomain, bool shouldBlock) {
+    this->testUrl = testUrl;
+    this->context = context;
+    this->contextDomain = contextDomain;
+    this->shouldBlock = shouldBlock;
+  }
+
+  const char *testUrl;
+  FilterOption context;
+  const char *contextDomain;
+  bool shouldBlock;
+};
+
+bool checkOptionRule(const char *rules, set<OptionRuleData*> &&optionTests) {
+  ABPFilterParser parser;
+  parser.parse(rules);
+
+  bool fail = false;
+  std::for_each(optionTests.begin(), optionTests.end(), [&parser, &fail](OptionRuleData * const &data) {
+    bool matches = parser.matches(data->testUrl, data->context, data->contextDomain);
+    if (matches != data->shouldBlock) {
+      cout << "Expected to block: " << data->shouldBlock << endl << "Actual blocks: " << matches << endl;
+      fail = true;
+      return;
+    }
+  });
+  if (fail) {
+    return false;
+  }
+
+  return true;
+}
+
+// Option rules
+TEST(parser, optionRules)
+{
+  CHECK(checkOptionRule("||example.com",
+    {
+      new OptionRuleData("http://example.com", FOThirdParty, nullptr, true),
+      new OptionRuleData("http://example2.com", FOThirdParty, nullptr, false),
+      new OptionRuleData("http://example.com", FONotThirdParty, nullptr, true),
+    }
+  ));
+
+  CHECK(checkOptionRule("||example.com^$third-party",
+    {
+      new OptionRuleData("http://example.com", FOThirdParty, nullptr, true),
+      new OptionRuleData("http://example.com", FONotThirdParty, nullptr, false),
+      new OptionRuleData("http://ad.example.com", FOThirdParty, nullptr, true),
+      new OptionRuleData("http://ad.example.com", FONotThirdParty, nullptr, false),
+      new OptionRuleData("http://example2.com", FOThirdParty, nullptr, false),
+      new OptionRuleData("http://example2.com", FONotThirdParty, nullptr, false),
+      new OptionRuleData("http://example.com.au", FOThirdParty, nullptr, false),
+      new OptionRuleData("http://example.com.au", FONotThirdParty, nullptr, false),
+    }
+  ));
+
+  CHECK(checkOptionRule("||example.com^$third-party,~script",
+    {
+      new OptionRuleData("http://example.com", static_cast<FilterOption>(FOThirdParty | FOScript), nullptr, false),
+      new OptionRuleData("http://example.com", FOOther, nullptr, true),
+      new OptionRuleData("http://example2.com", static_cast<FilterOption>(FOThirdParty | FOOther), nullptr, false),
+      new OptionRuleData("http://example.com", static_cast<FilterOption>(FONotThirdParty | FOOther), nullptr, false),
+    }
+  ));
+
+  CHECK(checkOptionRule("adv$domain=example.com|example.net",
+    {
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "example.net", true),
+      new OptionRuleData("http://somewebsite.com/adv", FONoFilterOption, "example.com", true),
+      new OptionRuleData("http://www.example.net/adv", FONoFilterOption, "www.example.net", true),
+      new OptionRuleData("http://my.subdomain.example.com/adv", FONoFilterOption, "my.subdomain.example.com", true),
+      new OptionRuleData("http://my.subdomain.example.com/adv", FONoFilterOption, "my.subdomain.example.com", true),
+      new OptionRuleData("http://example.com/adv", FONoFilterOption, "badexample.com", false),
+      new OptionRuleData("http://example.com/adv", FONoFilterOption, "otherdomain.net", false),
+      new OptionRuleData("http://example.net/ad", FONoFilterOption, "example.net", false),
+    }
+  ));
+
+  CHECK(checkOptionRule("adv$domain=example.com|~foo.example.com",
+    {
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "example.com", true),
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "foo.example.com", false),
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "www.foo.example.com", false),
+    }
+  ));
+
+  CHECK(checkOptionRule("adv$domain=~example.com|foo.example.com",
+    {
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "example.com", false),
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "foo.example.com", true),
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "www.foo.example.com", true),
+    }
+  ));
+
+  CHECK(checkOptionRule("adv$domain=~example.com",
+    {
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "otherdomain.com", true),
+      new OptionRuleData("http://somewebsite.com/adv", FONoFilterOption, "example.com", false),
+    }
+  ));
+
+  CHECK(checkOptionRule("adv$domain=~example.com|~example.net",
+    {
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "example.net", false),
+      new OptionRuleData("http://somewebsite.com/adv", FONoFilterOption, "example.com", false),
+      new OptionRuleData("http://www.example.net/adv", FONoFilterOption, "www.example.net", false),
+      new OptionRuleData("http://my.subdomain.example.com/adv", FONoFilterOption, "my.subdomain.example.com", false),
+      new OptionRuleData("http://example.com/adv", FONoFilterOption, "badexample.com", true),
+      new OptionRuleData("http://example.com/adv", FONoFilterOption, "otherdomain.net", true),
+      new OptionRuleData("http://example.net/ad", FONoFilterOption, "example.net", false),
+    }
+  ));
+
+  CHECK(checkOptionRule("adv$domain=example.com|~example.net",
+    {
+      new OptionRuleData("http://example.net/adv", FONoFilterOption, "example.net", false),
+      new OptionRuleData("http://somewebsite.com/adv", FONoFilterOption, "example.com", true),
+      new OptionRuleData("http://www.example.net/adv", FONoFilterOption, "www.example.net", false),
+      new OptionRuleData("http://my.subdomain.example.com/adv", FONoFilterOption, "my.subdomain.example.com", true),
+      new OptionRuleData("http://example.com/adv", FONoFilterOption, "badexample.com", false),
+      new OptionRuleData("http://example.com/adv", FONoFilterOption, "otherdomain.net", false),
+      new OptionRuleData("http://example.net/ad", FONoFilterOption, "example.net", false),
+    }
+  ));
+
+  CHECK(checkOptionRule("adv$domain=example.com|~foo.example.com,script",
+    {
+      new OptionRuleData("http://example.net/adv", FOScript, "example.com", true),
+      new OptionRuleData("http://example.net/adv", FOScript, "foo.example.com", false),
+      new OptionRuleData("http://example.net/adv", FOScript, "www.foo.example.com", false),
+      new OptionRuleData("http://example.net/adv", FOOther, "example.com", false),
+      new OptionRuleData("http://example.net/adv", FOOther, "foo.example.com", false),
+      new OptionRuleData("http://example.net/adv", FOOther, "www.foo.example.com", false),
+    }
+  ));
+
+  CHECK(checkOptionRule("adv\n"
+                        "@@advice.$~script",
+    {
+      new OptionRuleData("http://example.com/advice.html", FOOther, nullptr, false),
+      new OptionRuleData("http://example.com/advice.html", FOScript, nullptr, true),
+      new OptionRuleData("http://example.com/advert.html", FOOther, nullptr, true),
+      new OptionRuleData("http://example.com/advert.html", FOScript, nullptr, true),
     }
   ));
 }

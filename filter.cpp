@@ -56,7 +56,14 @@ const char * getUrlHost(const char *input, int &len) {
       p++;
     }
   }
-  len = findFirstSeparatorChar(p);
+  const char *q = p;
+  while (*q != '\0') {
+    q++;
+  }
+  len = findFirstSeparatorChar(p, q);
+  if (len == -1) {
+    len = strlen(p);
+  }
   return p;
 }
 
@@ -192,12 +199,84 @@ void Filter::parseOptions(const char *input) {
   parseOption(input + startOffset, len);
 }
 
+bool endsWith(const char *input, const char *sub, int inputLen, int subLen) {
+  if (subLen > inputLen) {
+    return false;
+  }
+
+  int startCheckPos = inputLen - subLen;
+  const char *p = input + startCheckPos;
+  const char *q = sub;
+  while (q != sub + subLen) {
+    if (*(p++) != *(q++)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen, const char *testHost, int testHostLen) {
+  if (!endsWith(testHost, baseContextHost, testHostLen, baseContextHostLen)) {
+    return true;
+  }
+
+  char c = testHost[testHostLen - baseContextHostLen - 1];
+  return c != '.' && testHostLen != baseContextHostLen;
+}
+
 // Determines if there's a match based on the options, this doesn't
 // mean that the filter rule should be accepted, just that the filter rule
 // should be considered given the current context.
 // By specifying context params, you can filter out the number of rules which are
 // considered.
-bool Filter::matchesOptions(const char *input) {
+bool Filter::matchesOptions(const char *input, FilterOption context, const char *contextDomain) {
+  // Maybe the user of the library can't determine a context because they're
+  // blocking a the HTTP level, don't block here because we don't have enough
+  // information
+  if (context != FONoFilterOption) {
+    if ((filterOption & ~FOThirdParty) != FONoFilterOption && !(filterOption & context)) {
+      return false;
+    }
+
+    if ((antiFilterOption & ~FOThirdParty) != FONoFilterOption && (antiFilterOption & context)) {
+      return false;
+    }
+  }
+
+  // Domain options check
+  if (domainList && contextDomain) {
+    int bufSize = strlen(domainList) + 1;
+    char *shouldBlockDomains = new char[bufSize];
+    char *shouldSkipDomains = new char[bufSize];
+    memset(shouldBlockDomains, 0, bufSize);
+    memset(shouldSkipDomains, 0, bufSize);
+    filterDomainList(domainList, shouldBlockDomains, contextDomain, false);
+    filterDomainList(domainList, shouldSkipDomains, contextDomain, true);
+
+    int leftOverBlocking = getLeftoverDomainCount(shouldBlockDomains, shouldSkipDomains);
+    int leftOverSkipping = getLeftoverDomainCount(shouldSkipDomains, shouldBlockDomains);
+    int shouldBlockDomainsLen = strlen(shouldBlockDomains);
+    int shouldSkipDomainsLen = strlen(shouldSkipDomains);
+
+    if ((shouldBlockDomainsLen == 0 && getDomainCount() != 0) ||
+        (shouldBlockDomainsLen > 0 && leftOverBlocking == 0) ||
+        (shouldSkipDomainsLen > 0 && leftOverSkipping > 0)) {
+      return false;
+    }
+  }
+
+  // If we're in the context of third-party site, then consider third-party option checks
+  if (context & (FOThirdParty | FONotThirdParty)) {
+    if (filterOption & FOThirdParty) {
+      int hostLen;
+      const char *host = getUrlHost(input, hostLen);
+      bool inputHostIsThirdParty = isThirdPartyHost(domainList, strlen(domainList), host, hostLen);
+      if (inputHostIsThirdParty || !(context & FOThirdParty)) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
 
@@ -295,34 +374,8 @@ int indexOfFilter(const char* input, const char *filterPosStart, const char *fil
   return beginIndex;
 }
 
-bool endsWith(const char *input, const char *sub, int inputLen, int subLen) {
-  if (subLen > inputLen) {
-    return false;
-  }
-
-  int startCheckPos = inputLen - subLen;
-  const char *p = input + startCheckPos;
-  const char *q = sub;
-  while (*q != '\0') {
-    if (*(p++) != *(q++)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-bool isThirdPartyHost(const char *baseContextHost, const char *testHost, int testHostLen) {
-  int baseContextHostLen = strlen(baseContextHost);
-  if (!endsWith(testHost, baseContextHost, testHostLen, baseContextHostLen)) {
-    return true;
-  }
-
-  char c = testHost[testHostLen - baseContextHostLen - 1];
-  return c != '.' && testHostLen != baseContextHostLen;
-}
-
-bool Filter::matches(const char *input) {
-  if (!matchesOptions(input)) {
+bool Filter::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
+  if (!matchesOptions(input, contextOption, contextDomain)) {
     return false;
   }
 
@@ -372,7 +425,8 @@ bool Filter::matches(const char *input) {
     }
     int currentHostLen;
     const char *currentHost = getUrlHost(input, currentHostLen);
-    return !isThirdPartyHost(domainList, currentHost, currentHostLen) &&
+    int domainListLen = strlen(domainList);
+    return !isThirdPartyHost(domainList, domainListLen, currentHost, currentHostLen) &&
       indexOfFilter(input, data, filterPartEnd) != -1;
   }
 
@@ -401,4 +455,116 @@ bool Filter::matches(const char *input) {
   }
 
   return true;
+}
+
+
+void Filter::filterDomainList(const char *domainList, char *destBuffer, const char *contextDomain, bool anti) {
+  if (!domainList) {
+    return;
+  }
+
+  char *curDest = destBuffer;
+  int contextDomainLen = strlen(contextDomain);
+  int startOffset = 0;
+  int len = 0;
+  const char *p = domainList;
+  while (true) {
+    if (*p == '|' || *p == '\0') {
+
+      const char *domain = domainList + startOffset;
+      if (!isThirdPartyHost(domain[0] == '~' ? domain + 1 : domain, domain[0] == '~' ? len -1 : len, contextDomain, contextDomainLen)) {
+        // We're only considering domains, not anti domains
+        if (!anti && len > 0 && *domain != '~') {
+          memcpy(curDest, domain, len);
+          curDest[len + 1] = '|';
+          curDest[len + 2] = '\0';
+        } else if (anti && len > 0 && *domain == '~') {
+          memcpy(curDest, domain + 1, len - 1);
+          curDest[len] = '|';
+          curDest[len + 1] = '\0';
+        }
+      }
+
+      startOffset += len + 1;
+      len = -1;
+    }
+
+    if (*p == '\0') {
+      break;
+    }
+    p++;
+    len++;
+  }
+}
+
+bool isEveryDomainThirdParty(const char *shouldSkipDomains, const char *shouldBlockDomain, int shouldBlockDomainLen) {
+  bool everyDomainThirdParty = true;
+  if (!shouldSkipDomains) {
+    return false;
+  }
+
+  int startOffset = 0;
+  int len = 0;
+  const char *p = shouldSkipDomains;
+  while (true) {
+    if (*p == '|' || *p == '\0') {
+
+      const char *domain = shouldSkipDomains + startOffset;
+      if (*domain == '~') {
+        everyDomainThirdParty = everyDomainThirdParty &&
+          isThirdPartyHost(shouldBlockDomain, shouldBlockDomainLen, domain + 1, len - 1);
+      } else {
+        everyDomainThirdParty = everyDomainThirdParty &&
+          isThirdPartyHost(shouldBlockDomain, shouldBlockDomainLen, domain, len);
+      }
+
+      startOffset += len + 1;
+      len = -1;
+    }
+
+    if (*p == '\0') {
+      break;
+    }
+    p++;
+    len++;
+  }
+
+  return everyDomainThirdParty;
+}
+
+int Filter::getLeftoverDomainCount(const char *shouldBlockDomains, const char *shouldSkipDomains) {
+  int leftOverBlocking = 0;
+
+  if (strlen(shouldBlockDomains) == 0) {
+    return 0;
+  }
+
+  int startOffset = 0;
+  int len = 0;
+  const char *p = domainList;
+  while (true) {
+    if (*p == '|' || *p == '\0') {
+      const char *domain = domainList + startOffset;
+      if (*domain == '~') {
+        if (isEveryDomainThirdParty(shouldSkipDomains, domain + 1, len - 1)) {
+          leftOverBlocking++;
+        }
+      } else {
+        if (isEveryDomainThirdParty(shouldSkipDomains, domain, len)) {
+          leftOverBlocking++;
+        }
+      }
+
+      startOffset += len + 1;
+      len = -1;
+    }
+
+    if (*p == '\0') {
+      break;
+    }
+    p++;
+    len++;
+  }
+
+  return leftOverBlocking;
 }

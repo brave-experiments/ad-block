@@ -9,7 +9,7 @@ public:
   ~ABPFilterParser();
 
   bool parse(const char *input);
-  bool matches(const char *input);
+  bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
 
   Filter *filters;
   Filter *htmlRuleFilters;
@@ -21,13 +21,12 @@ public:
   int numNoFingerprintFilters;
 
 protected:
-  bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input);
+  bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, FilterOption contextOption, const char *contextDomain);
 
 };
 
 extern const char *separatorCharacters;
 void parseDomains(const char *input);
-int findFirstSeparatorChar(const char *input, int startingPos);
 void parseHTMLFilter(const char *input, int index, Filter *);
 void parseFilter(const char *input, const char *end, Filter&);
 void parseFilter(const char *input, Filter&);
@@ -37,4 +36,4 @@ bool filterDataContainsOption(Filter *);
 bool isThirdPartyHost(const char *input);
 void getFingerprint(const char *input);
 bool isSeparatorChar(char c);
-int findFirstSeparatorChar(const char *input);
+int findFirstSeparatorChar(const char *input, const char *end);
