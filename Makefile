@@ -10,7 +10,7 @@ $(EXEC): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXEC)
 
 %.o: %.cpp
-	$(CC) -c $(CC_FLAGS) $< -o $@
+	$(CC) -c $(CFLAGS) $< -o $@
 
 test-release:
 	 node-gyp configure && node-gyp build && ./build/Release/test
