@@ -3,6 +3,11 @@
 #include <string.h>
 #include <iostream>
 
+#ifndef DISABLE_REGEX
+#include <string>
+#include <regex>
+#endif
+
 using namespace std;
 
 Filter::Filter() :
@@ -387,14 +392,13 @@ bool Filter::matches(const char *input, FilterOption contextOption, const char *
 
   // Check for a regex match
   if (filterType & FTRegex) {
-    // TODO
-    /*
-    if (!parsedFilterData.regex) {
-      parsedFilterData.regex = new RegExp(parsedFilterData.data);
-    }
-    return parsedFilterData.regex.test(input);
-    */
+#ifndef DISABLE_REGEX
+    std::smatch m;
+    std::regex e (data);
+    return std::regex_search(std::string(input), m, e);
+#else
     return false;
+#endif
   }
 
   // Check for both left and right anchored

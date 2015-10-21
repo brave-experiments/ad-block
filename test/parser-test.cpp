@@ -196,9 +196,9 @@ TEST(parser, parseFilterMatchesFilter)
     {
     }
   ));
-#if 0
+#ifndef DISABLE_REGEX
   CHECK(testFilter("/banner\\d+/",
-    regex,
+    FTRegex,
     FONoFilterOption,
     "banner\\d+",
     {
@@ -207,11 +207,10 @@ TEST(parser, parseFilterMatchesFilter)
     },
     {
       "banners",
-      "banners123",
+      "banners123"
     }
   ));
 #endif
-
   CHECK(testFilter("||static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
     FTHostAnchored,
     FONoFilterOption,
