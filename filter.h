@@ -14,19 +14,6 @@ enum FilterType {
   FTListTypesMask = FTException|FTElementHiding|FTElementHidingException|FTEmpty|FTComment,
 };
 
-enum ElementType {
-  noFilterOption = 0,
-  script = 01,
-  image = 02,
-  stylesheet = 04,
-  object = 010,
-  xmlHttpRequest = 020,
-  objectSubrequest = 040,
-  subdocument = 0100,
-  document = 0200,
-  other = 0400,
-};
-
 enum FilterOption {
   FONoFilterOption = 0,
   FOScript = 01,
