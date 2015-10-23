@@ -1,0 +1,28 @@
+{
+  "name": "abp-filter-parser-cpp",
+  "version": "0.1.0",
+  "description": "C++ Adblock Plus filter parser for lists like EasyList",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "cppunitlite": "^1.0.0",
+    "nan": "^2.1.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "make test",
+    "install": "node-gyp rebuild"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bbondy/ABPFilterParser.cpp.git"
+  },
+  "author": "Brian R. Bondy <netzen@gmail.com> (http://www.brianbondy.com)",
+  "license": "MPL-2.0",
+  "gypfile": true,
+  "bugs": {
+    "url": "https://github.com/bbondy/ABPFilterParser.cpp/issues"
+  },
+  "homepage": "https://github.com/bbondy/ABPFilterParser.cpp#readme"
+}
