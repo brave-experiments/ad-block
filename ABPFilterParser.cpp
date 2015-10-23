@@ -1,8 +1,5 @@
 #include "ABPFilterParser.h"
 #include <string.h>
-#include <iostream>
-
-using namespace std;
 
 const int maxLineLength = 2048;
 const char *separatorCharacters = ":?/=^";

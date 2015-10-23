@@ -1,7 +1,6 @@
 #include "filter.h"
 #include "ABPFilterParser.h"
 #include <string.h>
-#include <iostream>
 
 #ifndef DISABLE_REGEX
 #include <string>

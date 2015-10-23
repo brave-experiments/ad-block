@@ -1,5 +1,7 @@
 #pragma once
 
+#include "base.h"
+
 enum FilterType {
   FTNoFilterType = 0,
   FTRegex = 01,
