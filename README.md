@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/bbondy/abp-filter-parser-cpp.svg?branch=master)](https://travis-ci.org/bbondy/abp-filter-parser-cpp)
+
 # ABPFilterParser.cpp
 
 C++ Adblock Plus filter parser for lists like EasyList
