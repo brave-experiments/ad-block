@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <algorithm>
 #include <cerrno>
 #include "util.h"
 #include "string.h"

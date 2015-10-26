@@ -1,10 +1,11 @@
 #include "CppUnitLite/TestHarness.h"
-#include "CppUnitLite/test.h"
+#include "CppUnitLite/Test.h"
 #include "ABPFilterParser.h"
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <cerrno>
+#include <algorithm>
 #include "util.h"
 #include "string.h"
 #include <iostream>
@@ -200,7 +201,7 @@ TEST(parser, parseFilterMatchesFilter)
   CHECK(testFilter("/banner\\d+/",
     FTRegex,
     FONoFilterOption,
-    "banner\\d+",
+    "banner[0-9]+",
     {
       "banner123",
       "testbanner1"

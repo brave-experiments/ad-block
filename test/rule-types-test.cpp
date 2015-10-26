@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <cerrno>
+#include <algorithm>
 #include "util.h"
 #include "string.h"
 #include <iostream>
