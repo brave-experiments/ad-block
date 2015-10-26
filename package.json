@@ -1,18 +1,19 @@
 {
   "name": "abp-filter-parser-cpp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "C++ Adblock Plus filter parser for lists like EasyList",
   "directories": {
     "test": "test"
   },
   "dependencies": {
+    "bloom-filter-cpp": "^0.1.3",
     "cppunitlite": "^1.0.0",
     "nan": "^2.1.0"
   },
   "devDependencies": {},
   "scripts": {
     "test": "make test",
-    "install": "node-gyp rebuild"
+    "preinstall": "npm install nan && npm install cppunitlite && npm install bloom-filter-cpp && node-gyp rebuild"
   },
   "repository": {
     "type": "git",
