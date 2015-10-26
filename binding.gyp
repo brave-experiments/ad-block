@@ -37,6 +37,8 @@
       "ABPFilterParser.h",
       "filter.cpp",
       "filter.h",
+      "./node_modules/bloom-filter-cpp/BloomFilter.cpp",
+      "./node_modules/bloom-filter-cpp/BloomFilter.h",
     ],
     "include_dirs": [
       ".",
@@ -66,7 +68,11 @@
       "./test/rule-types-test.cpp",
       "./test/util.cpp",
       "ABPFilterParser.cpp",
+      "ABPFilterParser.h",
       "filter.cpp",
+      "filter.h",
+      "./node_modules/bloom-filter-cpp/BloomFilter.cpp",
+      "./node_modules/bloom-filter-cpp/BloomFilter.h",
     ],
     "include_dirs": [
       ".",
