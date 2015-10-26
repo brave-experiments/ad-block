@@ -10,7 +10,7 @@ It uses a bloom filter and Rabin-Karp algorithm to be super fast.
 ## Setup
 
 ```
-npm install
+npm install --save abp-filter-parser-cpp
 ```
 
 ## Running tests
