@@ -13,11 +13,6 @@ It uses a bloom filter and Rabin-Karp algorithm to be super fast.
 npm install --save abp-filter-parser-cpp
 ```
 
-## Running tests
-
-```
-make test
-```
 
 ## Sample
 
@@ -70,6 +65,12 @@ int main(int argc, char**argv) {
 ```
 make
 ./run
+```
+
+## Running tests
+
+```
+make test
 ```
 
 ## Clearing build files
