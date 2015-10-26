@@ -1,26 +1,23 @@
-CC=clang++
-CFLAGS=-std=c++11 -c
-EXEC=run
-SOURCES = $(wildcard *.cpp)
-OBJECTS = $(SOURCES:.cpp=.o)
-
+.PHONY: build
+.PHONY: build-debug
 .PHONY: test
+.PHONY: static
 
-$(EXEC): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(EXEC)
+build:
+	 node-gyp configure && node-gyp rebuild
 
-%.o: %.cpp
-	$(CC) -I node_modules/bloom-filter-cpp -c $(CFLAGS) $< -o $@
-
-test-release:
-	 node-gyp configure && node-gyp build && ./build/Release/test
+build-debug:
+	 node-gyp configure -debug && node-gyp rebuild
 
 test:
 	 node-gyp configure -debug && node-gyp build && ./build/Debug/test
+
+sample:
+	 node-gyp && node-gyp build && ./build/Release/sample
 
 xcode-proj:
 	node-gyp configure -- -f xcode
 
 clean:
-	rm -Rf run build *.o
+	node-gyp clean
 
