@@ -59,12 +59,22 @@ int main(int argc, char**argv) {
   return 0;
 }
 ```
+## Build everything in release
+
+```
+make
+```
+
+## Build everything in debug
+
+```
+make build-debug
+```
 
 ## Running sample
 
 ```
-make
-./run
+make sample
 ```
 
 ## Running tests
