@@ -10,7 +10,7 @@ $(EXEC): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXEC)
 
 %.o: %.cpp
-	$(CC) -c $(CFLAGS) $< -o $@
+	$(CC) -I node_modules/bloom-filter-cpp -c $(CFLAGS) $< -o $@
 
 test-release:
 	 node-gyp configure && node-gyp build && ./build/Release/test

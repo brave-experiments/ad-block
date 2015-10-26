@@ -1,6 +1,7 @@
 #pragma once
 
 #include "filter.h"
+#include "BloomFilter.h"
 
 class ABPFilterParser
 {

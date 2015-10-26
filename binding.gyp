@@ -15,10 +15,12 @@
       ".",
       "src",
       "<!(node -e \"require('cppunitlite')\")",
-      "<!(node -e \"require('nan')\")"
+      "<!(node -e \"require('nan')\")",
+      "<!(node -e \"require('bloom-filter-cpp')\")"
     ],
     "dependencies": [
       "node_modules/cppunitlite/binding.gyp:CppUnitLite",
+      "node_modules/bloom-filter-cpp/binding.gyp:test"
     ],
     "conditions": [
       ['OS=="win"', {
