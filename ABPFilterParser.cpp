@@ -267,7 +267,9 @@ ABPFilterParser::ABPFilterParser() : filters(nullptr),
   numFilters(0),
   numHtmlRuleFilters(0),
   numExceptionFilters(0),
-  numNoFingerprintFilters(0) {
+  numNoFingerprintFilters(0),
+  bloomFilter(nullptr),
+  exceptionBloomFilter(nullptr) {
 }
 
 ABPFilterParser::~ABPFilterParser() {
@@ -282,6 +284,12 @@ ABPFilterParser::~ABPFilterParser() {
   }
   if (noFingerprintFilters) {
    delete[] noFingerprintFilters;
+  }
+  if (bloomFilter) {
+    delete bloomFilter;
+  }
+  if (exceptionBloomFilter) {
+    delete exceptionBloomFilter;
   }
 }
 
@@ -310,8 +318,34 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
   return false;
 }
 
+void ABPFilterParser::initBloomFilter(const char *buffer, int len) {
+  if (bloomFilter) {
+    delete bloomFilter;
+  }
+  bloomFilter = new BloomFilter(buffer, len);
+
+}
+void ABPFilterParser::initExceptionBloomFilter(const char *buffer, int len) {
+  if (exceptionBloomFilter) {
+    delete exceptionBloomFilter;
+  }
+  exceptionBloomFilter = new BloomFilter(buffer, len);
+}
+
 // Parses the filter data into a few collections of filters and enables efficent querying
 bool ABPFilterParser::parse(const char *input) {
+#ifndef DISABLE_REGEX
+  // If the user is parsing and we have regex support,
+  // then we can determine the fingerprints for the bloom filter.
+  // Otherwise it needs to be done manually via initBloomFilter and initExceptionBloomFilter
+  if (!bloomFilter) {
+    bloomFilter = new BloomFilter();
+  }
+  if (!exceptionBloomFilter) {
+    exceptionBloomFilter = new BloomFilter();
+  }
+#endif
+
   const char *p = input;
   const char *lineStart = p;
 

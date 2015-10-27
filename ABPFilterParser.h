@@ -20,9 +20,11 @@ public:
   int numHtmlRuleFilters;
   int numExceptionFilters;
   int numNoFingerprintFilters;
+  void initBloomFilter(const char *buffer, int len);
+  void initExceptionBloomFilter(const char *buffer, int len);
 
-  BloomFilter bloomFilter;
-  BloomFilter exceptionBloomFilter;
+  BloomFilter *bloomFilter;
+  BloomFilter *exceptionBloomFilter;
 protected:
   // Determines if a passed in array of filter pointers matches for any of the input
   bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, FilterOption contextOption, const char *contextDomain);
