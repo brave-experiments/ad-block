@@ -80,6 +80,7 @@
       "<!(node -e \"require('nan')\")",
       "<!(node -e \"require('bloom-filter-cpp')\")"
     ],
+    "defines": ["DISABLE_REGEX"],
     "dependencies": [
       "node_modules/cppunitlite/binding.gyp:CppUnitLite",
     ],

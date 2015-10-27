@@ -26,18 +26,22 @@ static const char* fingerprintRegexs[2] = {
   ".*([./&_\\-=a-zA-Z0-9]{8})\\$?.*",
   "([./&_\\-=a-zA-Z0-9]{8})\\$?.*",
 };
+#endif
 
 /**
  * Obtains a fingerprint for the specified filter
  */
 bool getFingerprint(char *buffer, const char *input) {
+#ifdef DISABLE_REGEX
+  return false;
+#else
   if (!input) {
     return false;
   }
 
   for (unsigned int  i = 0; i < sizeof(fingerprintRegexs) / sizeof(fingerprintRegexs[0]); i++) {
     std::smatch m;
-    std::regex e (fingerprintRegexs[i]);
+    std::regex e (fingerprintRegexs[i], std::regex_constants::extended);
     std::regex_search(std::string(input), m, e);
 
     if (m.size() < 2 || m[1].length() == 0) {
@@ -68,7 +72,6 @@ bool getFingerprint(char *buffer, const char *input) {
     if (buffer) {
       std::string curMatch = m[1];
       strcpy(buffer, curMatch.c_str());
-      // cout << "Found a good fingerprint: " << m[1] << endl;
     }
     return true;
   }
@@ -85,8 +88,8 @@ bool getFingerprint(char *buffer, const char *input) {
     return foundNew;
   }
   return false;
-}
 #endif
+}
 
 
 bool isSeparatorChar(char c) {

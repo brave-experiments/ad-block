@@ -7,8 +7,6 @@
 #include <regex>
 #endif
 
-using namespace std;
-
 Filter::Filter() :
   filterType(FTNoFilterType),
   filterOption(FONoFilterOption),
@@ -400,7 +398,7 @@ bool Filter::matches(const char *input, FilterOption contextOption, const char *
   if (filterType & FTRegex) {
 #ifndef DISABLE_REGEX
     std::smatch m;
-    std::regex e (data);
+    std::regex e (data, std::regex_constants::extended);
     return std::regex_search(std::string(input), m, e);
 #else
     return false;
