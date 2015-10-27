@@ -52,14 +52,14 @@ int main(int argc, char**argv) {
   writeFile("./bloomFilterData.dat", parser.bloomFilter->getBuffer(), parser.bloomFilter->getByteBufferSize());
   writeFile("./exceptionBloomFilterData.dat", parser.bloomFilter->getBuffer(), parser.bloomFilter->getByteBufferSize());
 
-  // If you'd like to preload bloom filter data for faster checking
+  char *buffer = parser.serialize();
   ABPFilterParser parser2;
-  parser2.initBloomFilter(parser.bloomFilter->getBuffer(), parser.bloomFilter->getByteBufferSize());
-  parser2.initExceptionBloomFilter(parser.bloomFilter->getBuffer(), parser.bloomFilter->getByteBufferSize());
-  if (parser2.matches("http://www.brianbondy.com", FONoFilterOption, currentPageDomain)) {
+  parser2.deserialize(buffer);
+  if (parser2.matches(urlToCheck, FONoFilterOption, currentPageDomain)) {
     cout << "You should block this URL!" << endl;
   } else {
     cout << "You should NOT block this URL!" << endl;
   }
+  delete[] buffer;
   return 0;
 }

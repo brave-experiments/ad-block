@@ -1,5 +1,6 @@
 #include "ABPFilterParser.h"
 #include <string.h>
+#include <stdio.h>
 
 #ifndef DISABLE_REGEX
 #include <string>
@@ -480,3 +481,133 @@ bool ABPFilterParser::parse(const char *input) {
   return true;
 }
 
+// Fills the specified buffer if specified, returns the number of characters written or needed
+int serializeFilters(char * buffer, Filter *f, int numFilters) {
+  char sz[256];
+  int bufferSize = 0;
+  for (int i = 0; i < numFilters; i++) {
+    bufferSize += sprintf(sz, "%x,%x,%x", (int)f->filterType, (int)f->filterOption, (int)f->antiFilterOption);
+    if (buffer) {
+      strcpy(buffer, sz);
+    }
+    // Extra null termination
+    bufferSize++;
+
+    if (f->data) {
+      if (buffer) {
+        strcpy(buffer + bufferSize, f->data);
+      }
+      bufferSize += strlen(f->data);
+    }
+    bufferSize++;
+
+    if (f->domainList) {
+      if (buffer) {
+        strcpy(buffer + bufferSize, f->domainList);
+      }
+      bufferSize += strlen(f->domainList);
+    }
+    // Extra null termination
+    bufferSize++;
+    if (f->host) {
+      if (buffer) {
+        strcpy(buffer + bufferSize, f->host);
+      }
+      bufferSize += strlen(f->host);
+    }
+    // Extra null termination
+    bufferSize++;
+  }
+  return bufferSize;
+}
+
+// Returns a newly allocated buffer, caller must manually delete[] the buffer
+char * ABPFilterParser::serialize() {
+  int totalSize = 0;
+
+  // Get the number of bytes that we'll need
+  char sz[512];
+  totalSize += sprintf(sz, "%x,%x,%x,%x,%x,%x", numFilters, numExceptionFilters, numHtmlRuleFilters, numNoFingerprintFilters, bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0);
+  totalSize += serializeFilters(nullptr, filters, numFilters) +
+    serializeFilters(nullptr, exceptionFilters, numExceptionFilters) +
+    serializeFilters(nullptr, htmlRuleFilters, numHtmlRuleFilters) +
+    serializeFilters(nullptr, noFingerprintFilters, numNoFingerprintFilters);
+  totalSize += bloomFilter ? bloomFilter->getByteBufferSize() : 0;
+  totalSize += exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0;
+
+  // Allocate it
+  int pos = 0;
+  char *buffer = new char[totalSize];
+
+  // And start copying stuff in
+  strcpy(buffer, sz);
+  pos += strlen(sz) + 1;
+  pos += serializeFilters(buffer + pos, filters, numFilters);
+  pos += serializeFilters(buffer + pos, exceptionFilters, numExceptionFilters);
+  pos += serializeFilters(buffer + pos, htmlRuleFilters, numHtmlRuleFilters);
+  pos += serializeFilters(buffer + pos, noFingerprintFilters, numNoFingerprintFilters);
+  if (bloomFilter) {
+    memcpy(buffer + pos, bloomFilter->getBuffer(), bloomFilter->getByteBufferSize());
+    pos += bloomFilter->getByteBufferSize();
+  }
+  if (exceptionBloomFilter) {
+    memcpy(buffer + pos, exceptionBloomFilter->getBuffer(), exceptionBloomFilter->getByteBufferSize());
+    pos += exceptionBloomFilter->getByteBufferSize();
+  }
+  return buffer;
+}
+
+// Fills the specified buffer if specified, returns the number of characters written or needed
+int deserializeFilters(char *buffer, Filter *f, int numFilters) {
+  int pos = 0;
+  for (int i = 0; i < numFilters; i++) {
+    f->borrowedData = true;
+    sscanf(buffer, "%x,%x,%x", &f->filterType, &f->filterOption, &f->antiFilterOption);
+    pos += strlen(buffer) + 1;
+
+    if (*(buffer + pos) == '\0') {
+      f->data = nullptr;
+    } else {
+      f->data = buffer + pos;
+      pos += strlen(f->data);
+    }
+    pos++;
+
+   if (*(buffer + pos) == '\0') {
+      f->domainList = nullptr;
+    } else {
+      f->domainList = buffer + pos;
+      pos += strlen(f->domainList);
+    }
+    pos++;
+
+   if (*(buffer + pos) == '\0') {
+      f->host = nullptr;
+    } else {
+      f->host = buffer + pos;
+      pos += strlen(f->host);
+    }
+    pos++;
+  }
+  return pos;
+}
+
+void ABPFilterParser::deserialize(char *buffer) {
+  int bloomFilterSize = 0, exceptionBloomFilterSize = 0;
+  int pos = 0;
+  sscanf(buffer, "%x,%x,%x,%x,%x,%x", &numFilters, &numExceptionFilters, &numHtmlRuleFilters, &numNoFingerprintFilters, &bloomFilterSize, &exceptionBloomFilterSize);
+  pos += strlen(buffer) + 1;
+
+  filters = new Filter[numFilters];
+  exceptionFilters = new Filter[numExceptionFilters];
+  htmlRuleFilters = new Filter[numHtmlRuleFilters];
+  noFingerprintFilters = new Filter[numNoFingerprintFilters];
+
+  pos += deserializeFilters(buffer + pos, filters, numFilters);
+  pos += deserializeFilters(buffer + pos, exceptionFilters, numExceptionFilters);
+  pos += deserializeFilters(buffer + pos, htmlRuleFilters, numHtmlRuleFilters);
+  pos += deserializeFilters(buffer + pos, noFingerprintFilters, numNoFingerprintFilters);
+
+  initBloomFilter(buffer + pos, bloomFilterSize);
+  initExceptionBloomFilter(buffer + pos, exceptionBloomFilterSize);
+}

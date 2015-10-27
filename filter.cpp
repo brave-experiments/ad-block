@@ -8,6 +8,7 @@
 #endif
 
 Filter::Filter() :
+  borrowedData(false),
   filterType(FTNoFilterType),
   filterOption(FONoFilterOption),
   antiFilterOption(FONoFilterOption),
@@ -17,6 +18,9 @@ Filter::Filter() :
 }
 
 Filter::~Filter() {
+  if (borrowedData) {
+    return;
+  }
   if (data) {
     delete[] data;
   }
