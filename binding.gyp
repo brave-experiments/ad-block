@@ -82,7 +82,6 @@
     ],
     "dependencies": [
       "node_modules/cppunitlite/binding.gyp:CppUnitLite",
-      "node_modules/bloom-filter-cpp/binding.gyp:bloom-filter-cpp"
     ],
     "conditions": [
       ['OS=="win"', {

@@ -1,6 +1,14 @@
 #include "ABPFilterParser.h"
 #include <string.h>
 
+#ifndef DISABLE_REGEX
+#include <string>
+#include <regex>
+#include <algorithm>
+#include <functional>
+#include "badFingerprints.h"
+#endif
+
 const int maxLineLength = 2048;
 const char *separatorCharacters = ":?/=^";
 
@@ -11,6 +19,75 @@ enum FilterParseState {
   FPOneAt,
   FPData
 };
+
+#ifndef DISABLE_REGEX
+static const int fingerprintSize = 8;
+static const char* fingerprintRegexs[2] = {
+  ".*([./&_\\-=a-zA-Z0-9]{8})\\$?.*",
+  "([./&_\\-=a-zA-Z0-9]{8})\\$?.*",
+};
+
+/**
+ * Obtains a fingerprint for the specified filter
+ */
+bool getFingerprint(char *buffer, const char *input) {
+  if (!input) {
+    return false;
+  }
+
+  for (unsigned int  i = 0; i < sizeof(fingerprintRegexs) / sizeof(fingerprintRegexs[0]); i++) {
+    std::smatch m;
+    std::regex e (fingerprintRegexs[i]);
+    std::regex_search(std::string(input), m, e);
+
+    if (m.size() < 2 || m[1].length() == 0) {
+      return false;
+    }
+
+    bool fingerprintStillGood = true;
+    std::for_each(badFingerprints, badFingerprints + sizeof(badFingerprints) / sizeof(badFingerprints[0]), [&fingerprintStillGood, &m](std::string const &bad) {
+      if (!fingerprintStillGood) {
+        return;
+      }
+      std::string curMatch = m[1];
+      fingerprintStillGood = fingerprintStillGood && strcmp(curMatch.c_str(), bad.c_str());
+    });
+    std::for_each(badSubstrings, badSubstrings + sizeof(badSubstrings) / sizeof(badSubstrings[0]), [&fingerprintStillGood, &m](std::string const &bad) {
+      if (!fingerprintStillGood) {
+        return;
+      }
+      std::string curMatch = m[1];
+      fingerprintStillGood = fingerprintStillGood && !strstr(curMatch.c_str(), bad.c_str());
+    });
+
+    if (!fingerprintStillGood) {
+      continue;
+    }
+
+    // Sometimes the caller only cares if there is a match and not what the match is
+    if (buffer) {
+      std::string curMatch = m[1];
+      strcpy(buffer, curMatch.c_str());
+      // cout << "Found a good fingerprint: " << m[1] << endl;
+    }
+    return true;
+  }
+  // This is pretty ugly but getting fingerprints is assumed to be used only when preprocessing and
+  // in a live environment.
+  if (strlen(input) > 9) {
+    // Remove first and last char
+    int inputLen = strlen(input);
+    char *newInput = new char[inputLen - 1];
+    memcpy(newInput, input + 1, inputLen - 2);
+    newInput[inputLen - 2] = '\0';
+    bool foundNew = getFingerprint(buffer, newInput);
+    delete[] newInput;
+    return foundNew;
+  }
+  return false;
+}
+#endif
+
 
 bool isSeparatorChar(char c) {
   const char *p = separatorCharacters;
@@ -34,14 +111,14 @@ int findFirstSeparatorChar(const char *input, const char *end) {
   return -1;
 }
 
-void parseFilter(const char *input, Filter &f) {
+void parseFilter(const char *input, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter) {
   const char *end = input;
   while (*end != '\0') end++;
-  parseFilter(input, end, f);
+  parseFilter(input, end, f, bloomFilter, exceptionBloomFilter);
 }
 
 // Not currently multithreaded safe due to the static buffer named 'data'
-void parseFilter(const char *input, const char *end, Filter &f) {
+void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter) {
   FilterParseState parseState = FPStart;
   const char *p = input;
   char data[maxLineLength];
@@ -166,6 +243,17 @@ void parseFilter(const char *input, const char *end, Filter &f) {
   data[i] = '\0';
   f.data = new char[i + 1];
   memcpy(f.data, data, i + 1);
+
+#ifndef DISABLE_REGEX
+  char fingerprintBuffer[fingerprintSize + 1];
+  fingerprintBuffer[fingerprintSize] = '\0';
+  getFingerprint(fingerprintBuffer, f.data);
+  if (exceptionBloomFilter && f.filterType & FTException) {
+    exceptionBloomFilter->add(fingerprintBuffer);
+  } else if (bloomFilter) {
+    bloomFilter->add(fingerprintBuffer);
+  }
+#endif
 }
 
 
@@ -205,7 +293,12 @@ bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const 
 }
 
 bool ABPFilterParser::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
-  if (hasMatchingFilters(filters, numFilters, input, contextOption, contextDomain)) {
+  bool hasMatch = hasMatchingFilters(noFingerprintFilters, numNoFingerprintFilters, input, contextOption, contextDomain);
+  if (!hasMatch) {
+    hasMatch = hasMatchingFilters(filters, numFilters, input, contextOption, contextDomain);
+  }
+
+  if (hasMatch) {
     if (hasMatchingFilters(exceptionFilters, numExceptionFilters, input, contextOption, contextDomain)) {
       return false;
     }
@@ -246,8 +339,11 @@ bool ABPFilterParser::parse(const char *input) {
           // No need to store comments
           break;
         default:
-          // TODO: check if no fingerprint and if so update numNoFingerprintFilters
-          newNumFilters++;
+          if (getFingerprint(nullptr, f.data)) {
+            newNumFilters++;
+          } else {
+            newNumNoFingerprintFilters++;
+          }
           break;
       }
       lineStart = p + 1;
@@ -325,9 +421,13 @@ bool ABPFilterParser::parse(const char *input) {
           // No need to store
           break;
         default:
-          // TODO: check if no fingerprint here and update noFingerprintFilters instead
-          (*curFilters).swap(f);
-          curFilters++;
+          if (getFingerprint(nullptr, f.data)) {
+            (*curFilters).swap(f);
+            curFilters++;
+          } else {
+            (*curNoFingerprintFilters).swap(f);
+            curNoFingerprintFilters++;
+          }
           break;
       }
       lineStart = p + 1;

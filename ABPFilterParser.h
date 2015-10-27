@@ -21,15 +21,15 @@ public:
   int numExceptionFilters;
   int numNoFingerprintFilters;
 
+  BloomFilter bloomFilter;
+  BloomFilter exceptionBloomFilter;
 protected:
   // Determines if a passed in array of filter pointers matches for any of the input
   bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, FilterOption contextOption, const char *contextDomain);
-  BloomFilter bloomFilter;
-  BloomFilter exceptionBloomFilter;
 };
 
 extern const char *separatorCharacters;
-void parseFilter(const char *input, const char *end, Filter&);
-void parseFilter(const char *input, Filter&);
+void parseFilter(const char *input, const char *end, Filter&, BloomFilter *bloomFilter = nullptr, BloomFilter *exceptionBloomFilter = nullptr);
+void parseFilter(const char *input, Filter&, BloomFilter *bloomFilter = nullptr, BloomFilter *exceptionBloomFilter = nullptr);
 bool isSeparatorChar(char c);
 int findFirstSeparatorChar(const char *input, const char *end);

@@ -198,7 +198,7 @@ TEST(parser, parseFilterMatchesFilter)
     }
   ));
 #ifndef DISABLE_REGEX
-  CHECK(testFilter("/banner\\d+/",
+  CHECK(testFilter("/banner[0-9]+/",
     FTRegex,
     FONoFilterOption,
     "banner[0-9]+",
@@ -459,7 +459,7 @@ TEST(parser, parse)
   parser.parse(fileContents.c_str());
 
   // TODO: Compare to JS lib which says 18096 here for filters + nofingerprint
-  CHECK(compareNums(parser.numFilters, 18105));
+  CHECK(compareNums(parser.numFilters + parser.numNoFingerprintFilters, 18105));
   // TODO: Compare to JS lib which says 26465 here
   CHECK(compareNums(parser.numHtmlRuleFilters, 26455));
   // TODO: Compare to JS lib which says 2975 here
@@ -479,8 +479,9 @@ TEST(multipleParse, multipleParse2)
                "adv3\n"
                "@@test3\n"
                "###test3");
-  // TODO: Should actually be: noFingerprintRules 3, numFilters: 0
-  CHECK(compareNums(parser.numFilters, 3));
+
+  CHECK(compareNums(parser.numFilters, 0));
+  CHECK(compareNums(parser.numNoFingerprintFilters, 3));
   CHECK(compareNums(parser.numHtmlRuleFilters, 3));
   CHECK(compareNums(parser.numExceptionFilters, 3));
 }
