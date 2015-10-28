@@ -77,7 +77,7 @@ bool getFingerprint(char *buffer, const char *input) {
     return true;
   }
   // This is pretty ugly but getting fingerprints is assumed to be used only when preprocessing and
-  // in a live environment.
+  // NOT in a live environment.
   if (strlen(input) > 9) {
     // Remove first and last char
     int inputLen = strlen(input);
@@ -524,15 +524,16 @@ int serializeFilters(char * buffer, Filter *f, int numFilters) {
 }
 
 // Returns a newly allocated buffer, caller must manually delete[] the buffer
-char * ABPFilterParser::serialize(int &totalSize) {
+char * ABPFilterParser::serialize(int &totalSize, bool ignoreHTMLFilters) {
   totalSize = 0;
+  int adjustedNumHTMLFilters = ignoreHTMLFilters ? 0 : numHtmlRuleFilters;
 
   // Get the number of bytes that we'll need
   char sz[512];
-  totalSize += sprintf(sz, "%x,%x,%x,%x,%x,%x", numFilters, numExceptionFilters, numHtmlRuleFilters, numNoFingerprintFilters, bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0);
+  totalSize += sprintf(sz, "%x,%x,%x,%x,%x,%x", numFilters, numExceptionFilters, adjustedNumHTMLFilters, numNoFingerprintFilters, bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0);
   totalSize += serializeFilters(nullptr, filters, numFilters) +
     serializeFilters(nullptr, exceptionFilters, numExceptionFilters) +
-    serializeFilters(nullptr, htmlRuleFilters, numHtmlRuleFilters) +
+    serializeFilters(nullptr, htmlRuleFilters, adjustedNumHTMLFilters) +
     serializeFilters(nullptr, noFingerprintFilters, numNoFingerprintFilters);
   totalSize += bloomFilter ? bloomFilter->getByteBufferSize() : 0;
   totalSize += exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0;
@@ -547,7 +548,7 @@ char * ABPFilterParser::serialize(int &totalSize) {
   pos += strlen(sz) + 1;
   pos += serializeFilters(buffer + pos, filters, numFilters);
   pos += serializeFilters(buffer + pos, exceptionFilters, numExceptionFilters);
-  pos += serializeFilters(buffer + pos, htmlRuleFilters, numHtmlRuleFilters);
+  pos += serializeFilters(buffer + pos, htmlRuleFilters, adjustedNumHTMLFilters);
   pos += serializeFilters(buffer + pos, noFingerprintFilters, numNoFingerprintFilters);
   if (bloomFilter) {
     memcpy(buffer + pos, bloomFilter->getBuffer(), bloomFilter->getByteBufferSize());
