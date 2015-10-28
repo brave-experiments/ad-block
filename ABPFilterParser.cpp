@@ -486,10 +486,11 @@ int serializeFilters(char * buffer, Filter *f, int numFilters) {
   char sz[256];
   int bufferSize = 0;
   for (int i = 0; i < numFilters; i++) {
-    bufferSize += sprintf(sz, "%x,%x,%x", (int)f->filterType, (int)f->filterOption, (int)f->antiFilterOption);
+    int sprintfLen = sprintf(sz, "%x,%x,%x", (int)f->filterType, (int)f->filterOption, (int)f->antiFilterOption);
     if (buffer) {
-      strcpy(buffer, sz);
+      strcpy(buffer + bufferSize, sz);
     }
+    bufferSize += sprintfLen;
     // Extra null termination
     bufferSize++;
 
@@ -517,6 +518,7 @@ int serializeFilters(char * buffer, Filter *f, int numFilters) {
     }
     // Extra null termination
     bufferSize++;
+    f++;
   }
   return bufferSize;
 }
@@ -538,6 +540,7 @@ char * ABPFilterParser::serialize() {
   // Allocate it
   int pos = 0;
   char *buffer = new char[totalSize];
+  memset(buffer, 0, totalSize);
 
   // And start copying stuff in
   strcpy(buffer, sz);
@@ -562,8 +565,8 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
   int pos = 0;
   for (int i = 0; i < numFilters; i++) {
     f->borrowedData = true;
-    sscanf(buffer, "%x,%x,%x", &f->filterType, &f->filterOption, &f->antiFilterOption);
-    pos += strlen(buffer) + 1;
+    sscanf(buffer + pos, "%x,%x,%x", &f->filterType, &f->filterOption, &f->antiFilterOption);
+    pos += strlen(buffer + pos) + 1;
 
     if (*(buffer + pos) == '\0') {
       f->data = nullptr;
@@ -588,6 +591,7 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
       pos += strlen(f->host);
     }
     pos++;
+    f++;
   }
   return pos;
 }
@@ -595,8 +599,8 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
 void ABPFilterParser::deserialize(char *buffer) {
   int bloomFilterSize = 0, exceptionBloomFilterSize = 0;
   int pos = 0;
-  sscanf(buffer, "%x,%x,%x,%x,%x,%x", &numFilters, &numExceptionFilters, &numHtmlRuleFilters, &numNoFingerprintFilters, &bloomFilterSize, &exceptionBloomFilterSize);
-  pos += strlen(buffer) + 1;
+  sscanf(buffer + pos, "%x,%x,%x,%x,%x,%x", &numFilters, &numExceptionFilters, &numHtmlRuleFilters, &numNoFingerprintFilters, &bloomFilterSize, &exceptionBloomFilterSize);
+  pos += strlen(buffer + pos) + 1;
 
   filters = new Filter[numFilters];
   exceptionFilters = new Filter[numExceptionFilters];

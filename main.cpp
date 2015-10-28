@@ -52,9 +52,11 @@ int main(int argc, char**argv) {
   writeFile("./bloomFilterData.dat", parser.bloomFilter->getBuffer(), parser.bloomFilter->getByteBufferSize());
   writeFile("./exceptionBloomFilterData.dat", parser.bloomFilter->getBuffer(), parser.bloomFilter->getByteBufferSize());
 
+  // Note that this buffer must be freed and will actually be used directly by the deserializer.
   char *buffer = parser.serialize();
   ABPFilterParser parser2;
   parser2.deserialize(buffer);
+  // Prints the same as parser.matches would
   if (parser2.matches(urlToCheck, FONoFilterOption, currentPageDomain)) {
     cout << "You should block this URL!" << endl;
   } else {
