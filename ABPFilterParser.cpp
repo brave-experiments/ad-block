@@ -21,8 +21,8 @@ enum FilterParseState {
   FPData
 };
 
-#ifndef DISABLE_REGEX
 static const int fingerprintSize = 8;
+#ifndef DISABLE_REGEX
 static const char* fingerprintRegexs[2] = {
   ".*([./&_\\-=a-zA-Z0-9]{8})\\$?.*",
   "([./&_\\-=a-zA-Z0-9]{8})\\$?.*",
@@ -129,7 +129,8 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
   memset(data, 0, sizeof data);
   int i = 0;
 
-  while (p != end) {
+  bool earlyBreak = false;
+  while (p != end && !earlyBreak) {
     // Check for the filter being too long
     if ((p - input) >= maxLineLength - 1) {
       return;
@@ -139,6 +140,7 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
       parseState = FPData;
       f.filterType = static_cast<FilterType>(f.filterType | FTLeftAnchored);
     }
+
 
     switch (*p) {
       case '|':
@@ -214,11 +216,8 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
 
       case '$':
         f.parseOptions(p + 1);
-        data[i] = '\0';
-        f.data = new char[i + 1];
-        memcpy(f.data, data, i + 1);
-        return;
-
+        earlyBreak = true;
+        continue;
       case '#':
         if (*(p+1) == '#') {
           // TODO
@@ -305,18 +304,34 @@ bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const 
 }
 
 bool ABPFilterParser::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
+  // We always have to check noFingerprintFilters because the bloom filter opt cannot be used for them
   bool hasMatch = hasMatchingFilters(noFingerprintFilters, numNoFingerprintFilters, input, contextOption, contextDomain);
+  // If no noFingerprintFilters were hit, check the bloom filter substring fingerprint for the normal
+  // filter list.   If no substring exists for the input then we know for sure the URL should not be blocked.
+  if (!hasMatch && bloomFilter && !bloomFilter->substringExists(input, fingerprintSize)) {
+    return false;
+  }
+
+  // We need to check the filters list manually because there is either a match or a false positive
   if (!hasMatch) {
     hasMatch = hasMatchingFilters(filters, numFilters, input, contextOption, contextDomain);
   }
 
-  if (hasMatch) {
-    if (hasMatchingFilters(exceptionFilters, numExceptionFilters, input, contextOption, contextDomain)) {
-      return false;
-    }
-    return true;
+  // If there's still no match after checking the block filters, then no need to try to block this
+  // because there is a false positive.
+  if (!hasMatch) {
+    return false;
   }
-  return false;
+
+  // Now that we have a matching rule, we should check if an exception rule hits, using the bloom filter data
+  // first for a faster check.
+  bool exceptionBloomFilterMiss = !exceptionBloomFilter || !exceptionBloomFilter->substringExists(input, fingerprintSize);
+  if (!exceptionBloomFilterMiss ||
+      hasMatchingFilters(exceptionFilters, numExceptionFilters, input, contextOption, contextDomain)) {
+    return false;
+  }
+
+  return true;
 }
 
 void ABPFilterParser::initBloomFilter(const char *buffer, int len) {
@@ -443,7 +458,7 @@ bool ABPFilterParser::parse(const char *input) {
   while (true) {
     if (*p == '\n' || *p == '\0') {
       Filter f;
-      parseFilter(lineStart, p, f);
+      parseFilter(lineStart, p, f, bloomFilter, exceptionBloomFilter);
       switch(f.filterType & FTListTypesMask) {
         case FTException:
           (*curExceptionFilters).swap(f);
@@ -614,5 +629,7 @@ void ABPFilterParser::deserialize(char *buffer) {
   pos += deserializeFilters(buffer + pos, noFingerprintFilters, numNoFingerprintFilters);
 
   initBloomFilter(buffer + pos, bloomFilterSize);
+  pos += bloomFilterSize;
   initExceptionBloomFilter(buffer + pos, exceptionBloomFilterSize);
+  pos += exceptionBloomFilterSize;
 }

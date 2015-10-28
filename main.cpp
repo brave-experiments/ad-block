@@ -35,8 +35,11 @@ void writeFile(const char *filename, const char *buffer, int length)
 int main(int argc, char**argv) {
   std::string &&easyListTxt = getFileContents("./test/data/easylist.txt");
   const char *urlsToCheck[] = {
+    // Should be blocked by: ||googlesyndication.com/safeframe/$third-party
     "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html",
+    // Should be blocked by: ||googletagservices.com/tag/js/gpt_$third-party
     "http://www.googletagservices.com/tag/js/gpt_mobile.js",
+    // Shouldn't be blocked
     "http://www.brianbondy.com"
   };
 
