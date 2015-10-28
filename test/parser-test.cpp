@@ -243,29 +243,40 @@ TEST(parser, parseFilterMatchesFilter)
 }
 
 bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlocked) {
-  ABPFilterParser parser;
-  parser.parse(rules);
+  ABPFilterParser parsers[2];
+  char * buffer;
+  for (int i = 0; i < 2; i++) {
+    ABPFilterParser &parser = parsers[i];
+    if (i == 0) {
+      parser.parse(rules);
+    } else {
+      int size;
+      buffer = parsers[0].serialize(size);
+      parser.deserialize(buffer);
+    }
 
-  bool ret = true;
-  std::string lastChecked;
-  std::for_each(blocked.begin(), blocked.end(), [&parser, &lastChecked, &ret](string const &s) {
-    ret = ret && parser.matches(s.c_str());
-    lastChecked = s;
-  });
-  if (!ret) {
-    cout << "Should match but did not: " << lastChecked.c_str() << endl;
-    return false;
-  }
+    bool ret = true;
+    std::string lastChecked;
+    std::for_each(blocked.begin(), blocked.end(), [&parser, &lastChecked, &ret](string const &s) {
+      ret = ret && parser.matches(s.c_str());
+      lastChecked = s;
+    });
+    if (!ret) {
+      cout << "Should match but did not: " << lastChecked.c_str() << endl;
+      return false;
+    }
 
-  std::for_each(notBlocked.begin(), notBlocked.end(), [&parser, &ret, &lastChecked](string const &s) {
-    ret = ret && !parser.matches(s.c_str());
-    lastChecked = s;
-  });
-  if (!ret) {
-    cout << "Should NOT match but did: " << lastChecked.c_str() << endl;
-    return false;
+    std::for_each(notBlocked.begin(), notBlocked.end(), [&parser, &ret, &lastChecked](string const &s) {
+      ret = ret && !parser.matches(s.c_str());
+      lastChecked = s;
+    });
+    if (!ret) {
+      cout << "Should NOT match but did: " << lastChecked.c_str() << endl;
+      return false;
+    }
+    return true;
   }
-  return true;
+  delete[] buffer;
 }
 
 TEST(parser, exceptionRules)
