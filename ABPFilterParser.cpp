@@ -524,8 +524,8 @@ int serializeFilters(char * buffer, Filter *f, int numFilters) {
 }
 
 // Returns a newly allocated buffer, caller must manually delete[] the buffer
-char * ABPFilterParser::serialize() {
-  int totalSize = 0;
+char * ABPFilterParser::serialize(int &totalSize) {
+  totalSize = 0;
 
   // Get the number of bytes that we'll need
   char sz[512];

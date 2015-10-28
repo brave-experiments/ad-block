@@ -36,5 +36,5 @@ run
 # ctags
 tags
 
-bloomFilterData.dat
-exceptionBloomFilterData.dat
+# output from sample which can be used for importing
+ABPFilterParserData.dat

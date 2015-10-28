@@ -11,7 +11,10 @@ public:
 
   bool parse(const char *input);
   bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
-  char * serialize();
+  // Serializes a the parsed data and bloom filter data into a single buffer.
+  // The returned buffer should be deleted.
+  char * serialize(int &size);
+  // Deserializes the buffer, a size is not needed since a serialized buffer is self described
   void deserialize(char *);
 
   Filter *filters;
