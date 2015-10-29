@@ -21,10 +21,12 @@ public:
   Filter *htmlRuleFilters;
   Filter *exceptionFilters;
   Filter *noFingerprintFilters;
+  Filter *noFingerprintExceptionFilters;
   int numFilters;
   int numHtmlRuleFilters;
   int numExceptionFilters;
   int numNoFingerprintFilters;
+  int numNoFingerprintExceptionFilters;
 
   BloomFilter *bloomFilter;
   BloomFilter *exceptionBloomFilter;

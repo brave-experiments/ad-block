@@ -244,14 +244,14 @@ TEST(parser, parseFilterMatchesFilter)
 
 bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlocked) {
   ABPFilterParser parsers[2];
-  char * buffer;
+  char * buffer = nullptr;
   for (int i = 0; i < 2; i++) {
     ABPFilterParser &parser = parsers[i];
     if (i == 0) {
       parser.parse(rules);
-    } else {
       int size;
       buffer = parsers[0].serialize(size);
+    } else {
       parser.deserialize(buffer);
     }
 
@@ -274,9 +274,9 @@ bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlock
       cout << "Should NOT match but did: " << lastChecked.c_str() << endl;
       return false;
     }
-    return true;
   }
   delete[] buffer;
+  return true;
 }
 
 TEST(parser, exceptionRules)
@@ -474,7 +474,7 @@ TEST(parser, parse)
   // TODO: Compare to JS lib which says 26465 here
   CHECK(compareNums(parser.numHtmlRuleFilters, 26455));
   // TODO: Compare to JS lib which says 2975 here
-  CHECK(compareNums(parser.numExceptionFilters, 2975));
+  CHECK(compareNums(parser.numExceptionFilters + + parser.numNoFingerprintExceptionFilters, 2975));
 }
 
 // Calling parse amongst 2 different lists should preserve both sets of rules
@@ -494,7 +494,8 @@ TEST(multipleParse, multipleParse2)
   CHECK(compareNums(parser.numFilters, 0));
   CHECK(compareNums(parser.numNoFingerprintFilters, 3));
   CHECK(compareNums(parser.numHtmlRuleFilters, 3));
-  CHECK(compareNums(parser.numExceptionFilters, 3));
+  CHECK(compareNums(parser.numExceptionFilters, 0));
+  CHECK(compareNums(parser.numNoFingerprintExceptionFilters, 3));
 }
 
 // Demo app test

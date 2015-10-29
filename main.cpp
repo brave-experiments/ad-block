@@ -35,6 +35,8 @@ void writeFile(const char *filename, const char *buffer, int length)
 int main(int argc, char**argv) {
   std::string &&easyListTxt = getFileContents("./test/data/easylist.txt");
   const char *urlsToCheck[] = {
+    // ||pagead2.googlesyndication.com^$~object-subrequest
+    "http://pagead2.googlesyndication.com/pagead/show_ads.js",
     // Should be blocked by: ||googlesyndication.com/safeframe/$third-party
     "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html",
     // Should be blocked by: ||googletagservices.com/tag/js/gpt_$third-party
