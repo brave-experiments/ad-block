@@ -56,8 +56,13 @@ void writeFile(const char *filename, const char *buffer, int length)
 int main(int argc, char**argv) {
   std::string &&easyListTxt = getFileContents("./test/data/easylist.txt");
   const char *urlsToCheck[] = {
+    // ||pagead2.googlesyndication.com^$~object-subrequest
+    "http://pagead2.googlesyndication.com/pagead/show_ads.js",
+    // Should be blocked by: ||googlesyndication.com/safeframe/$third-party
     "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html",
+    // Should be blocked by: ||googletagservices.com/tag/js/gpt_$third-party
     "http://www.googletagservices.com/tag/js/gpt_mobile.js",
+    // Shouldn't be blocked
     "http://www.brianbondy.com"
   };
 
@@ -78,11 +83,12 @@ int main(int argc, char**argv) {
   });
 
   int size;
+  // This buffer is allocate on the heap, you must call delete[] when you're done using it.
   char *buffer = parser.serialize(size);
   writeFile("./ABPFilterParserData.dat", buffer, size);
 
-  // Note that this buffer must be freed and will actually be used directly by the deserializer.
   ABPFilterParser parser2;
+  // Deserialize uses the buffer directly for subsequent matches, do not free until all matches are done.
   parser2.deserialize(buffer);
   // Prints the same as parser.matches would
   std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck) / sizeof(urlsToCheck[0]), [&parser2, currentPageDomain](std::string const &urlToCheck) {

@@ -62,11 +62,12 @@ int main(int argc, char**argv) {
   });
 
   int size;
+  // This buffer is allocate on the heap, you must call delete[] when you're done using it.
   char *buffer = parser.serialize(size);
   writeFile("./ABPFilterParserData.dat", buffer, size);
 
-  // Note that this buffer must be freed and will actually be used directly by the deserializer.
   ABPFilterParser parser2;
+  // Deserialize uses the buffer directly for subsequent matches, do not free until all matches are done.
   parser2.deserialize(buffer);
   // Prints the same as parser.matches would
   std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck) / sizeof(urlsToCheck[0]), [&parser2, currentPageDomain](std::string const &urlToCheck) {
