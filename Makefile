@@ -2,6 +2,7 @@
 .PHONY: build-debug
 .PHONY: test
 .PHONY: static
+.PHONY: perf
 
 build:
 	 node-gyp configure && node-gyp build
@@ -14,6 +15,9 @@ test:
 
 sample:
 	 node-gyp configure && node-gyp build && ./build/Release/sample
+
+perf:
+	 node-gyp configure && node-gyp build && ./build/Release/perf
 
 xcode-proj:
 	node-gyp configure -- -f xcode
