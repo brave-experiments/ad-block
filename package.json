@@ -7,7 +7,7 @@
     "test": "test"
   },
   "dependencies": {
-    "bloom-filter-cpp": "^0.1.7",
+    "bloom-filter-cpp": "^0.1.8",
     "cppunitlite": "^1.0.0",
     "nan": "^2.1.0"
   },
