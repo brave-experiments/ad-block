@@ -16,7 +16,8 @@ using namespace std;
 #endif
 
 const int maxLineLength = 2048;
-const char *separatorCharacters = ":?/=^";
+
+
 
 enum FilterParseState {
   FPStart,
@@ -100,16 +101,10 @@ bool getFingerprint(char *buffer, const char *input) {
 #endif
 }
 
-
+// Separator chars are one of: :?/=^;
+char separatorBuffer[32] = { 0, 0, 0, 0, 0, -128, 0, -92, 0, 0, 0, 64 };
 bool isSeparatorChar(char c) {
-  const char *p = separatorCharacters;
-  while (*p != 0) {
-    if (*p == c) {
-      return true;
-    }
-    ++p;
-  };
-  return false;
+  return !!(separatorBuffer[(unsigned char)c / 8] & 1 << (unsigned char)c % 8);
 }
 
 int findFirstSeparatorChar(const char *input, const char *end) {

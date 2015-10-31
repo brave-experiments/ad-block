@@ -507,3 +507,15 @@ TEST(demoApp, demoApp2)
   const char *currentPageDomain = "slashdot.org";
   CHECK(parser.matches(urlToCheck, FOScript, currentPageDomain));
 }
+
+TEST(misc, misc2)
+{
+  for (int i = 0; i < 256; i++) {
+    if (i == (int)':' || i == (int)'?' || i == (int)'/' ||
+        i == (int)'=' || i == (int)'^') {
+      CHECK(isSeparatorChar((char)i));
+    } else {
+      CHECK(!isSeparatorChar((int)(char)i));
+    }
+  }
+}
