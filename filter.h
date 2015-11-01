@@ -46,6 +46,8 @@ public:
   void swap(Filter&f);
 
   // Checks to see if any filter matches the input but does not match any exception rule
+  // You may want to call the first overload to be slighly more efficient
+  bool matches(const char *input, int inputLen, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
   bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
 
   // Checks to see if the filter options match for the passed in data
@@ -63,6 +65,7 @@ public:
   FilterOption filterOption;
   FilterOption antiFilterOption;
   char *data;
+  int dataLen;
   char *domainList;
   char *host;
 

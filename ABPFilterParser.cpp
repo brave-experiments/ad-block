@@ -17,8 +17,6 @@ using namespace std;
 
 const int maxLineLength = 2048;
 
-
-
 enum FilterParseState {
   FPStart,
   FPPastWhitespace,
@@ -115,7 +113,7 @@ int findFirstSeparatorChar(const char *input, const char *end) {
     }
     p++;
   }
-  return -1;
+  return end - input;
 }
 
 void parseFilter(const char *input, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter) {
@@ -158,10 +156,6 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
           p++;
 
           int len = findFirstSeparatorChar(p, end);
-          if (len == -1) {
-            len = end - p;
-          }
-
           f.host = new char[len + 1];
           f.host[len] = '\0';
           memcpy(f.host, p, len);
@@ -309,9 +303,9 @@ ABPFilterParser::~ABPFilterParser() {
   }
 }
 
-bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const char *input, FilterOption contextOption, const char *contextDomain) {
+bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain) {
   for (int i = 0; i < numFilters; i++) {
-    if (filter->matches(input, contextOption, contextDomain)) {
+    if (filter->matches(input, inputLen, contextOption, contextDomain)) {
       return true;
     }
     filter++;
@@ -337,8 +331,9 @@ void discoverMatchingPrefix(const char *str, BloomFilter *bloomFilter, int prefi
 #endif
 
 bool ABPFilterParser::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
+  int inputLen = strlen(input);
   // We always have to check noFingerprintFilters because the bloom filter opt cannot be used for them
-  bool hasMatch = hasMatchingFilters(noFingerprintFilters, numNoFingerprintFilters, input, contextOption, contextDomain);
+  bool hasMatch = hasMatchingFilters(noFingerprintFilters, numNoFingerprintFilters, input, inputLen, contextOption, contextDomain);
   // If no noFingerprintFilters were hit, check the bloom filter substring fingerprint for the normal
   // filter list.   If no substring exists for the input then we know for sure the URL should not be blocked.
   if (!hasMatch && bloomFilter && !bloomFilter->substringExists(input, fingerprintSize)) {
@@ -348,7 +343,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
 
   // We need to check the filters list manually because there is either a match or a false positive
   if (!hasMatch) {
-    hasMatch = hasMatchingFilters(filters, numFilters, input, contextOption, contextDomain);
+    hasMatch = hasMatchingFilters(filters, numFilters, input, inputLen, contextOption, contextDomain);
   }
 
   // If there's still no match after checking the block filters, then no need to try to block this
@@ -363,7 +358,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
   }
 
   // If there's a matching no fingerprint exception then we can just return right away because we shouldn't block
-  if (hasMatchingFilters(noFingerprintExceptionFilters, numNoFingerprintExceptionFilters, input, contextOption, contextDomain)) {
+  if (hasMatchingFilters(noFingerprintExceptionFilters, numNoFingerprintExceptionFilters, input, inputLen, contextOption, contextDomain)) {
     return false;
   }
 
@@ -374,7 +369,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
   }
 
   // No bloom filter exception rule hit so it's either a false positive or a match, check to make sure
-  if (hasMatchingFilters(exceptionFilters, numExceptionFilters, input, contextOption, contextDomain)) {
+  if (hasMatchingFilters(exceptionFilters, numExceptionFilters, input, inputLen, contextOption, contextDomain)) {
     // False positive on the exception filter list
     numExceptionFalsePositives++;
 #ifdef PERF_STATS

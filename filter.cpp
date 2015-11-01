@@ -13,6 +13,7 @@ Filter::Filter() :
   filterOption(FONoFilterOption),
   antiFilterOption(FONoFilterOption),
   data(nullptr),
+  dataLen(-1),
   domainList(nullptr),
   host(nullptr) {
 }
@@ -37,6 +38,7 @@ void Filter::swap(Filter &other) {
   FilterOption tempFilterOption = filterOption;
   FilterOption tempAntiFilterOption = antiFilterOption;
   char *tempData = data;
+  int tempDataLen = dataLen;
   char *tempDomainList = domainList;
   char *tempHost = host;
 
@@ -44,6 +46,7 @@ void Filter::swap(Filter &other) {
   filterOption = other.filterOption;
   antiFilterOption = other.antiFilterOption;
   data = other.data;
+  dataLen = other.dataLen;
   domainList = other.domainList;
   host = other.host;
 
@@ -51,6 +54,7 @@ void Filter::swap(Filter &other) {
   other.filterOption = tempFilterOption;
   other.antiFilterOption = tempAntiFilterOption;
   other.data = tempData;
+  other.dataLen = tempDataLen;
   other.domainList = tempDomainList;
   other.host = tempHost;
 }
@@ -74,9 +78,6 @@ const char * getUrlHost(const char *input, int &len) {
     q++;
   }
   len = findFirstSeparatorChar(p, q);
-  if (len == -1) {
-    len = strlen(p);
-  }
   return p;
 }
 
@@ -388,6 +389,10 @@ int indexOfFilter(const char* input, const char *filterPosStart, const char *fil
 }
 
 bool Filter::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
+  return matches(input, strlen(input), contextOption, contextDomain);
+}
+
+bool Filter::matches(const char *input, int inputLen, FilterOption contextOption, const char *contextDomain) {
   if (!matchesOptions(input, contextOption, contextDomain)) {
     return false;
   }
@@ -395,8 +400,11 @@ bool Filter::matches(const char *input, FilterOption contextOption, const char *
   if (!data) {
     return false;
   }
-  int dataLen = strlen(data);
-  int inputLen = strlen(input);
+
+  // We lazily figure out the dataLen only once
+  if (dataLen == -1) {
+    dataLen = strlen(data);
+  }
 
   // Check for a regex match
   if (filterType & FTRegex) {
