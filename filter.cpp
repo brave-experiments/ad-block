@@ -334,10 +334,9 @@ int indexOf(const char *source, const char *filterPartStart, const char *filterP
  * Similar to str1.indexOf(filter, startingPos) but with
  * extra consideration to some ABP filter rules like ^.
  */
-int indexOfFilter(const char* input, const char *filterPosStart, const char *filterPosEnd) {
+int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, const char *filterPosEnd) {
   bool prefixedSeparatorChar = false;
   int filterLen = filterPosEnd - filterPosStart;
-  int inputLen = strlen(input);
   int index = 0;
   int beginIndex = -1;
   if (filterLen > inputLen) {
@@ -447,7 +446,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
     const char *currentHost = getUrlHost(input, currentHostLen);
     int hostLen = strlen(host);
     return !isThirdPartyHost(host, hostLen, currentHost, currentHostLen) &&
-      indexOfFilter(input, data, filterPartEnd) != -1;
+      indexOfFilter(input, inputLen, data, filterPartEnd) != -1;
   }
 
   // Wildcard match comparison
@@ -456,7 +455,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
   int index = 0;
   while (filterPartStart != filterPartEnd) {
     int filterPartLen = filterPartEnd - filterPartStart;
-    int newIndex = indexOfFilter(input + index, filterPartStart, filterPartEnd);
+    int newIndex = indexOfFilter(input + index, inputLen - index, filterPartStart, filterPartEnd);
     if (newIndex == -1) {
       return false;
     }
