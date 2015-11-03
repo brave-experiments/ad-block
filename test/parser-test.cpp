@@ -460,6 +460,13 @@ TEST(parser, optionRules)
       new OptionRuleData("http://example.com/advert.html", FOScript, nullptr, true),
     }
   ));
+
+  // Single matching context domain to domain list
+  CHECK(checkOptionRule("||mzstatic.com^$image,object-subrequest,domain=dailymotion.com",
+    {
+      new OptionRuleData("http://www.dailymotion.com", FONoFilterOption, "dailymotion.com", false),
+    }
+  ));
 }
 
 // Should parse EasyList without failing

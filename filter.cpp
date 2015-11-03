@@ -259,7 +259,8 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
 
   // Domain options check
   if (domainList && contextDomain) {
-    int bufSize = strlen(domainList) + 1;
+    // + 2 because we always end in a |\0 for these buffers
+    int bufSize = strlen(domainList) + 2;
     char *shouldBlockDomains = new char[bufSize];
     char *shouldSkipDomains = new char[bufSize];
     memset(shouldBlockDomains, 0, bufSize);
