@@ -44,28 +44,29 @@ bool getFingerprint(char *buffer, const char *input) {
     return false;
   }
 
+  std::string strInput(input);
   for (unsigned int  i = 0; i < sizeof(fingerprintRegexs) / sizeof(fingerprintRegexs[0]); i++) {
     std::smatch m;
     std::regex e (fingerprintRegexs[i], std::regex_constants::extended);
-    std::regex_search(std::string(input), m, e);
-
-    if (m.size() < 2 || m[1].length() == 0) {
+    if (!std::regex_search(strInput, m, e) || m.size() < 2) {
       return false;
     }
 
+    std::ssub_match subMatch = m[1];
+    std::string curMatch = subMatch.str();
+
     bool fingerprintStillGood = true;
-    std::for_each(badFingerprints, badFingerprints + sizeof(badFingerprints) / sizeof(badFingerprints[0]), [&fingerprintStillGood, &m](std::string const &bad) {
+    std::for_each(badFingerprints, badFingerprints + sizeof(badFingerprints) / sizeof(badFingerprints[0]), [&fingerprintStillGood, &curMatch](std::string const &bad) {
       if (!fingerprintStillGood) {
         return;
       }
-      std::string curMatch = m[1];
+
       fingerprintStillGood = fingerprintStillGood && strcmp(curMatch.c_str(), bad.c_str());
     });
-    std::for_each(badSubstrings, badSubstrings + sizeof(badSubstrings) / sizeof(badSubstrings[0]), [&fingerprintStillGood, &m](std::string const &bad) {
+    std::for_each(badSubstrings, badSubstrings + sizeof(badSubstrings) / sizeof(badSubstrings[0]), [&fingerprintStillGood, &curMatch](std::string const &bad) {
       if (!fingerprintStillGood) {
         return;
       }
-      std::string curMatch = m[1];
       fingerprintStillGood = fingerprintStillGood && !strstr(curMatch.c_str(), bad.c_str());
     });
 
