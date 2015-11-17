@@ -273,6 +273,9 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
     int shouldBlockDomainsLen = strlen(shouldBlockDomains);
     int shouldSkipDomainsLen = strlen(shouldSkipDomains);
 
+    delete[] shouldBlockDomains;
+    delete[] shouldSkipDomains;
+
     if ((shouldBlockDomainsLen == 0 && getDomainCount() != 0) ||
         (shouldBlockDomainsLen > 0 && leftOverBlocking == 0) ||
         (shouldSkipDomainsLen > 0 && leftOverSkipping > 0)) {
