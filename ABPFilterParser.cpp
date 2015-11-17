@@ -401,6 +401,12 @@ void ABPFilterParser::initExceptionBloomFilter(const char *buffer, int len) {
   }
 }
 
+void setFilterBorrowedMemory(Filter *filters, int numFilters) {
+  for (int i = 0; i < numFilters; i++) {
+    filters[i].borrowedData = true;
+  }
+}
+
 // Parses the filter data into a few collections of filters and enables efficent querying
 bool ABPFilterParser::parse(const char *input) {
 #ifndef DISABLE_REGEX
@@ -499,6 +505,19 @@ bool ABPFilterParser::parse(const char *input) {
     memcpy(newExceptionFilters, exceptionFilters, sizeof(Filter) * numExceptionFilters);
     memcpy(newNoFingerprintFilters, noFingerprintFilters, sizeof(Filter) * (numNoFingerprintFilters));
     memcpy(newNoFingerprintExceptionFilters, noFingerprintExceptionFilters, sizeof(Filter) * (numNoFingerprintExceptionFilters));
+
+    // Free up the old memory for filter storage
+    // Set the old filter lists borrwedMemory to true since it'll be taken by the new filters.
+    setFilterBorrowedMemory(filters, numFilters);
+    setFilterBorrowedMemory(htmlRuleFilters, numHtmlRuleFilters);
+    setFilterBorrowedMemory(exceptionFilters, numExceptionFilters);
+    setFilterBorrowedMemory(noFingerprintFilters, numNoFingerprintFilters);
+    setFilterBorrowedMemory(noFingerprintExceptionFilters, numNoFingerprintExceptionFilters);
+    delete[] filters;
+    delete[] htmlRuleFilters;
+    delete[] exceptionFilters;
+    delete[] noFingerprintFilters;
+    delete[] noFingerprintExceptionFilters;
 
     // Adjust the current pointers to be just after the copied in data
     curFilters += numFilters;
