@@ -639,7 +639,7 @@ char * ABPFilterParser::serialize(int &totalSize, bool ignoreHTMLFilters) {
 
   // Get the number of bytes that we'll need
   char sz[512];
-  totalSize += sprintf(sz, "%x,%x,%x,%x,%x,%x,%x", numFilters, numExceptionFilters, adjustedNumHTMLFilters, numNoFingerprintFilters, numNoFingerprintExceptionFilters, bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0);
+  totalSize += 1 + sprintf(sz, "%x,%x,%x,%x,%x,%x,%x", numFilters, numExceptionFilters, adjustedNumHTMLFilters, numNoFingerprintFilters, numNoFingerprintExceptionFilters, bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0);
   totalSize += serializeFilters(nullptr, filters, numFilters) +
     serializeFilters(nullptr, exceptionFilters, numExceptionFilters) +
     serializeFilters(nullptr, htmlRuleFilters, adjustedNumHTMLFilters) +

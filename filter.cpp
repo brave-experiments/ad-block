@@ -158,38 +158,38 @@ void Filter::parseOption(const char *input, int len) {
     len --;
   }
 
-  if (len >= 7 && !memcmp(pStart, "domain=", 7)) {
+  if (len >= 7 && !strncmp(pStart, "domain=", 7)) {
     len -= 7;
     domainList = new char[len + 1];
     domainList[len] = '\0';
     memcpy(domainList, pStart + 7, len);
-  } else if (!memcmp(pStart, "script", len)) {
+  } else if (!strncmp(pStart, "script", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOScript);
-  } else if (!memcmp(pStart, "image", len)) {
+  } else if (!strncmp(pStart, "image", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOImage);
-  } else if (!memcmp(pStart, "stylesheet", len)) {
+  } else if (!strncmp(pStart, "stylesheet", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOStylesheet);
-  } else if (!memcmp(pStart, "object", len)) {
+  } else if (!strncmp(pStart, "object", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOObject);
-  } else if (!memcmp(pStart, "xmlhttprequest", len)) {
+  } else if (!strncmp(pStart, "xmlhttprequest", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOXmlHttpRequest);
-  } else if (!memcmp(pStart, "object-subrequest", len)) {
+  } else if (!strncmp(pStart, "object-subrequest", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOObjectSubrequest);
-  } else if (!memcmp(pStart, "subdocument", len)) {
+  } else if (!strncmp(pStart, "subdocument", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOSubdocument);
-  } else if (!memcmp(pStart, "document", len)) {
+  } else if (!strncmp(pStart, "document", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FODocument);
-  } else if (!memcmp(pStart, "xbl", len)) {
+  } else if (!strncmp(pStart, "xbl", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOXBL);
-  } else if (!memcmp(pStart, "collapse", len)) {
+  } else if (!strncmp(pStart, "collapse", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOCollapse);
-  } else if (!memcmp(pStart, "donottrack", len)) {
+  } else if (!strncmp(pStart, "donottrack", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FODoNotTrack);
-  } else if (!memcmp(pStart, "other", len)) {
+  } else if (!strncmp(pStart, "other", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOOther);
-  } else if (!memcmp(pStart, "elemhide", len)) {
+  } else if (!strncmp(pStart, "elemhide", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOElemHide);
-  } else if (!memcmp(pStart, "third-party", len)) {
+  } else if (!strncmp(pStart, "third-party", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOThirdParty);
   }
   // Otherwise just ignore the option, maybe something new we don't support yet
@@ -232,6 +232,11 @@ bool endsWith(const char *input, const char *sub, int inputLen, int subLen) {
 bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen, const char *testHost, int testHostLen) {
   if (!endsWith(testHost, baseContextHost, testHostLen, baseContextHostLen)) {
     return true;
+  }
+
+  // baseContextHost matches testHost exactly
+  if (testHostLen == baseContextHostLen) {
+    return false;
   }
 
   char c = testHost[testHostLen - baseContextHostLen - 1];
@@ -498,8 +503,8 @@ void Filter::filterDomainList(const char *domainList, char *destBuffer, const ch
         // We're only considering domains, not anti domains
         if (!anti && len > 0 && *domain != '~') {
           memcpy(curDest, domain, len);
-          curDest[len + 1] = '|';
-          curDest[len + 2] = '\0';
+          curDest[len] = '|';
+          curDest[len + 1] = '\0';
         } else if (anti && len > 0 && *domain == '~') {
           memcpy(curDest, domain + 1, len - 1);
           curDest[len] = '|';
