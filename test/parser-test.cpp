@@ -513,13 +513,30 @@ TEST(demoApp, demoApp2)
   const char *urlToCheck = "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html";
   const char *currentPageDomain = "slashdot.org";
   CHECK(parser.matches(urlToCheck, FOScript, currentPageDomain));
+
+}
+
+TEST(hostAnchoredFiltersParseCorrectly, hostAnchoredFiltersParseCorrectly2)
+{
+  // Host anchor is calculated correctly
+  Filter filter;
+  parseFilter("||test.com$third-party", filter);
+  CHECK(!strcmp("test.com", filter.host));
+
+  Filter filter2;
+  parseFilter("||test.com/ok$third-party", filter2);
+  CHECK(!strcmp("test.com", filter2.host));
+
+  Filter filter3;
+  parseFilter("||test.com/ok", filter3);
+  CHECK(!strcmp("test.com", filter3.host));
 }
 
 TEST(misc, misc2)
 {
   for (int i = 0; i < 256; i++) {
     if (i == (int)':' || i == (int)'?' || i == (int)'/' ||
-        i == (int)'=' || i == (int)'^') {
+        i == (int)'=' || i == (int)'^' || i == (int)'$') {
       CHECK(isSeparatorChar((char)i));
     } else {
       CHECK(!isSeparatorChar((int)(char)i));

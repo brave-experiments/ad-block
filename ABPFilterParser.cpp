@@ -101,7 +101,7 @@ bool getFingerprint(char *buffer, const char *input) {
 }
 
 // Separator chars are one of: :?/=^;
-char separatorBuffer[32] = { 0, 0, 0, 0, 0, -128, 0, -92, 0, 0, 0, 64 };
+char separatorBuffer[32] = { 0, 0, 0, 0, 16, -128, 0, -92, 0, 0, 0, 64 };
 bool isSeparatorChar(char c) {
   return !!(separatorBuffer[(unsigned char)c / 8] & 1 << (unsigned char)c % 8);
 }
