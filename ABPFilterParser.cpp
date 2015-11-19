@@ -518,10 +518,10 @@ bool ABPFilterParser::parse(const char *input) {
   // then we can determine the fingerprints for the bloom filter.
   // Otherwise it needs to be done manually via initBloomFilter and initExceptionBloomFilter
   if (!bloomFilter) {
-    bloomFilter = new BloomFilter();
+    bloomFilter = new BloomFilter(10, 40000);
   }
   if (!exceptionBloomFilter) {
-    exceptionBloomFilter = new BloomFilter();
+    exceptionBloomFilter = new BloomFilter(10, 10000);
   }
   if (!hostAnchoredHashSet) {
     // Optimized to be 1:1 with the easylist number of host anchored hosts
