@@ -816,10 +816,12 @@ char * ABPFilterParser::serialize(int &totalSize, bool ignoreHTMLFilters) {
   if (hostAnchoredHashSet) {
     memcpy(buffer + pos, hostAnchoredHashSetBuffer, hostAnchoredHashSetSize);
     pos += hostAnchoredHashSetSize;
+    delete hostAnchoredHashSetBuffer;
   }
   if (hostAnchoredExceptionHashSet) {
     memcpy(buffer + pos, hostAnchoredExceptionHashSetBuffer, hostAnchoredExceptionHashSetSize);
     pos += hostAnchoredExceptionHashSetSize;
+    delete hostAnchoredExceptionHashSetBuffer;
   }
   return buffer;
 }
