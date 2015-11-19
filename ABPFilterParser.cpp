@@ -524,10 +524,12 @@ bool ABPFilterParser::parse(const char *input) {
     exceptionBloomFilter = new BloomFilter();
   }
   if (!hostAnchoredHashSet) {
-    hostAnchoredHashSet = new HashSet<Filter>(256);
+    // Optimized to be 1:1 with the easylist number of host anchored hosts
+    hostAnchoredHashSet = new HashSet<Filter>(5395);
   }
   if (!hostAnchoredExceptionHashSet) {
-    hostAnchoredExceptionHashSet = new HashSet<Filter>(256);
+    // Optimized to be 1:1 with the easylist number of host anchored exception hosts
+    hostAnchoredExceptionHashSet = new HashSet<Filter>(428);
   }
 
   const char *p = input;
