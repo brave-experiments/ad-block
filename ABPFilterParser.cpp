@@ -7,13 +7,10 @@
 using namespace std;
 #endif
 
-#ifndef DISABLE_REGEX
-#include <string>
-#include <regex>
-#include <algorithm>
-#include <functional>
+#include <iostream>
+using namespace std;
+
 #include "badFingerprints.h"
-#endif
 
 const int maxLineLength = 2048;
 
@@ -25,79 +22,119 @@ enum FilterParseState {
   FPData
 };
 
-static const int fingerprintSize = 8;
-#ifndef DISABLE_REGEX
-static const char* fingerprintRegexs[2] = {
-  ".*([./&_\\-=a-zA-Z0-9]{8})\\$?.*",
-  "([./&_\\-=a-zA-Z0-9]{8})\\$?.*",
-};
-#endif
+static const int fingerprintSize = 6;
+
+/**
+ * Finds the host within the passed in URL and returns its length
+ */
+const char * getUrlHost(const char *input, int &len) {
+  const char *p = input;
+  while (*p != '\0' && *p != ':') {
+    p++;
+  }
+  if (*p != '\0') {
+    p++;
+    while (*p != '\0' && *p == '/') {
+      p++;
+    }
+  }
+  const char *q = p;
+  while (*q != '\0') {
+    q++;
+  }
+  len = findFirstSeparatorChar(p, q);
+  return p;
+}
+
+
+inline bool isFingerprintChar(char c) {
+  return c != '|' && c != '*' && c != '^';
+}
+
+bool isBadFingerprint(const char *fingerprint, const char * fingerprintEnd) {
+  for (unsigned int i = 0; i < sizeof(badFingerprints)/sizeof(badFingerprints[0]); i++) {
+    if(!strncmp(badFingerprints[i], fingerprint, fingerprintEnd - fingerprint)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool hasBadSubstring(const char *fingerprint, const char * fingerprintEnd) {
+  for (unsigned int i = 0; i < sizeof(badSubstrings)/sizeof(badSubstrings[0]); i++) {
+    const char * p = strstr(fingerprint, badSubstrings[i]);
+    if (p && (p - fingerprint) + strlen(badSubstrings[i]) <= (unsigned int)(fingerprintEnd - fingerprint)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Obtains a fingerprint for the specified filter
  */
 bool getFingerprint(char *buffer, const char *input) {
-#ifdef DISABLE_REGEX
-  return false;
-#else
   if (!input) {
     return false;
   }
-
-  std::string strInput(input);
-  for (unsigned int  i = 0; i < sizeof(fingerprintRegexs) / sizeof(fingerprintRegexs[0]); i++) {
-    std::smatch m;
-    std::regex e (fingerprintRegexs[i], std::regex_constants::extended);
-    if (!std::regex_search(strInput, m, e) || m.size() < 2) {
-      return false;
-    }
-
-    std::ssub_match subMatch = m[1];
-    std::string curMatch = subMatch.str();
-
-    bool fingerprintStillGood = true;
-    std::for_each(badFingerprints, badFingerprints + sizeof(badFingerprints) / sizeof(badFingerprints[0]), [&fingerprintStillGood, &curMatch](std::string const &bad) {
-      if (!fingerprintStillGood) {
-        return;
-      }
-
-      fingerprintStillGood = fingerprintStillGood && strcmp(curMatch.c_str(), bad.c_str());
-    });
-    std::for_each(badSubstrings, badSubstrings + sizeof(badSubstrings) / sizeof(badSubstrings[0]), [&fingerprintStillGood, &curMatch](std::string const &bad) {
-      if (!fingerprintStillGood) {
-        return;
-      }
-      fingerprintStillGood = fingerprintStillGood && !strstr(curMatch.c_str(), bad.c_str());
-    });
-
-    if (!fingerprintStillGood) {
+  int size = 0;
+  const char *p = input;
+  const char *start = input;
+  while (*p != '\0') {
+    if (!isFingerprintChar(*p)) {
+      size = 0;
+      p++;
+      start = p;
       continue;
     }
-
-    // Sometimes the caller only cares if there is a match and not what the match is
     if (buffer) {
-      std::string curMatch = m[1];
-      strcpy(buffer, curMatch.c_str());
-#ifdef PERF_STATS
-    cout << "extracted buffer: " << buffer << endl;
-#endif
+      buffer[size] = *p;
     }
-    return true;
+    if (hasBadSubstring(start, start + size + 1)) {
+      size = 0;
+      start++;
+      p = start;
+      continue;
+    }
+    size++;
+
+    if (size == fingerprintSize) {
+      if (buffer) {
+        buffer[size] = '\0';
+      }
+      if (isBadFingerprint(start, start + size)) {
+        size = 0;
+        start++;
+        p = start;
+        continue;
+      }
+      return true;
+    }
+    p++;
   }
-  // This is pretty ugly but getting fingerprints is assumed to be used only when preprocessing and
-  // NOT in a live environment.
-  if (strlen(input) > 9) {
-    // Remove first and last char
-    int inputLen = strlen(input);
-    char *newInput = new char[inputLen - 1];
-    memcpy(newInput, input + 1, inputLen - 2);
-    newInput[inputLen - 2] = '\0';
-    bool foundNew = getFingerprint(buffer, newInput);
-    delete[] newInput;
-    return foundNew;
+  if (buffer) {
+    buffer[0] = '\0';
   }
   return false;
-#endif
+}
+
+bool getFingerprint(char *buffer, Filter &f) {
+  if (f.filterType & FTRegex) {
+    // cout << "Get fingerprint for regex returning false; " << endl;
+    return false;
+  }
+
+  if (f.filterType & FTHostAnchored) {
+    if (getFingerprint(buffer, f.data + strlen(f.host))) {
+      return true;
+    }
+  }
+
+  bool b = getFingerprint(buffer, f.data);
+  // if (!b && f.data) {
+  //   cout << "No fingerprint for: " << f.data << endl;
+  // }
+  return b;
 }
 
 // Separator chars are one of: :?/=^;
@@ -117,14 +154,14 @@ int findFirstSeparatorChar(const char *input, const char *end) {
   return end - input;
 }
 
-void parseFilter(const char *input, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter) {
+void parseFilter(const char *input, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter, HashSet<Filter> *hostAnchoredHashSet, HashSet<Filter> *hostAnchoredExceptionHashSet) {
   const char *end = input;
   while (*end != '\0') end++;
-  parseFilter(input, end, f, bloomFilter, exceptionBloomFilter);
+  parseFilter(input, end, f, bloomFilter, exceptionBloomFilter, hostAnchoredHashSet, hostAnchoredExceptionHashSet);
 }
 
 // Not currently multithreaded safe due to the static buffer named 'data'
-void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter) {
+void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter, HashSet<Filter> *hostAnchoredHashSet, HashSet<Filter> *hostAnchoredExceptionHashSet) {
   FilterParseState parseState = FPStart;
   const char *p = input;
   char data[maxLineLength];
@@ -143,7 +180,6 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
       f.filterType = static_cast<FilterType>(f.filterType | FTLeftAnchored);
     }
 
-
     switch (*p) {
       case '|':
         if (parseState == FPStart || parseState == FPPastWhitespace) {
@@ -160,6 +196,11 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
           f.host = new char[len + 1];
           f.host[len] = '\0';
           memcpy(f.host, p, len);
+
+          if ((*(p + len) == '^' && (*(p + len + 1) == '\0' || *(p + len + 1) == '$' || *(p + len + 1) == '\n')) ||
+              *(p + len) == '\0' || *(p + len) == '$' || *(p + len) == '\n') {
+            f.filterType = static_cast<FilterType>(f.filterType | FTHostOnly);
+          }
 
           continue;
         } else {
@@ -245,20 +286,23 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
   f.data = new char[i + 1];
   memcpy(f.data, data, i + 1);
 
-#ifndef DISABLE_REGEX
   char fingerprintBuffer[fingerprintSize + 1];
   fingerprintBuffer[fingerprintSize] = '\0';
-  if (getFingerprint(fingerprintBuffer, f.data)) {
+
+  if (exceptionBloomFilter && (f.filterType & FTException) && (f.filterType & FTHostOnly)) {
+    // cout << "add host anchored exception bloom filter: " << f.host << endl;
+    hostAnchoredExceptionHashSet->add(f);
+  } else if (hostAnchoredHashSet && (f.filterType & FTHostOnly)) {
+    // cout << "add host anchored bloom filter: " << f.host << endl;
+    hostAnchoredHashSet->add(f);
+  } else if (getFingerprint(fingerprintBuffer, f)) {
     if (exceptionBloomFilter && f.filterType & FTException) {
       exceptionBloomFilter->add(fingerprintBuffer);
     } else if (bloomFilter) {
-#ifdef PERF_STATS
-      cout << "add fingerprint: " << fingerprintBuffer << endl;
-#endif
+      // cout << "add fingerprint: " << fingerprintBuffer << ", from string: " << f.data << endl;
       bloomFilter->add(fingerprintBuffer);
     }
   }
-#endif
 }
 
 
@@ -272,8 +316,13 @@ ABPFilterParser::ABPFilterParser() : filters(nullptr),
   numExceptionFilters(0),
   numNoFingerprintFilters(0),
   numNoFingerprintExceptionFilters(0),
+  numHostAnchoredFilters(0),
+  numHostAnchoredExceptionFilters(0),
   bloomFilter(nullptr),
   exceptionBloomFilter(nullptr),
+  hostAnchoredHashSet(nullptr),
+  hostAnchoredExceptionHashSet(nullptr),
+  badFingerprintsHashSet(nullptr),
   numFalsePositives(0),
   numExceptionFalsePositives(0),
   numBloomFilterSaves(0),
@@ -302,6 +351,15 @@ ABPFilterParser::~ABPFilterParser() {
   if (exceptionBloomFilter) {
     delete exceptionBloomFilter;
   }
+  if (hostAnchoredHashSet) {
+    delete hostAnchoredHashSet;
+  }
+  if (hostAnchoredExceptionHashSet) {
+    delete hostAnchoredExceptionHashSet;
+  }
+  if (badFingerprintsHashSet) {
+    delete badFingerprintsHashSet;
+  }
 }
 
 bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain) {
@@ -314,48 +372,90 @@ bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const 
   return false;
 }
 
-#ifdef PERF_STATS
-void discoverMatchingPrefix(const char *str, BloomFilter *bloomFilter, int prefixLen = fingerprintSize) {
+void discoverMatchingPrefix(BadFingerprintsHashSet *badFingerprintsHashSet, const char *str, BloomFilter *bloomFilter, int prefixLen = fingerprintSize) {
   char sz[32];
   memset(sz, 0, sizeof(sz));
   int strLen = strlen(str);
   for (int i = 0; i < strLen - prefixLen + 1; i++) {
     if (bloomFilter->exists(str + i, prefixLen)) {
       memcpy(sz, str + i, prefixLen);
-      cout <<  "Bad fingerprint: " << sz << endl;
+      // cout <<  "Bad fingerprint: " << sz << endl;
+      if (badFingerprintsHashSet) {
+        badFingerprintsHashSet->add(BadFingerprint(sz));
+      }
     } else {
       // memcpy(sz, str + i, prefixLen);
       // cout <<  "Good fingerprint: " << sz;
     }
   }
 }
-#endif
+
+bool isHostAnchoredHashSetMiss(const char *input, int inputLen, HashSet<Filter> *hashSet, const char *inputHost, int inputHostLen, FilterOption contextOption, const char *contextDomain) {
+  if (!hashSet) {
+    return false;
+  }
+
+  const char *start = inputHost + inputHostLen;
+  // Skip past the TLD
+  while (start != inputHost) {
+    start--;
+    if (*(start) == '.') {
+      break;
+    }
+  }
+
+  while (start != inputHost) {
+    if (*(start - 1) == '.') {
+      Filter *filter = hashSet->find(Filter(start, inputHost + inputHostLen - start, nullptr, start));
+      if (filter && filter->matches(input, inputLen, contextOption, contextDomain)) {
+        return false;
+      }
+    }
+    start--;
+  }
+
+  Filter *filter = hashSet->find(Filter(start, inputHost + inputHostLen - start, nullptr, start));
+  if (!filter) {
+    return true;
+  }
+  return !filter->matches(input, inputLen, contextOption, contextDomain);
+}
 
 bool ABPFilterParser::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
   int inputLen = strlen(input);
+  int inputHostLen;
+  const char *inputHost = getUrlHost(input, inputHostLen);
+
   // We always have to check noFingerprintFilters because the bloom filter opt cannot be used for them
   bool hasMatch = hasMatchingFilters(noFingerprintFilters, numNoFingerprintFilters, input, inputLen, contextOption, contextDomain);
   // If no noFingerprintFilters were hit, check the bloom filter substring fingerprint for the normal
   // filter list.   If no substring exists for the input then we know for sure the URL should not be blocked.
-  if (!hasMatch && bloomFilter && !bloomFilter->substringExists(input, fingerprintSize)) {
-    numBloomFilterSaves++;
-    return false;
+  bool bloomFilterMiss = false;
+  bool hostAnchoredHashSetMiss = false;
+  if (!hasMatch) {
+    bloomFilterMiss = bloomFilter && !bloomFilter->substringExists(input, fingerprintSize);
+    hostAnchoredHashSetMiss = isHostAnchoredHashSetMiss(input, inputLen, hostAnchoredHashSet, inputHost, inputHostLen, contextOption, contextDomain);
+    if (bloomFilterMiss && hostAnchoredHashSetMiss) {
+      numBloomFilterSaves++;
+      return false;
+    }
+
+    hasMatch = !hostAnchoredHashSetMiss;
   }
 
   // We need to check the filters list manually because there is either a match or a false positive
-  if (!hasMatch) {
+  if (!hasMatch && !bloomFilterMiss) {
     hasMatch = hasMatchingFilters(filters, numFilters, input, inputLen, contextOption, contextDomain);
-  }
-
-  // If there's still no match after checking the block filters, then no need to try to block this
-  // because there is a false positive.
-  if (!hasMatch) {
-    numFalsePositives++;
-#ifdef PERF_STATS
-    cout << "false positive for input: " << input << endl;
-    discoverMatchingPrefix(input, bloomFilter);
-#endif
-    return false;
+    // If there's still no match after checking the block filters, then no need to try to block this
+    // because there is a false positive.
+    if (!hasMatch) {
+      numFalsePositives++;
+      if (badFingerprintsHashSet) {
+        // cout << "false positive for input: " << input << " bloomFilterMiss: " << bloomFilterMiss << ", hostAnchoredHashSetMiss: " << hostAnchoredHashSetMiss << endl;
+        discoverMatchingPrefix(badFingerprintsHashSet, input, bloomFilter);
+      }
+      return false;
+    }
   }
 
   // If there's a matching no fingerprint exception then we can just return right away because we shouldn't block
@@ -363,41 +463,46 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
     return false;
   }
 
+  bool bloomExceptionFilterMiss = exceptionBloomFilter && !exceptionBloomFilter->substringExists(input, fingerprintSize);
+  bool hostAnchoredExceptionHashSetMiss = isHostAnchoredHashSetMiss(input, inputLen, hostAnchoredExceptionHashSet, inputHost, inputHostLen, contextOption, contextDomain);
+
   // Now that we have a matching rule, we should check if no exception rule hits, if none hits, we should block
-  if (exceptionBloomFilter && !exceptionBloomFilter->substringExists(input, fingerprintSize)) {
+  if (bloomExceptionFilterMiss && hostAnchoredExceptionHashSetMiss) {
     numExceptionBloomFilterSaves++;
     return true;
   }
 
-  // No bloom filter exception rule hit so it's either a false positive or a match, check to make sure
-  if (hasMatchingFilters(exceptionFilters, numExceptionFilters, input, inputLen, contextOption, contextDomain)) {
-    // False positive on the exception filter list
-    numExceptionFalsePositives++;
-#ifdef PERF_STATS
-    cout << "exception false positive for input: " << input << endl;
-    discoverMatchingPrefix(input, exceptionBloomFilter);
-#endif
-    return false;
+  if (!bloomExceptionFilterMiss) {
+    if (!hasMatchingFilters(exceptionFilters, numExceptionFilters, input, inputLen, contextOption, contextDomain)) {
+      // False positive on the exception filter list
+      numExceptionFalsePositives++;
+      // cout << "exception false positive for input: " << input << endl;
+      if (badFingerprintsHashSet) {
+        discoverMatchingPrefix(badFingerprintsHashSet, input, exceptionBloomFilter);
+      }
+      return true;
+    }
   }
 
-  // Exception list confirmed we have an exception
-  return true;
+  return false;
 }
 
-void ABPFilterParser::initBloomFilter(const char *buffer, int len) {
-  if (bloomFilter) {
-    delete bloomFilter;
+void ABPFilterParser::initBloomFilter(BloomFilter **pp, const char *buffer, int len) {
+  if (*pp) {
+    delete *pp;
   }
   if (len > 0) {
-    bloomFilter = new BloomFilter(buffer, len);
+    *pp = new BloomFilter(buffer, len);
   }
 }
-void ABPFilterParser::initExceptionBloomFilter(const char *buffer, int len) {
-  if (exceptionBloomFilter) {
-    delete exceptionBloomFilter;
+
+void ABPFilterParser::initHashSet(HashSet<Filter> **pp, char *buffer, int len) {
+  if (*pp) {
+    delete *pp;
   }
   if (len > 0) {
-    exceptionBloomFilter = new BloomFilter(buffer, len);
+    *pp = new HashSet<Filter>(0);
+    (*pp)->deserialize(buffer, len);
   }
 }
 
@@ -409,7 +514,6 @@ void setFilterBorrowedMemory(Filter *filters, int numFilters) {
 
 // Parses the filter data into a few collections of filters and enables efficent querying
 bool ABPFilterParser::parse(const char *input) {
-#ifndef DISABLE_REGEX
   // If the user is parsing and we have regex support,
   // then we can determine the fingerprints for the bloom filter.
   // Otherwise it needs to be done manually via initBloomFilter and initExceptionBloomFilter
@@ -419,7 +523,12 @@ bool ABPFilterParser::parse(const char *input) {
   if (!exceptionBloomFilter) {
     exceptionBloomFilter = new BloomFilter();
   }
-#endif
+  if (!hostAnchoredHashSet) {
+    hostAnchoredHashSet = new HashSet<Filter>(256);
+  }
+  if (!hostAnchoredExceptionHashSet) {
+    hostAnchoredExceptionHashSet = new HashSet<Filter>(256);
+  }
 
   const char *p = input;
   const char *lineStart = p;
@@ -429,6 +538,8 @@ bool ABPFilterParser::parse(const char *input) {
   int newNumExceptionFilters = 0;
   int newNumNoFingerprintFilters = 0;
   int newNumNoFingerprintExceptionFilters = 0;
+  int newNumHostAnchoredFilters = 0;
+  int newNumHostAnchoredExceptionFilters = 0;
 
   // Parsing does 2 passes, one just to determine the type of information we'll need to setup.
   // Note that the library will be used on a variety of builds so sometimes we won't even have STL
@@ -439,7 +550,9 @@ bool ABPFilterParser::parse(const char *input) {
       parseFilter(lineStart, p, f);
       switch(f.filterType & FTListTypesMask) {
         case FTException:
-          if (getFingerprint(nullptr, f.data)) {
+          if (f.filterType & FTHostOnly) {
+            newNumHostAnchoredExceptionFilters++;
+          } else if (getFingerprint(nullptr, f)) {
             newNumExceptionFilters++;
           } else {
             newNumNoFingerprintExceptionFilters++;
@@ -456,7 +569,9 @@ bool ABPFilterParser::parse(const char *input) {
           // No need to store comments
           break;
         default:
-          if (getFingerprint(nullptr, f.data)) {
+          if (f.filterType & FTHostOnly) {
+            newNumHostAnchoredFilters++;
+          } else if (getFingerprint(nullptr, f)) {
             newNumFilters++;
           } else {
             newNumNoFingerprintFilters++;
@@ -475,8 +590,14 @@ bool ABPFilterParser::parse(const char *input) {
 
 
 #ifdef PERF_STATS
-  cout << "Num no fingerprint filters: " << numNoFingerprintFilters << endl;
-  cout << "Num no fingerprint exception filters: " << numNoFingerprintExceptionFilters << endl;
+  cout << "Fingerprint size: " << fingerprintSize << endl;
+  cout << "Num new filters: " << newNumFilters << endl;
+  cout << "Num new HTML rule filters: " << newNumHtmlRuleFilters << endl;
+  cout << "Num new exception filters: " << newNumExceptionFilters << endl;
+  cout << "Num new no fingerprint filters: " << newNumNoFingerprintFilters << endl;
+  cout << "Num new no fingerprint exception filters: " << newNumNoFingerprintExceptionFilters << endl;
+  cout << "Num new host anchored filters: " << newNumHostAnchoredFilters << endl;
+  cout << "Num new host anchored exception filters: " << newNumHostAnchoredExceptionFilters << endl;
 #endif
 
   Filter *newFilters = new Filter[newNumFilters + numFilters];
@@ -498,7 +619,7 @@ bool ABPFilterParser::parse(const char *input) {
   Filter *curNoFingerprintExceptionFilters = newNoFingerprintExceptionFilters;
 
   // If we've had a parse before copy the old data into the new data structure
-  if (filters || htmlRuleFilters || exceptionFilters || noFingerprintFilters || noFingerprintExceptionFilters) {
+  if (filters || htmlRuleFilters || exceptionFilters || noFingerprintFilters || noFingerprintExceptionFilters /*|| hostAnchoredFilters || hostAnchoredExceptionFilters */) {
     // Copy the old data in
     memcpy(newFilters, filters, sizeof(Filter) * numFilters);
     memcpy(newHtmlRuleFilters, htmlRuleFilters, sizeof(Filter) * numHtmlRuleFilters);
@@ -533,6 +654,8 @@ bool ABPFilterParser::parse(const char *input) {
   numExceptionFilters += newNumExceptionFilters;
   numNoFingerprintFilters += newNumNoFingerprintFilters;
   numNoFingerprintExceptionFilters += newNumNoFingerprintExceptionFilters;
+  numHostAnchoredFilters += newNumHostAnchoredFilters;
+  numHostAnchoredExceptionFilters += newNumHostAnchoredExceptionFilters;
 
   // Adjust the new member list pointers
   filters = newFilters;
@@ -547,10 +670,12 @@ bool ABPFilterParser::parse(const char *input) {
   while (true) {
     if (*p == '\n' || *p == '\0') {
       Filter f;
-      parseFilter(lineStart, p, f, bloomFilter, exceptionBloomFilter);
+      parseFilter(lineStart, p, f, bloomFilter, exceptionBloomFilter, hostAnchoredHashSet, hostAnchoredExceptionHashSet);
       switch(f.filterType & FTListTypesMask) {
         case FTException:
-          if (getFingerprint(nullptr, f.data)) {
+          if (f.filterType & FTHostOnly) {
+            // do nothing, handled by hash set.
+          } else if (getFingerprint(nullptr, f)) {
             (*curExceptionFilters).swap(f);
             curExceptionFilters++;
           } else {
@@ -568,7 +693,9 @@ bool ABPFilterParser::parse(const char *input) {
           // No need to store
           break;
         default:
-          if (getFingerprint(nullptr, f.data)) {
+          if (f.filterType & FTHostOnly) {
+            // Do nothing
+          } else if (getFingerprint(nullptr, f)) {
             (*curFilters).swap(f);
             curFilters++;
           } else {
@@ -637,9 +764,22 @@ char * ABPFilterParser::serialize(int &totalSize, bool ignoreHTMLFilters) {
   totalSize = 0;
   int adjustedNumHTMLFilters = ignoreHTMLFilters ? 0 : numHtmlRuleFilters;
 
+  uint32_t hostAnchoredHashSetSize = 0;
+  char *hostAnchoredHashSetBuffer = nullptr;
+  if (hostAnchoredHashSet) {
+    hostAnchoredHashSetBuffer = hostAnchoredHashSet->serialize(hostAnchoredHashSetSize);
+  }
+
+  uint32_t hostAnchoredExceptionHashSetSize = 0;
+  char *hostAnchoredExceptionHashSetBuffer = nullptr;
+  if (hostAnchoredExceptionHashSet) {
+    hostAnchoredExceptionHashSetBuffer = hostAnchoredExceptionHashSet->serialize(hostAnchoredExceptionHashSetSize);
+  }
+
   // Get the number of bytes that we'll need
   char sz[512];
-  totalSize += 1 + sprintf(sz, "%x,%x,%x,%x,%x,%x,%x", numFilters, numExceptionFilters, adjustedNumHTMLFilters, numNoFingerprintFilters, numNoFingerprintExceptionFilters, bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0);
+  totalSize += 1 + sprintf(sz,  "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x", numFilters, numExceptionFilters, adjustedNumHTMLFilters, numNoFingerprintFilters, numNoFingerprintExceptionFilters, numHostAnchoredFilters, numHostAnchoredExceptionFilters,
+      bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0, hostAnchoredHashSetSize, hostAnchoredExceptionHashSetSize);
   totalSize += serializeFilters(nullptr, filters, numFilters) +
     serializeFilters(nullptr, exceptionFilters, numExceptionFilters) +
     serializeFilters(nullptr, htmlRuleFilters, adjustedNumHTMLFilters) +
@@ -647,6 +787,8 @@ char * ABPFilterParser::serialize(int &totalSize, bool ignoreHTMLFilters) {
     serializeFilters(nullptr, noFingerprintExceptionFilters, numNoFingerprintExceptionFilters);
   totalSize += bloomFilter ? bloomFilter->getByteBufferSize() : 0;
   totalSize += exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0;
+  totalSize += hostAnchoredHashSetSize;
+  totalSize += hostAnchoredExceptionHashSetSize;
 
   // Allocate it
   int pos = 0;
@@ -668,6 +810,14 @@ char * ABPFilterParser::serialize(int &totalSize, bool ignoreHTMLFilters) {
   if (exceptionBloomFilter) {
     memcpy(buffer + pos, exceptionBloomFilter->getBuffer(), exceptionBloomFilter->getByteBufferSize());
     pos += exceptionBloomFilter->getByteBufferSize();
+  }
+  if (hostAnchoredHashSet) {
+    memcpy(buffer + pos, hostAnchoredHashSetBuffer, hostAnchoredHashSetSize);
+    pos += hostAnchoredHashSetSize;
+  }
+  if (hostAnchoredExceptionHashSet) {
+    memcpy(buffer + pos, hostAnchoredExceptionHashSetBuffer, hostAnchoredExceptionHashSetSize);
+    pos += hostAnchoredExceptionHashSetSize;
   }
   return buffer;
 }
@@ -709,9 +859,9 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
 }
 
 void ABPFilterParser::deserialize(char *buffer) {
-  int bloomFilterSize = 0, exceptionBloomFilterSize = 0;
+  int bloomFilterSize = 0, exceptionBloomFilterSize = 0, hostAnchoredHashSetSize = 0, hostAnchoredExceptionHashSetSize = 0;
   int pos = 0;
-  sscanf(buffer + pos, "%x,%x,%x,%x,%x,%x,%x", &numFilters, &numExceptionFilters, &numHtmlRuleFilters, &numNoFingerprintFilters, &numNoFingerprintExceptionFilters, &bloomFilterSize, &exceptionBloomFilterSize);
+  sscanf(buffer + pos, "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x", &numFilters, &numExceptionFilters, &numHtmlRuleFilters, &numNoFingerprintFilters, &numNoFingerprintExceptionFilters, &numHostAnchoredFilters, &numHostAnchoredExceptionFilters, &bloomFilterSize, &exceptionBloomFilterSize, &hostAnchoredHashSetSize, &hostAnchoredExceptionHashSetSize);
   pos += strlen(buffer + pos) + 1;
 
   filters = new Filter[numFilters];
@@ -726,8 +876,23 @@ void ABPFilterParser::deserialize(char *buffer) {
   pos += deserializeFilters(buffer + pos, noFingerprintFilters, numNoFingerprintFilters);
   pos += deserializeFilters(buffer + pos, noFingerprintExceptionFilters, numNoFingerprintExceptionFilters);
 
-  initBloomFilter(buffer + pos, bloomFilterSize);
+  initBloomFilter(&bloomFilter, buffer + pos, bloomFilterSize);
   pos += bloomFilterSize;
-  initExceptionBloomFilter(buffer + pos, exceptionBloomFilterSize);
+  initBloomFilter(&exceptionBloomFilter, buffer + pos, exceptionBloomFilterSize);
   pos += exceptionBloomFilterSize;
+  initHashSet(&hostAnchoredHashSet, buffer + pos, hostAnchoredHashSetSize);
+  pos += hostAnchoredHashSetSize;
+  initHashSet(&hostAnchoredExceptionHashSet, buffer + pos, hostAnchoredExceptionHashSetSize);
+  pos += hostAnchoredExceptionHashSetSize;
+}
+
+void ABPFilterParser::enableBadFingerprintDetection() {
+  if (badFingerprintsHashSet) {
+    return;
+  }
+
+  badFingerprintsHashSet = new BadFingerprintsHashSet();
+  for (unsigned int i = 0; i < sizeof(badFingerprints)/sizeof(badFingerprints[0]); i++) {
+    badFingerprintsHashSet->add(BadFingerprint(badFingerprints[i]));
+  }
 }

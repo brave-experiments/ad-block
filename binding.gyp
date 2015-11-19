@@ -10,10 +10,12 @@
     ],
     "include_dirs": [
       ".",
-      "<!(node -e \"require('bloom-filter-cpp')\")"
+      "<!(node -e \"require('bloom-filter-cpp')\")",
+      "<!(node -e \"require('hashset-cpp')\")"
     ],
     "dependencies": [
-      "node_modules/bloom-filter-cpp/binding.gyp:bloom-filter-cpp"
+      "node_modules/bloom-filter-cpp/binding.gyp:bloom-filter-cpp",
+      "node_modules/hashset-cpp/binding.gyp:hashset-cpp"
     ],
     "conditions": [
       ['OS=="win"', {
@@ -39,10 +41,13 @@
       "filter.h",
       "./node_modules/bloom-filter-cpp/BloomFilter.cpp",
       "./node_modules/bloom-filter-cpp/BloomFilter.h",
+      "./node_modules/hashset-cpp/HashSet.cpp",
+      "./node_modules/hashset-cpp/HashSet.h"
     ],
     "include_dirs": [
       ".",
-      "<!(node -e \"require('bloom-filter-cpp')\")"
+      "<!(node -e \"require('bloom-filter-cpp')\")",
+      "<!(node -e \"require('hashset-cpp')\")"
     ],
     "conditions": [
       ['OS=="win"', {
@@ -69,10 +74,13 @@
       "filter.h",
       "./node_modules/bloom-filter-cpp/BloomFilter.cpp",
       "./node_modules/bloom-filter-cpp/BloomFilter.h",
+      "./node_modules/hashset-cpp/HashSet.cpp",
+      "./node_modules/hashset-cpp/HashSet.h"
     ],
     "include_dirs": [
       ".",
-      "<!(node -e \"require('bloom-filter-cpp')\")"
+      "<!(node -e \"require('bloom-filter-cpp')\")",
+      "<!(node -e \"require('hashset-cpp')\")"
     ],
     "defines": ["PERF_STATS"],
     "conditions": [
@@ -104,12 +112,15 @@
       "filter.h",
       "./node_modules/bloom-filter-cpp/BloomFilter.cpp",
       "./node_modules/bloom-filter-cpp/BloomFilter.h",
+      "./node_modules/hashset-cpp/HashSet.cpp",
+      "./node_modules/hashset-cpp/HashSet.h"
     ],
     "include_dirs": [
       ".",
       "<!(node -e \"require('cppunitlite')\")",
       "<!(node -e \"require('nan')\")",
-      "<!(node -e \"require('bloom-filter-cpp')\")"
+      "<!(node -e \"require('bloom-filter-cpp')\")",
+      "<!(node -e \"require('hashset-cpp')\")"
     ],
     "dependencies": [
       "node_modules/cppunitlite/binding.gyp:CppUnitLite",

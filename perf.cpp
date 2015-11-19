@@ -32,6 +32,9 @@ int main(int argc, char**argv) {
   // This is the site who's URLs are being checked, not the domain of the URL being checked.
   const char *currentPageDomain = "brianbondy.com";
   ABPFilterParser parser;
+  parser.enableBadFingerprintDetection();
+
+  //parser.parse("/public/ad/*");
   parser.parse(easyListTxt.c_str());
 
   int numBlocks = 0;
@@ -48,5 +51,6 @@ int main(int argc, char**argv) {
   cout << "num blocks: " << numBlocks << ", num skips: " << numSkips << endl;
   cout << "False Positives: " << parser.numFalsePositives << ", exception false positives: " << parser.numExceptionFalsePositives << endl;
   cout << "Bloom filter saves: " << parser.numBloomFilterSaves << ", exception bloom filter saves: " << parser.numExceptionBloomFilterSaves << endl;
+  parser.badFingerprintsHashSet->generateHeader("badFingerprints.h");
   return 0;
 }

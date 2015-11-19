@@ -1,11 +1,15 @@
-#include "filter.h"
-#include "ABPFilterParser.h"
 #include <string.h>
+#include <math.h>
+#include "filter.h"
+#include "hashFn.h"
+#include "ABPFilterParser.h"
 
 #ifndef DISABLE_REGEX
 #include <string>
 #include <regex>
 #endif
+
+const char * getUrlHost(const char *input, int &len);
 
 Filter::Filter() :
   borrowedData(false),
@@ -33,6 +37,42 @@ Filter::~Filter() {
   }
 }
 
+Filter::Filter(const Filter &other) {
+  borrowedData = other.borrowedData;
+  filterType = other.filterType;
+  filterOption = other.filterOption;
+  antiFilterOption = other.antiFilterOption;
+  dataLen = other.dataLen;
+  if (other.dataLen == -1 && other.data) {
+    dataLen = strlen(other.data);
+  }
+
+  if (other.borrowedData) {
+    data = other.data;
+    domainList = other.domainList;
+    host = other.host;
+  } else {
+    if (other.data) {
+      data = new char[dataLen];
+      memcpy(data, other.data, dataLen);
+    } else {
+      data = nullptr;
+    }
+    if (other.domainList) {
+       domainList = new char[strlen(other.domainList) + 1];
+       strcpy(domainList, other.domainList);
+    } else {
+      domainList = nullptr;
+    }
+    if (other.host) {
+      host = new char[strlen(other.host) + 1];
+      strcpy(host, other.host);
+    } else {
+      host = nullptr;
+    }
+  }
+}
+
 void Filter::swap(Filter &other) {
   FilterType tempFilterType = filterType;
   FilterOption tempFilterOption = filterOption;
@@ -57,28 +97,6 @@ void Filter::swap(Filter &other) {
   other.dataLen = tempDataLen;
   other.domainList = tempDomainList;
   other.host = tempHost;
-}
-
-/**
- * Finds the host within the passed in URL and returns its length
- */
-const char * getUrlHost(const char *input, int &len) {
-  const char *p = input;
-  while (*p != '\0' && *p != ':') {
-    p++;
-  }
-  if (*p != '\0') {
-    p++;
-    while (*p != '\0' && *p == '/') {
-      p++;
-    }
-  }
-  const char *q = p;
-  while (*q != '\0') {
-    q++;
-  }
-  len = findFirstSeparatorChar(p, q);
-  return p;
 }
 
 bool isDomain(const char *input, int len, const char *domain, bool anti) {
@@ -447,10 +465,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
   // Check for domain name anchored
   if (filterType & FTHostAnchored) {
 
-    const char *filterPartEnd = data;
-    while (*filterPartEnd != '\0') {
-      filterPartEnd++;
-    }
+    const char *filterPartEnd = data + dataLen;
     int currentHostLen;
     const char *currentHost = getUrlHost(input, currentHostLen);
     int hostLen = strlen(host);
@@ -595,3 +610,94 @@ int Filter::getLeftoverDomainCount(const char *shouldBlockDomains, const char *s
 
   return leftOverBlocking;
 }
+
+uint64_t Filter::hash() const {
+  HashFn fn(19);
+  if (!host && !data) {
+    return 0;
+  } else if (host) {
+    return fn(host, strlen(host));
+  }
+
+  return fn(data, dataLen);
+}
+
+uint32_t Filter::serialize(char *buffer) {
+  uint32_t totalSize = 0;
+  char sz[64];
+  uint32_t dataLenSize = 1 + sprintf(sz, "%x,%x,%x,%x", dataLen, filterType, filterOption, antiFilterOption);
+  if (buffer) {
+    memcpy(buffer + totalSize, sz, dataLenSize);
+  }
+  totalSize += dataLenSize;
+  if (buffer) {
+    memcpy(buffer + totalSize, data, dataLen);
+  }
+  totalSize += dataLen;
+
+  if (host) {
+    int hostLen = strlen(host);
+    if (buffer) {
+      memcpy(buffer + totalSize, host, hostLen + 1);
+    }
+    totalSize += hostLen;
+  }
+  totalSize += 1;
+
+  if (domainList) {
+    int domainListLen = strlen(domainList);
+    if (buffer) {
+      memcpy(buffer + totalSize, domainList, domainListLen + 1);
+    }
+    totalSize += domainListLen;
+  }
+  totalSize += 1;
+
+  return totalSize;
+}
+
+bool hasNewlineBefore(char *buffer, uint32_t bufferSize) {
+  char *p = buffer;
+  for (uint32_t i = 0; i < bufferSize; ++i) {
+    if (*p == '\0')
+      return true;
+    p++;
+  }
+  return false;
+}
+
+uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
+  dataLen = 0;
+  if (!hasNewlineBefore(buffer, bufferSize)) {
+    return 0;
+  }
+  sscanf(buffer, "%x,%x,%x,%x", &dataLen, &filterType, &filterOption, &antiFilterOption);
+  uint32_t consumed = strlen(buffer) + 1;
+  if (consumed + dataLen >= bufferSize) {
+    return 0;
+  }
+
+  data = buffer + consumed;
+  consumed += dataLen;
+
+  uint32_t hostLen = strlen(buffer + consumed);
+  if (hostLen != 0) {
+    host = buffer + consumed;
+  } else {
+    host = nullptr;
+  }
+  consumed += hostLen + 1;
+
+  uint32_t domainListLen = strlen(buffer + consumed);
+  if (domainListLen != 0) {
+    domainList = buffer + consumed;
+  } else {
+    domainList = nullptr;
+  }
+  consumed += domainListLen + 1;
+
+  borrowedData = true;
+
+  return consumed;
+}
+

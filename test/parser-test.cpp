@@ -90,7 +90,7 @@ TEST(parser, parseFilterMatchesFilter)
   ));
 
   CHECK(testFilter("||ads.example.com^",
-    FTHostAnchored,
+    static_cast<FilterType>(FTHostAnchored | FTHostOnly),
     FONoFilterOption,
     "ads.example.com^",
     {
@@ -305,6 +305,7 @@ TEST(parser, exceptionRules)
     {
       "http://examples.com/advert.html",
     }, {
+
       "http://example.com/advice.html",
       "http://example.com/advert.html",
       "http://examples.com/advice.html",
@@ -476,12 +477,9 @@ TEST(parser, parse)
   ABPFilterParser parser;
   parser.parse(fileContents.c_str());
 
-  // TODO: Compare to JS lib which says 18096 here for filters + nofingerprint
-  CHECK(compareNums(parser.numFilters + parser.numNoFingerprintFilters, 18105));
-  // TODO: Compare to JS lib which says 26465 here
+  CHECK(compareNums(parser.numFilters + parser.numNoFingerprintFilters, 12710));
   CHECK(compareNums(parser.numHtmlRuleFilters, 26455));
-  // TODO: Compare to JS lib which says 2975 here
-  CHECK(compareNums(parser.numExceptionFilters + + parser.numNoFingerprintExceptionFilters, 2975));
+  CHECK(compareNums(parser.numExceptionFilters + + parser.numNoFingerprintExceptionFilters, 2547));
 }
 
 // Calling parse amongst 2 different lists should preserve both sets of rules
@@ -498,11 +496,9 @@ TEST(multipleParse, multipleParse2)
                "@@test3\n"
                "###test3");
 
-  CHECK(compareNums(parser.numFilters, 0));
-  CHECK(compareNums(parser.numNoFingerprintFilters, 3));
+  CHECK(compareNums(parser.numFilters + parser.numNoFingerprintFilters, 3));
   CHECK(compareNums(parser.numHtmlRuleFilters, 3));
-  CHECK(compareNums(parser.numExceptionFilters, 0));
-  CHECK(compareNums(parser.numNoFingerprintExceptionFilters, 3));
+  CHECK(compareNums(parser.numExceptionFilters + parser.numNoFingerprintExceptionFilters, 3));
 }
 
 // Demo app test
@@ -542,4 +538,31 @@ TEST(misc, misc2)
       CHECK(!isSeparatorChar((int)(char)i));
     }
   }
+}
+
+
+TEST(serializationTests, serializationTests2)
+{
+  ABPFilterParser parser;
+  parser.parse("||googlesyndication.com$third-party\n@@||googlesyndication.ca");
+  int size;
+  char * buffer = parser.serialize(size);
+
+  ABPFilterParser parser2;
+  parser2.deserialize(buffer);
+
+  Filter f(static_cast<FilterType>(FTHostAnchored | FTHostOnly), FOThirdParty, FONoFilterOption, "googlesyndication.com", 21, nullptr, "googlesyndication.com");
+  Filter f2(FTNoFilterType, FOThirdParty, FONoFilterOption, "googleayndication.com", 21, nullptr, "googleayndication.com");
+  CHECK(parser.hostAnchoredHashSet->exists(f));
+  CHECK(parser2.hostAnchoredHashSet->exists(f));
+  CHECK(!parser.hostAnchoredHashSet->exists(f2));
+  CHECK(!parser2.hostAnchoredHashSet->exists(f2));
+
+  Filter f3(static_cast<FilterType>(FTHostAnchored | FTHostOnly | FTException), FONoFilterOption, FONoFilterOption, "googlesyndication.ca", 20, nullptr, "googlesyndication.ca");
+  Filter f4(FTNoFilterType, FONoFilterOption, FONoFilterOption, "googleayndication.ca", 20, nullptr, "googleayndication.ca");
+  CHECK(parser.hostAnchoredExceptionHashSet->exists(f3));
+  CHECK(parser2.hostAnchoredExceptionHashSet->exists(f3));
+  CHECK(!parser.hostAnchoredExceptionHashSet->exists(f4));
+  CHECK(!parser2.hostAnchoredExceptionHashSet->exists(f4));
+
 }
