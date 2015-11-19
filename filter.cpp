@@ -322,9 +322,9 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
 }
 
 
-const char * getNextPos(const char *input, char separator) {
+const char * getNextPos(const char *input, char separator, const char *end) {
   const char *p = input;
-  while (*p != '\0' && *p != separator) {
+  while (p != end && *p != '\0' && *p != separator) {
     p++;
   }
   return p;
@@ -371,7 +371,7 @@ int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, c
   }
 
   const char *filterPartStart = filterPosStart;
-  const char *filterPartEnd = getNextPos(filterPosStart, '^');
+  const char *filterPartEnd = getNextPos(filterPosStart, '^', filterPosEnd);
   if (filterPartEnd - filterPosEnd > 0) {
     filterPartEnd = filterPosEnd;
   }
@@ -399,10 +399,10 @@ int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, c
       }
     }
 
-    if (*filterPartEnd == '\0') {
+    if (filterPartEnd == filterPosEnd || *filterPartEnd == '\0') {
       break;
     }
-    const char *temp = getNextPos(filterPartEnd + 1, '^');
+    const char *temp = getNextPos(filterPartEnd + 1, '^', filterPosEnd);
     filterPartStart = filterPartEnd + 1;
     filterPartEnd = temp;
     prefixedSeparatorChar = false;
@@ -475,7 +475,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
 
   // Wildcard match comparison
   const char *filterPartStart = data;
-  const char *filterPartEnd = getNextPos(data, '*');
+  const char *filterPartEnd = getNextPos(data, '*', data + dataLen);
   int index = 0;
   while (filterPartStart != filterPartEnd) {
     int filterPartLen = filterPartEnd - filterPartStart;
@@ -488,7 +488,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
     if (*filterPartEnd == '\0') {
       break;
     }
-    const char *temp = getNextPos(filterPartEnd + 1, '*');
+    const char *temp = getNextPos(filterPartEnd + 1, '*', data + dataLen);
     filterPartStart = filterPartEnd + 1;
     filterPartEnd = temp;
     index = newIndex + filterPartLen;
