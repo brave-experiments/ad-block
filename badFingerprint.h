@@ -42,6 +42,9 @@ public:
     return !(*this == rhs);
   }
 
+  // Nothing needs to be updated for multiple adds
+  void update(const BadFingerprint &) {}
+
   uint32_t serialize(char *buffer) {
     if (buffer) {
       memcpy(buffer, data, strlen(data) + 1);

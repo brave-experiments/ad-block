@@ -64,6 +64,9 @@ public:
   bool matches(const char *input, int inputLen, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
   bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
 
+  // Nothing needs to be updated when a filter is added multiple times
+  void update(const Filter &) {}
+
   // Checks to see if the filter options match for the passed in data
   bool matchesOptions(const char *input, FilterOption contextOption, const char *contextDomain = nullptr);
 
