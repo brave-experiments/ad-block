@@ -19,7 +19,9 @@ enum FilterParseState {
   FPPastWhitespace,
   FPOneBar,
   FPOneAt,
-  FPData
+  FPData,
+  // Same as data but won't consider any special char handling like | or $
+  FPDataOnly
 };
 
 static const int fingerprintSize = 6;
@@ -175,103 +177,106 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
       return;
     }
 
-    if (parseState == FPOneBar && *p != '|') {
-      parseState = FPData;
-      f.filterType = static_cast<FilterType>(f.filterType | FTLeftAnchored);
-    }
-
-    switch (*p) {
-      case '|':
-        if (parseState == FPStart || parseState == FPPastWhitespace) {
-          parseState = FPOneBar;
-          p++;
-          continue;
-        } else if (parseState == FPOneBar) {
-          parseState = FPOneBar;
-          f.filterType = static_cast<FilterType>(f.filterType | FTHostAnchored);
-          parseState = FPData;
-          p++;
-
-          int len = findFirstSeparatorChar(p, end);
-          f.host = new char[len + 1];
-          f.host[len] = '\0';
-          memcpy(f.host, p, len);
-
-          if ((*(p + len) == '^' && (*(p + len + 1) == '\0' || *(p + len + 1) == '$' || *(p + len + 1) == '\n')) ||
-              *(p + len) == '\0' || *(p + len) == '$' || *(p + len) == '\n') {
-            f.filterType = static_cast<FilterType>(f.filterType | FTHostOnly);
-          }
-
-          continue;
-        } else {
-          f.filterType = static_cast<FilterType>(f.filterType | FTRightAnchored);
-          parseState = FPData;
-          p++;
-          continue;
-        }
-        break;
-      case '@':
-        if (parseState == FPStart || parseState == FPPastWhitespace) {
-          parseState = FPOneAt;
-          p++;
-          continue;
-        } else if (parseState == FPOneAt) {
-          parseState = FPOneBar;
-          f.filterType = FTException;
-          parseState = FPPastWhitespace;
-          p++;
-          continue;
-        }
-        break;
-      case '!':
-      case '[':
-        if (parseState == FPStart || parseState == FPPastWhitespace) {
-          f.filterType = FTComment;
-          // Wed don't care about comments right now
-          return;
-        }
-        break;
-      case '\r':
-      case '\n':
-      case '\t':
-      case ' ':
-        // Skip leading whitespace
-        if (parseState == FPStart) {
-          p++;
-          continue;
-        }
-        break;
-      case '/':
-        if ((parseState == FPStart || parseState == FPPastWhitespace) && input[strlen(input) -1] == '/') {
-          // Just copy out the whole regex and return early
-          int len = strlen(input) - i - 1;
-          f.data = new char[len];
-          f.data[len - 1] = '\0';
-          memcpy(f.data, input + i + 1, len - 1);
-          f.filterType = FTRegex;
-          return;
-        }
-        break;
-
-      case '$':
-        f.parseOptions(p + 1);
-        earlyBreak = true;
-        continue;
-      case '#':
-        if (*(p+1) == '#') {
-          // TODO
-          f.filterType = FTElementHiding;
-          return;
-        } else if (*(p+1) == '@') {
-          f.filterType = FTElementHidingException;
-          return;
-        }
-
-      default:
+    if (parseState != FPDataOnly) {
+      if (parseState == FPOneBar && *p != '|') {
         parseState = FPData;
-        break;
-    }
+        f.filterType = static_cast<FilterType>(f.filterType | FTLeftAnchored);
+      }
 
+      switch (*p) {
+        case '|':
+          if (parseState == FPStart || parseState == FPPastWhitespace) {
+            parseState = FPOneBar;
+            p++;
+            continue;
+          } else if (parseState == FPOneBar) {
+            parseState = FPOneBar;
+            f.filterType = static_cast<FilterType>(f.filterType | FTHostAnchored);
+            parseState = FPData;
+            p++;
+
+            int len = findFirstSeparatorChar(p, end);
+            f.host = new char[len + 1];
+            f.host[len] = '\0';
+            memcpy(f.host, p, len);
+
+            if ((*(p + len) == '^' && (*(p + len + 1) == '\0' || *(p + len + 1) == '$' || *(p + len + 1) == '\n')) ||
+                *(p + len) == '\0' || *(p + len) == '$' || *(p + len) == '\n') {
+              f.filterType = static_cast<FilterType>(f.filterType | FTHostOnly);
+            }
+
+            continue;
+          } else {
+            f.filterType = static_cast<FilterType>(f.filterType | FTRightAnchored);
+            parseState = FPData;
+            p++;
+            continue;
+          }
+          break;
+        case '@':
+          if (parseState == FPStart || parseState == FPPastWhitespace) {
+            parseState = FPOneAt;
+            p++;
+            continue;
+          } else if (parseState == FPOneAt) {
+            parseState = FPOneBar;
+            f.filterType = FTException;
+            parseState = FPPastWhitespace;
+            p++;
+            continue;
+          }
+          break;
+        case '!':
+        case '[':
+          if (parseState == FPStart || parseState == FPPastWhitespace) {
+            f.filterType = FTComment;
+            // Wed don't care about comments right now
+            return;
+          }
+          break;
+        case '\r':
+        case '\n':
+        case '\t':
+        case ' ':
+          // Skip leading whitespace
+          if (parseState == FPStart) {
+            p++;
+            continue;
+          }
+          break;
+        case '/':
+          if ((parseState == FPStart || parseState == FPPastWhitespace) && input[strlen(input) -1] == '/') {
+            // Just copy out the whole regex and return early
+            int len = strlen(input) - i - 1;
+            f.data = new char[len];
+            f.data[len - 1] = '\0';
+            memcpy(f.data, input + i + 1, len - 1);
+            f.filterType = FTRegex;
+            return;
+          }
+          break;
+
+        case '$':
+          f.parseOptions(p + 1);
+          earlyBreak = true;
+          continue;
+        case '#':
+          if (*(p+1) == '#') {
+            parseState = FPDataOnly;
+            f.filterType = FTElementHiding;
+            p += 2;
+            continue;
+          } else if (*(p+1) == '@') {
+            parseState = FPDataOnly;
+            f.filterType = FTElementHidingException;
+            p += 2;
+            continue;
+          }
+        default:
+          parseState = FPData;
+          break;
+      }
+    }
     data[i] = *p;
     i++;
     p++;
@@ -289,7 +294,11 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
   char fingerprintBuffer[fingerprintSize + 1];
   fingerprintBuffer[fingerprintSize] = '\0';
 
-  if (exceptionBloomFilter && (f.filterType & FTException) && (f.filterType & FTHostOnly)) {
+  if (f.filterType == FTElementHiding) {
+
+  } else if (f.filterType == FTElementHidingException) {
+
+  } else if (exceptionBloomFilter && (f.filterType & FTException) && (f.filterType & FTHostOnly)) {
     // cout << "add host anchored exception bloom filter: " << f.host << endl;
     hostAnchoredExceptionHashSet->add(f);
   } else if (hostAnchoredHashSet && (f.filterType & FTHostOnly)) {

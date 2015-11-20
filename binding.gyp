@@ -105,6 +105,7 @@
       "./test/parser-test.cpp",
       "./test/options-test.cpp",
       "./test/rule-types-test.cpp",
+      "./test/cosmetic-filter-test.cpp",
       "./test/util.cpp",
       "ABPFilterParser.cpp",
       "ABPFilterParser.h",
