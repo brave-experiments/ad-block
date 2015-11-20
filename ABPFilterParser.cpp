@@ -261,14 +261,18 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
           earlyBreak = true;
           continue;
         case '#':
-          if (*(p+1) == '#') {
+          if (*(p+1) == '#' || *(p+1) == '@') {
+            if (i != 0) {
+              f.domainList = new char [i + 1];
+              memcpy(f.domainList, data, i + 1);
+              i = 0;
+            }
             parseState = FPDataOnly;
-            f.filterType = FTElementHiding;
-            p += 2;
-            continue;
-          } else if (*(p+1) == '@') {
-            parseState = FPDataOnly;
-            f.filterType = FTElementHidingException;
+            if (*(p+1) == '#') {
+              f.filterType = FTElementHiding;
+            } else {
+              f.filterType = FTElementHidingException;
+            }
             p += 2;
             continue;
           }
