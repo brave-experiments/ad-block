@@ -4,6 +4,7 @@
 #include "BloomFilter.h"
 #include "HashSet.h"
 #include "badFingerprint.h"
+#include "cosmeticFilter.h"
 
 class ABPFilterParser
 {
@@ -56,7 +57,7 @@ protected:
 };
 
 extern const char *separatorCharacters;
-void parseFilter(const char *input, const char *end, Filter&, BloomFilter *bloomFilter = nullptr, BloomFilter *exceptionBloomFilter = nullptr, HashSet<Filter> *hostAnchoredHashSet = nullptr, HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr);
-void parseFilter(const char *input, Filter&, BloomFilter *bloomFilter = nullptr, BloomFilter *exceptionBloomFilter = nullptr, HashSet<Filter> *hostAnchoredHashSet = nullptr, HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr);
+void parseFilter(const char *input, const char *end, Filter&, BloomFilter *bloomFilter = nullptr, BloomFilter *exceptionBloomFilter = nullptr, HashSet<Filter> *hostAnchoredHashSet = nullptr, HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr, HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr);
+void parseFilter(const char *input, Filter&, BloomFilter *bloomFilter = nullptr, BloomFilter *exceptionBloomFilter = nullptr, HashSet<Filter> *hostAnchoredHashSet = nullptr, HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr, HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr);
 bool isSeparatorChar(char c);
 int findFirstSeparatorChar(const char *input, const char *end);

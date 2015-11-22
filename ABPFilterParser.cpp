@@ -156,14 +156,14 @@ int findFirstSeparatorChar(const char *input, const char *end) {
   return end - input;
 }
 
-void parseFilter(const char *input, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter, HashSet<Filter> *hostAnchoredHashSet, HashSet<Filter> *hostAnchoredExceptionHashSet) {
+void parseFilter(const char *input, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter, HashSet<Filter> *hostAnchoredHashSet, HashSet<Filter> *hostAnchoredExceptionHashSet, HashSet<CosmeticFilter> *simpleCosmeticFilters) {
   const char *end = input;
   while (*end != '\0') end++;
-  parseFilter(input, end, f, bloomFilter, exceptionBloomFilter, hostAnchoredHashSet, hostAnchoredExceptionHashSet);
+  parseFilter(input, end, f, bloomFilter, exceptionBloomFilter, hostAnchoredHashSet, hostAnchoredExceptionHashSet, simpleCosmeticFilters);
 }
 
 // Not currently multithreaded safe due to the static buffer named 'data'
-void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter, HashSet<Filter> *hostAnchoredHashSet, HashSet<Filter> *hostAnchoredExceptionHashSet) {
+void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter, HashSet<Filter> *hostAnchoredHashSet, HashSet<Filter> *hostAnchoredExceptionHashSet, HashSet<CosmeticFilter> *simpleCosmeticFilters) {
   FilterParseState parseState = FPStart;
   const char *p = input;
   char data[maxLineLength];
@@ -299,9 +299,13 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
   fingerprintBuffer[fingerprintSize] = '\0';
 
   if (f.filterType == FTElementHiding) {
-
+    if (simpleCosmeticFilters && !f.domainList) {
+      simpleCosmeticFilters->add(data);
+    }
   } else if (f.filterType == FTElementHidingException) {
-
+    if (simpleCosmeticFilters && f.domainList) {
+      simpleCosmeticFilters->remove(data);
+    }
   } else if (exceptionBloomFilter && (f.filterType & FTException) && (f.filterType & FTHostOnly)) {
     // cout << "add host anchored exception bloom filter: " << f.host << endl;
     hostAnchoredExceptionHashSet->add(f);
@@ -556,6 +560,9 @@ bool ABPFilterParser::parse(const char *input) {
   int newNumHostAnchoredFilters = 0;
   int newNumHostAnchoredExceptionFilters = 0;
 
+  // Simple cosmetic filters apply to all sites without exception
+  HashSet<CosmeticFilter> simpleCosmeticFilters(1000);
+
   // Parsing does 2 passes, one just to determine the type of information we'll need to setup.
   // Note that the library will be used on a variety of builds so sometimes we won't even have STL
   // So we can't use something like a vector here.
@@ -685,7 +692,7 @@ bool ABPFilterParser::parse(const char *input) {
   while (true) {
     if (*p == '\n' || *p == '\0') {
       Filter f;
-      parseFilter(lineStart, p, f, bloomFilter, exceptionBloomFilter, hostAnchoredHashSet, hostAnchoredExceptionHashSet);
+      parseFilter(lineStart, p, f, bloomFilter, exceptionBloomFilter, hostAnchoredHashSet, hostAnchoredExceptionHashSet, &simpleCosmeticFilters);
       switch(f.filterType & FTListTypesMask) {
         case FTException:
           if (f.filterType & FTHostOnly) {
@@ -729,6 +736,7 @@ bool ABPFilterParser::parse(const char *input) {
     p++;
   };
 
+  cout << "Simple cosmetic filter size: " << simpleCosmeticFilters.size() << endl;
   return true;
 }
 
