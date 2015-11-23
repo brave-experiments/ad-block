@@ -48,11 +48,15 @@ public:
   Filter(const char * data, int dataLen, char *domainList = nullptr, const char * host = nullptr) :
     borrowedData(true), filterType(FTNoFilterType), filterOption(FONoFilterOption),
     antiFilterOption(FONoFilterOption), data(const_cast<char*>(data)), dataLen(dataLen), domainList(domainList), host(const_cast<char*>(host)) {
+    domainCount = 0;
+    antiDomainCount = 0;
   }
   Filter(FilterType filterType, FilterOption filterOption,FilterOption antiFilterOption,
          const char * data, int dataLen, char *domainList = nullptr, const char * host = nullptr) :
     borrowedData(true), filterType(filterType), filterOption(filterOption),
     antiFilterOption(antiFilterOption), data(const_cast<char*>(data)), dataLen(dataLen), domainList(domainList), host(const_cast<char *>(host)) {
+    domainCount = 0;
+    antiDomainCount = 0;
   }
 
   ~Filter();
@@ -73,7 +77,7 @@ public:
 
   void parseOptions(const char *input);
   bool containsDomain(const char *domain, bool anti = false) const;
-  int getDomainCount(bool anti = false) const;
+  uint32_t getDomainCount(bool anti = false);
 
   uint64_t hash() const;
 
@@ -112,6 +116,8 @@ public:
   int dataLen;
   char *domainList;
   char *host;
+  uint32_t domainCount;
+  uint32_t antiDomainCount;
 
 protected:
   // Filters the domain list down to what's applicable for the context domain

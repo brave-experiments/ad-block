@@ -19,7 +19,9 @@ Filter::Filter() :
   data(nullptr),
   dataLen(-1),
   domainList(nullptr),
-  host(nullptr) {
+  host(nullptr),
+  domainCount(0),
+  antiDomainCount(0) {
 }
 
 Filter::~Filter() {
@@ -43,6 +45,8 @@ Filter::Filter(const Filter &other) {
   filterOption = other.filterOption;
   antiFilterOption = other.antiFilterOption;
   dataLen = other.dataLen;
+  domainCount = other.domainCount;
+  antiDomainCount = other.antiDomainCount;
   if (other.dataLen == -1 && other.data) {
     dataLen = strlen(other.data);
   }
@@ -134,9 +138,15 @@ bool Filter::containsDomain(const char *domain, bool anti) const {
   return isDomain(domainList + startOffset, len, domain, anti);
 }
 
-int Filter::getDomainCount(bool anti) const {
+uint32_t Filter::getDomainCount(bool anti) {
   if (!domainList || domainList[0] == '\0') {
     return 0;
+  }
+
+  if (!anti && domainCount) {
+    return domainCount;
+  } else if (anti && antiDomainCount) {
+    return antiDomainCount;
   }
 
   int count = 0;
@@ -163,6 +173,12 @@ int Filter::getDomainCount(bool anti) const {
   }
   else if (*(domainList + startOffset) != '~' && !anti) {
     count++;
+  }
+
+  if (anti) {
+    antiDomainCount = count;
+  } else {
+    domainCount = count;
   }
   return count;
 }
