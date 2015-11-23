@@ -284,8 +284,23 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
   if (domainList && contextDomain) {
     // + 2 because we always end in a |\0 for these buffers
     int bufSize = strlen(domainList) + 2;
-    char *shouldBlockDomains = new char[bufSize];
-    char *shouldSkipDomains = new char[bufSize];
+
+    char shouldBlockDomainsBuffer[2048];
+    char shouldSkipDomainsBuffer[2048];
+
+
+    // This is purely an optimizaiton to avoid allocation a bunch of things
+    // we don't need to. This will use stack allocation above as long as it's
+    // possible to fit in it.
+    char *shouldBlockDomains = shouldBlockDomainsBuffer;
+    char *shouldSkipDomains = shouldSkipDomainsBuffer;
+    bool allocatedBuffers = false;
+    if (bufSize > 2048) {
+      shouldBlockDomains = new char[bufSize];
+      shouldSkipDomains = new char[bufSize];
+      allocatedBuffers = true;
+    }
+
     memset(shouldBlockDomains, 0, bufSize);
     memset(shouldSkipDomains, 0, bufSize);
     filterDomainList(domainList, shouldBlockDomains, contextDomain, false);
@@ -296,8 +311,10 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
     int shouldBlockDomainsLen = strlen(shouldBlockDomains);
     int shouldSkipDomainsLen = strlen(shouldSkipDomains);
 
-    delete[] shouldBlockDomains;
-    delete[] shouldSkipDomains;
+    if (allocatedBuffers) {
+      delete[] shouldBlockDomains;
+      delete[] shouldSkipDomains;
+    }
 
     if ((shouldBlockDomainsLen == 0 && getDomainCount() != 0) ||
         (shouldBlockDomainsLen > 0 && leftOverBlocking == 0) ||
