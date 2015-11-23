@@ -470,6 +470,15 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
     int currentHostLen;
     const char *currentHost = getUrlHost(input, currentHostLen);
     int hostLen = strlen(host);
+
+    if (inputBloomFilter) {
+      for (int i = 1; i < hostLen; i++) {
+        if (!inputBloomFilter->exists(host + i - 1, 2)) {
+          return false;
+        }
+      }
+    }
+
     return !isThirdPartyHost(host, hostLen, currentHost, currentHostLen) &&
       indexOfFilter(input, inputLen, data, filterPartEnd) != -1;
   }
