@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "BloomFilter.h"
 #include <stdint.h>
 #include <string.h>
 
@@ -61,8 +62,8 @@ public:
 
   // Checks to see if any filter matches the input but does not match any exception rule
   // You may want to call the first overload to be slighly more efficient
-  bool matches(const char *input, int inputLen, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
-  bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
+  bool matches(const char *input, int inputLen, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr, BloomFilter *inputBloomFilter = nullptr);
+  bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr, BloomFilter *inputBloomFilter = nullptr);
 
   // Nothing needs to be updated when a filter is added multiple times
   void update(const Filter &) {}

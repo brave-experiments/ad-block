@@ -51,9 +51,23 @@ public:
   unsigned int numExceptionBloomFilterSaves;
 protected:
   // Determines if a passed in array of filter pointers matches for any of the input
-  bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain);
+  bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter);
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
   void initHashSet(HashSet<Filter>**, char *buffer, int len);
+};
+
+// Fast hash function applicable to 2 byte char checks
+class HashFn2Byte : public HashFn {
+public:
+  HashFn2Byte() : HashFn (0) {
+  }
+
+  virtual uint64_t operator()(const char *input, int len, unsigned char lastCharCode, uint64_t lastHash) {
+    return (((uint64_t)input[1]) << 8) | input[0];  }
+
+  virtual uint64_t operator()(const char *input, int len) {
+    return (((uint64_t)input[1]) << 8) | input[0];
+  }
 };
 
 extern const char *separatorCharacters;

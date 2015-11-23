@@ -414,11 +414,12 @@ int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, c
   return beginIndex;
 }
 
-bool Filter::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
-  return matches(input, strlen(input), contextOption, contextDomain);
+bool Filter::matches(const char *input, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter) {
+  return matches(input, strlen(input), contextOption, contextDomain, inputBloomFilter);
 }
 
-bool Filter::matches(const char *input, int inputLen, FilterOption contextOption, const char *contextDomain) {
+bool Filter::matches(const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter) {
+
   if (!matchesOptions(input, contextOption, contextDomain)) {
     return false;
   }
@@ -479,6 +480,15 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
   int index = 0;
   while (filterPartStart != filterPartEnd) {
     int filterPartLen = filterPartEnd - filterPartStart;
+
+    if (inputBloomFilter) {
+      for (int i = 1; i < filterPartLen && filterPartEnd - filterPartStart - i >= 2; i++) {
+        if (!inputBloomFilter->exists(filterPartStart + i - 1, 2)) {
+          return false;
+        }
+      }
+    }
+
     int newIndex = indexOfFilter(input + index, inputLen - index, filterPartStart, filterPartEnd);
     if (newIndex == -1) {
       return false;

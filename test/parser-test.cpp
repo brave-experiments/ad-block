@@ -307,7 +307,6 @@ TEST(parser, exceptionRules)
     {
       "http://examples.com/advert.html",
     }, {
-
       "http://example.com/advice.html",
       "http://example.com/advert.html",
       "http://examples.com/advice.html",
