@@ -544,7 +544,7 @@ bool ABPFilterParser::parse(const char *input) {
   // then we can determine the fingerprints for the bloom filter.
   // Otherwise it needs to be done manually via initBloomFilter and initExceptionBloomFilter
   if (!bloomFilter) {
-    bloomFilter = new BloomFilter(10, 40000);
+    bloomFilter = new BloomFilter(15, 40000);
   }
   if (!exceptionBloomFilter) {
     exceptionBloomFilter = new BloomFilter(10, 10000);
