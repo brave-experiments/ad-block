@@ -51,7 +51,7 @@ public:
   unsigned int numExceptionBloomFilterSaves;
 protected:
   // Determines if a passed in array of filter pointers matches for any of the input
-  bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter);
+  bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen);
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
   void initHashSet(HashSet<Filter>**, char *buffer, int len);
 };

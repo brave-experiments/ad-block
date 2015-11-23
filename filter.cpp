@@ -266,7 +266,7 @@ bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen, const
 // should be considered given the current context.
 // By specifying context params, you can filter out the number of rules which are
 // considered.
-bool Filter::matchesOptions(const char *input, FilterOption context, const char *contextDomain) {
+bool Filter::matchesOptions(const char *input, FilterOption context, const char *contextDomain, const char *inputHost, int inputHostLen) {
   // Maybe the user of the library can't determine a context because they're
   // blocking a the HTTP level, don't block here because we don't have enough
   // information
@@ -309,8 +309,9 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
   // If we're in the context of third-party site, then consider third-party option checks
   if (context & (FOThirdParty | FONotThirdParty)) {
     if ((filterOption & FOThirdParty) && host) {
-      int inputHostLen;
-      const char *inputHost = getUrlHost(input, inputHostLen);
+      if (!inputHost) {
+        inputHost = getUrlHost(input, inputHostLen);
+      }
       bool inputHostIsThirdParty = isThirdPartyHost(host, strlen(host), inputHost, inputHostLen);
       if (inputHostIsThirdParty || !(context & FOThirdParty)) {
         return false;
@@ -414,12 +415,11 @@ int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, c
   return beginIndex;
 }
 
-bool Filter::matches(const char *input, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter) {
-  return matches(input, strlen(input), contextOption, contextDomain, inputBloomFilter);
+bool Filter::matches(const char *input, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen) {
+  return matches(input, strlen(input), contextOption, contextDomain, inputBloomFilter, inputHost, inputHostLen);
 }
 
-bool Filter::matches(const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter) {
-
+bool Filter::matches(const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen) {
   if (!matchesOptions(input, contextOption, contextDomain)) {
     return false;
   }
@@ -467,8 +467,11 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
   if (filterType & FTHostAnchored) {
 
     const char *filterPartEnd = data + dataLen;
-    int currentHostLen;
-    const char *currentHost = getUrlHost(input, currentHostLen);
+    int currentHostLen = inputHostLen;
+    const char *currentHost = inputHost;
+    if (!currentHostLen) {
+      currentHost = getUrlHost(input, currentHostLen);
+    }
     int hostLen = strlen(host);
 
     if (inputBloomFilter) {

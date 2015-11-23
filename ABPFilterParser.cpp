@@ -379,9 +379,9 @@ ABPFilterParser::~ABPFilterParser() {
   }
 }
 
-bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter) {
+bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen) {
   for (int i = 0; i < numFilters; i++) {
-    if (filter->matches(input, inputLen, contextOption, contextDomain, inputBloomFilter)) {
+    if (filter->matches(input, inputLen, contextOption, contextDomain, inputBloomFilter, inputHost, inputHostLen)) {
       return true;
     }
     filter++;
@@ -453,7 +453,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
   }
 
   // We always have to check noFingerprintFilters because the bloom filter opt cannot be used for them
-  bool hasMatch = hasMatchingFilters(noFingerprintFilters, numNoFingerprintFilters, input, inputLen, contextOption, contextDomain, &inputBloomFilter);
+  bool hasMatch = hasMatchingFilters(noFingerprintFilters, numNoFingerprintFilters, input, inputLen, contextOption, contextDomain, &inputBloomFilter, inputHost, inputHostLen);
   // If no noFingerprintFilters were hit, check the bloom filter substring fingerprint for the normal
   // filter list.   If no substring exists for the input then we know for sure the URL should not be blocked.
   bool bloomFilterMiss = false;
@@ -471,7 +471,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
 
   // We need to check the filters list manually because there is either a match or a false positive
   if (!hasMatch && !bloomFilterMiss) {
-    hasMatch = hasMatchingFilters(filters, numFilters, input, inputLen, contextOption, contextDomain, &inputBloomFilter);
+    hasMatch = hasMatchingFilters(filters, numFilters, input, inputLen, contextOption, contextDomain, &inputBloomFilter, inputHost, inputHostLen);
     // If there's still no match after checking the block filters, then no need to try to block this
     // because there is a false positive.
     if (!hasMatch) {
@@ -485,7 +485,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
   }
 
   // If there's a matching no fingerprint exception then we can just return right away because we shouldn't block
-  if (hasMatchingFilters(noFingerprintExceptionFilters, numNoFingerprintExceptionFilters, input, inputLen, contextOption, contextDomain, &inputBloomFilter)) {
+  if (hasMatchingFilters(noFingerprintExceptionFilters, numNoFingerprintExceptionFilters, input, inputLen, contextOption, contextDomain, &inputBloomFilter, inputHost, inputHostLen)) {
     return false;
   }
 
@@ -499,7 +499,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption, con
   }
 
   if (!bloomExceptionFilterMiss) {
-    if (!hasMatchingFilters(exceptionFilters, numExceptionFilters, input, inputLen, contextOption, contextDomain, &inputBloomFilter)) {
+    if (!hasMatchingFilters(exceptionFilters, numExceptionFilters, input, inputLen, contextOption, contextDomain, &inputBloomFilter, inputHost, inputHostLen)) {
       // False positive on the exception filter list
       numExceptionFalsePositives++;
       // cout << "exception false positive for input: " << input << endl;

@@ -62,14 +62,14 @@ public:
 
   // Checks to see if any filter matches the input but does not match any exception rule
   // You may want to call the first overload to be slighly more efficient
-  bool matches(const char *input, int inputLen, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr, BloomFilter *inputBloomFilter = nullptr);
-  bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr, BloomFilter *inputBloomFilter = nullptr);
+  bool matches(const char *input, int inputLen, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr, BloomFilter *inputBloomFilter = nullptr, const char *inputHost = nullptr, int inputHostLen = 0);
+  bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr, BloomFilter *inputBloomFilter = nullptr,  const char *inputHost = nullptr, int inputHostLen = 0);
 
   // Nothing needs to be updated when a filter is added multiple times
   void update(const Filter &) {}
 
   // Checks to see if the filter options match for the passed in data
-  bool matchesOptions(const char *input, FilterOption contextOption, const char *contextDomain = nullptr);
+  bool matchesOptions(const char *input, FilterOption contextOption, const char *contextDomain = nullptr, const char *inputHost = nullptr, int inputHostLen = 0);
 
   void parseOptions(const char *input);
   bool containsDomain(const char *domain, bool anti = false) const;
