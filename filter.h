@@ -88,8 +88,8 @@ public:
     }
     */
 
-    int hostLen = strlen(host);
-    int rhsHostLen = strlen(rhs.host);
+    int hostLen = static_cast<int>(strlen(host));
+    int rhsHostLen = static_cast<int>(strlen(rhs.host));
 
     if (hostLen != rhsHostLen) {
       return false;

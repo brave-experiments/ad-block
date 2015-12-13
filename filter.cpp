@@ -48,7 +48,7 @@ Filter::Filter(const Filter &other) {
   domainCount = other.domainCount;
   antiDomainCount = other.antiDomainCount;
   if (other.dataLen == -1 && other.data) {
-    dataLen = strlen(other.data);
+    dataLen = static_cast<int>(strlen(other.data));
   }
 
   if (other.borrowedData) {
@@ -299,7 +299,7 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
   // Domain options check
   if (domainList && contextDomain) {
     // + 2 because we always end in a |\0 for these buffers
-    int bufSize = strlen(domainList) + 2;
+    int bufSize = static_cast<int>(strlen(domainList)) + 2;
 
     char shouldBlockDomainsBuffer[2048];
     char shouldSkipDomainsBuffer[2048];
@@ -324,8 +324,8 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
 
     int leftOverBlocking = getLeftoverDomainCount(shouldBlockDomains, shouldSkipDomains);
     int leftOverSkipping = getLeftoverDomainCount(shouldSkipDomains, shouldBlockDomains);
-    int shouldBlockDomainsLen = strlen(shouldBlockDomains);
-    int shouldSkipDomainsLen = strlen(shouldSkipDomains);
+    int shouldBlockDomainsLen = static_cast<int>(strlen(shouldBlockDomains));
+    int shouldSkipDomainsLen = static_cast<int>(strlen(shouldSkipDomains));
 
     if (allocatedBuffers) {
       delete[] shouldBlockDomains;
@@ -345,7 +345,7 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
       if (!inputHost) {
         inputHost = getUrlHost(input, inputHostLen);
       }
-      bool inputHostIsThirdParty = isThirdPartyHost(host, strlen(host), inputHost, inputHostLen);
+      bool inputHostIsThirdParty = isThirdPartyHost(host, static_cast<int>(strlen(host)), inputHost, inputHostLen);
       if (inputHostIsThirdParty || !(context & FOThirdParty)) {
         return false;
       }
@@ -371,7 +371,7 @@ int indexOf(const char *source, const char *filterPartStart, const char *filterP
 
   while (*s != '\0') {
     if (fStart == filterPartEnd) {
-      return s - source - (filterPartEnd - filterPartStart);
+      return static_cast<int>(s - source - (filterPartEnd - filterPartStart));
     }
     if (*s != *fStart) {
       notCheckedSource++;
@@ -385,7 +385,7 @@ int indexOf(const char *source, const char *filterPartStart, const char *filterP
   }
 
   if (fStart == filterPartEnd) {
-    return s - source - (filterPartEnd - filterPartStart);
+    return static_cast<int>(s - source - (filterPartEnd - filterPartStart));
   }
 
   return -1;
@@ -397,7 +397,7 @@ int indexOf(const char *source, const char *filterPartStart, const char *filterP
  */
 int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, const char *filterPosEnd) {
   bool prefixedSeparatorChar = false;
-  int filterLen = filterPosEnd - filterPosStart;
+  int filterLen = static_cast<int>(filterPosEnd - filterPosStart);
   int index = 0;
   int beginIndex = -1;
   if (filterLen > inputLen) {
@@ -424,7 +424,7 @@ int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, c
       beginIndex = index;
     }
 
-    index += (filterPartEnd - filterPartStart);
+    index += static_cast<int>(filterPartEnd - filterPartStart);
 
     if (prefixedSeparatorChar) {
       char testChar = *(input + index + (filterPartEnd - filterPartStart));
@@ -449,7 +449,7 @@ int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, c
 }
 
 bool Filter::matches(const char *input, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen) {
-  return matches(input, strlen(input), contextOption, contextDomain, inputBloomFilter, inputHost, inputHostLen);
+  return matches(input, static_cast<int>(strlen(input)), contextOption, contextDomain, inputBloomFilter, inputHost, inputHostLen);
 }
 
 bool Filter::matches(const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen) {
@@ -463,7 +463,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
 
   // We lazily figure out the dataLen only once
   if (dataLen == -1) {
-    dataLen = strlen(data);
+    dataLen = static_cast<int>(strlen(data));
   }
 
   // Check for a regex match
@@ -505,7 +505,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
     if (!currentHostLen) {
       currentHost = getUrlHost(input, currentHostLen);
     }
-    int hostLen = strlen(host);
+    int hostLen = static_cast<int>(strlen(host));
 
     if (inputBloomFilter) {
       for (int i = 1; i < hostLen; i++) {
@@ -524,7 +524,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
   const char *filterPartEnd = getNextPos(data, '*', data + dataLen);
   int index = 0;
   while (filterPartStart != filterPartEnd) {
-    int filterPartLen = filterPartEnd - filterPartStart;
+    int filterPartLen = static_cast<int>(filterPartEnd - filterPartStart);
 
     if (inputBloomFilter) {
       for (int i = 1; i < filterPartLen && filterPartEnd - filterPartStart - i >= 2; i++) {
@@ -561,7 +561,7 @@ void Filter::filterDomainList(const char *domainList, char *destBuffer, const ch
   }
 
   char *curDest = destBuffer;
-  int contextDomainLen = strlen(contextDomain);
+  int contextDomainLen = static_cast<int>(strlen(contextDomain));
   int startOffset = 0;
   int len = 0;
   const char *p = domainList;
@@ -671,7 +671,7 @@ uint64_t Filter::hash() const {
   if (!host && !data) {
     return 0;
   } else if (host) {
-    return fn(host, strlen(host));
+    return fn(host, static_cast<int>(strlen(host)));
   }
 
   return fn(data, dataLen);
@@ -691,7 +691,7 @@ uint32_t Filter::serialize(char *buffer) {
   totalSize += dataLen;
 
   if (host) {
-    int hostLen = strlen(host);
+    int hostLen = static_cast<int>(strlen(host));
     if (buffer) {
       memcpy(buffer + totalSize, host, hostLen + 1);
     }
@@ -700,7 +700,7 @@ uint32_t Filter::serialize(char *buffer) {
   totalSize += 1;
 
   if (domainList) {
-    int domainListLen = strlen(domainList);
+    int domainListLen = static_cast<int>(strlen(domainList));
     if (buffer) {
       memcpy(buffer + totalSize, domainList, domainListLen + 1);
     }
@@ -727,7 +727,7 @@ uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
     return 0;
   }
   sscanf(buffer, "%x,%x,%x,%x", &dataLen, &filterType, &filterOption, &antiFilterOption);
-  uint32_t consumed = strlen(buffer) + 1;
+  uint32_t consumed = static_cast<uint32_t>(strlen(buffer)) + 1;
   if (consumed + dataLen >= bufferSize) {
     return 0;
   }
@@ -735,7 +735,7 @@ uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
   data = buffer + consumed;
   consumed += dataLen;
 
-  uint32_t hostLen = strlen(buffer + consumed);
+  uint32_t hostLen = static_cast<uint32_t>(strlen(buffer + consumed));
   if (hostLen != 0) {
     host = buffer + consumed;
   } else {
@@ -743,7 +743,7 @@ uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
   }
   consumed += hostLen + 1;
 
-  uint32_t domainListLen = strlen(buffer + consumed);
+  uint32_t domainListLen = static_cast<uint32_t>(strlen(buffer + consumed));
   if (domainListLen != 0) {
     domainList = buffer + consumed;
   } else {

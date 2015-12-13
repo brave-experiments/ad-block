@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <iterator>
+#include <time.h>
 
 using namespace std;
 
@@ -40,7 +41,7 @@ int main(int argc, char**argv) {
 
   int numBlocks = 0;
   int numSkips = 0;
-  const clock_t begin_time = clock();
+  const clock_t beginTime = clock();
   std::for_each(sites.begin(), sites.end(), [&parser, currentPageDomain, &numBlocks, &numSkips](std::string const &urlToCheck) {
     if (parser.matches(urlToCheck.c_str(), FONoFilterOption, currentPageDomain)) {
       ++numBlocks;
@@ -48,7 +49,7 @@ int main(int argc, char**argv) {
       ++numSkips;
     }
   });
-  std::cout << "Time: " << float( clock () - begin_time ) /  CLOCKS_PER_SEC << "s" << endl;
+  std::cout << "Time: " << float( clock () - beginTime ) /  CLOCKS_PER_SEC << "s" << endl;
   cout << "num blocks: " << numBlocks << ", num skips: " << numSkips << endl;
   cout << "False Positives: " << parser.numFalsePositives << ", exception false positives: " << parser.numExceptionFalsePositives << endl;
   cout << "Bloom filter saves: " << parser.numBloomFilterSaves << ", exception bloom filter saves: " << parser.numExceptionBloomFilterSaves << endl;

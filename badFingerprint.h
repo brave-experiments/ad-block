@@ -49,11 +49,11 @@ public:
     if (buffer) {
       memcpy(buffer, data, strlen(data) + 1);
     }
-    return strlen(data) + 1;
+    return static_cast<uint32_t>(strlen(data)) + 1;
   }
 
   uint32_t deserialize(char *buffer, uint32_t bufferSize) {
-    int len = strlen(buffer);
+    uint32_t len = static_cast<uint32_t>(strlen(buffer));
     data = new char[len + 1];
     memcpy(data, buffer, len + 1);
     return len + 1;

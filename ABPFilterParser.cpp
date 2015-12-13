@@ -149,11 +149,11 @@ int findFirstSeparatorChar(const char *input, const char *end) {
   const char *p = input;
   while (p != end) {
     if (isSeparatorChar(*p)) {
-      return p - input;
+      return static_cast<int>(p - input);
     }
     p++;
   }
-  return end - input;
+  return static_cast<int>(end - input);
 }
 
 void parseFilter(const char *input, Filter &f, BloomFilter *bloomFilter, BloomFilter *exceptionBloomFilter, HashSet<Filter> *hostAnchoredHashSet, HashSet<Filter> *hostAnchoredExceptionHashSet, HashSet<CosmeticFilter> *simpleCosmeticFilters) {
@@ -247,7 +247,7 @@ void parseFilter(const char *input, const char *end, Filter &f, BloomFilter *blo
         case '/':
           if ((parseState == FPStart || parseState == FPPastWhitespace) && input[strlen(input) -1] == '/') {
             // Just copy out the whole regex and return early
-            int len = strlen(input) - i - 1;
+            int len = static_cast<int>(strlen(input)) - i - 1;
             f.data = new char[len];
             f.data[len - 1] = '\0';
             memcpy(f.data, input + i + 1, len - 1);
@@ -392,7 +392,7 @@ bool ABPFilterParser::hasMatchingFilters(Filter *filter, int &numFilters, const 
 void discoverMatchingPrefix(BadFingerprintsHashSet *badFingerprintsHashSet, const char *str, BloomFilter *bloomFilter, int prefixLen = fingerprintSize) {
   char sz[32];
   memset(sz, 0, sizeof(sz));
-  int strLen = strlen(str);
+  int strLen = static_cast<int>(strlen(str));
   for (int i = 0; i < strLen - prefixLen + 1; i++) {
     if (bloomFilter->exists(str + i, prefixLen)) {
       memcpy(sz, str + i, prefixLen);
@@ -423,7 +423,7 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen, HashSet<Filter> 
 
   while (start != inputHost) {
     if (*(start - 1) == '.') {
-      Filter *filter = hashSet->find(Filter(start, inputHost + inputHostLen - start, nullptr, start));
+      Filter *filter = hashSet->find(Filter(start, static_cast<int>(inputHost + inputHostLen - start), nullptr, start));
       if (filter && filter->matches(input, inputLen, contextOption, contextDomain)) {
         return false;
       }
@@ -431,7 +431,7 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen, HashSet<Filter> 
     start--;
   }
 
-  Filter *filter = hashSet->find(Filter(start, inputHost + inputHostLen - start, nullptr, start));
+  Filter *filter = hashSet->find(Filter(start, static_cast<int>(inputHost + inputHostLen - start), nullptr, start));
   if (!filter) {
     return true;
   }
@@ -439,7 +439,7 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen, HashSet<Filter> 
 }
 
 bool ABPFilterParser::matches(const char *input, FilterOption contextOption, const char *contextDomain) {
-  int inputLen = strlen(input);
+  int inputLen = static_cast<int>(strlen(input));
   int inputHostLen;
   const char *inputHost = getUrlHost(input, inputHostLen);
 
@@ -766,7 +766,7 @@ int serializeFilters(char * buffer, Filter *f, int numFilters) {
       if (buffer) {
         strcpy(buffer + bufferSize, f->data);
       }
-      bufferSize += strlen(f->data);
+      bufferSize += static_cast<int>(strlen(f->data));
     }
     bufferSize++;
 
@@ -774,7 +774,7 @@ int serializeFilters(char * buffer, Filter *f, int numFilters) {
       if (buffer) {
         strcpy(buffer + bufferSize, f->domainList);
       }
-      bufferSize += strlen(f->domainList);
+      bufferSize += static_cast<int>(strlen(f->domainList));
     }
     // Extra null termination
     bufferSize++;
@@ -782,7 +782,7 @@ int serializeFilters(char * buffer, Filter *f, int numFilters) {
       if (buffer) {
         strcpy(buffer + bufferSize, f->host);
       }
-      bufferSize += strlen(f->host);
+      bufferSize += static_cast<int>(strlen(f->host));
     }
     // Extra null termination
     bufferSize++;
@@ -829,7 +829,7 @@ char * ABPFilterParser::serialize(int &totalSize, bool ignoreHTMLFilters) {
 
   // And start copying stuff in
   strcpy(buffer, sz);
-  pos += strlen(sz) + 1;
+  pos += static_cast<int>(strlen(sz)) + 1;
   pos += serializeFilters(buffer + pos, filters, numFilters);
   pos += serializeFilters(buffer + pos, exceptionFilters, numExceptionFilters);
   pos += serializeFilters(buffer + pos, htmlRuleFilters, adjustedNumHTMLFilters);
@@ -862,13 +862,13 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
   for (int i = 0; i < numFilters; i++) {
     f->borrowedData = true;
     sscanf(buffer + pos, "%x,%x,%x", &f->filterType, &f->filterOption, &f->antiFilterOption);
-    pos += strlen(buffer + pos) + 1;
+    pos += static_cast<int>(strlen(buffer + pos)) + 1;
 
     if (*(buffer + pos) == '\0') {
       f->data = nullptr;
     } else {
       f->data = buffer + pos;
-      pos += strlen(f->data);
+      pos += static_cast<int>(strlen(f->data));
     }
     pos++;
 
@@ -876,7 +876,7 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
       f->domainList = nullptr;
     } else {
       f->domainList = buffer + pos;
-      pos += strlen(f->domainList);
+      pos += static_cast<int>(strlen(f->domainList));
     }
     pos++;
 
@@ -884,7 +884,7 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
       f->host = nullptr;
     } else {
       f->host = buffer + pos;
-      pos += strlen(f->host);
+      pos += static_cast<int>(strlen(f->host));
     }
     pos++;
     f++;
@@ -896,7 +896,7 @@ void ABPFilterParser::deserialize(char *buffer) {
   int bloomFilterSize = 0, exceptionBloomFilterSize = 0, hostAnchoredHashSetSize = 0, hostAnchoredExceptionHashSetSize = 0;
   int pos = 0;
   sscanf(buffer + pos, "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x", &numFilters, &numExceptionFilters, &numHtmlRuleFilters, &numNoFingerprintFilters, &numNoFingerprintExceptionFilters, &numHostAnchoredFilters, &numHostAnchoredExceptionFilters, &bloomFilterSize, &exceptionBloomFilterSize, &hostAnchoredHashSetSize, &hostAnchoredExceptionHashSetSize);
-  pos += strlen(buffer + pos) + 1;
+  pos += static_cast<int>(strlen(buffer + pos)) + 1;
 
   filters = new Filter[numFilters];
   exceptionFilters = new Filter[numExceptionFilters];

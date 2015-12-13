@@ -3,6 +3,6 @@
 
 uint64_t CosmeticFilter::hash() const {
   HashFn fn(19);
-  return fn(data, strlen(data));
+  return fn(data, static_cast<int>(strlen(data)));
 }
 
