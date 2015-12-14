@@ -9,7 +9,7 @@ https://github.com/bbondy/abp-filter-parser
 
 It uses a bloom filter and Rabin-Karp algorithm to be super fast.
 
-## Setup
+## To include abp-filter-parser-cpp in your project:
 
 ```
 npm install --save abp-filter-parser-cpp
@@ -102,6 +102,15 @@ int main(int argc, char**argv) {
   return 0;
 }
 ```
+
+## Developing abp-filter-parser-cpp
+
+````
+git clone abp-filter-parser-cpp
+npm install
+```
+
+
 ## Build everything in release
 
 ```
