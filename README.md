@@ -107,6 +107,7 @@ int main(int argc, char**argv) {
 
 ````
 git clone abp-filter-parser-cpp
+cd abp-filter-parser-cpp
 npm install
 ```
 
@@ -123,7 +124,7 @@ make
 make build-debug
 ```
 
-## Running sample
+## Running sample (which also generates a .dat file for deserializing)
 
 ```
 make sample
