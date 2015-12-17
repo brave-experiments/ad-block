@@ -805,16 +805,16 @@ bool ABPFilterParser::parse(const char *input) {
           if (f.filterType & FTHostOnly) {
             // do nothing, handled by hash set.
           } else if (getFingerprint(nullptr, f)) {
-            (*curExceptionFilters).swap(f);
+            (*curExceptionFilters).swapData(&f);
             curExceptionFilters++;
           } else {
-            (*curNoFingerprintExceptionFilters).swap(f);
+            (*curNoFingerprintExceptionFilters).swapData(&f);
             curNoFingerprintExceptionFilters++;
           }
           break;
         case FTElementHiding:
         case FTElementHidingException:
-          (*curHtmlRuleFilters).swap(f);
+          (*curHtmlRuleFilters).swapData(&f);
           curHtmlRuleFilters++;
           break;
         case FTEmpty:
@@ -825,10 +825,10 @@ bool ABPFilterParser::parse(const char *input) {
           if (f.filterType & FTHostOnly) {
             // Do nothing
           } else if (getFingerprint(nullptr, f)) {
-            (*curFilters).swap(f);
+            (*curFilters).swapData(&f);
             curFilters++;
           } else {
-            (*curNoFingerprintFilters).swap(f);
+            (*curNoFingerprintFilters).swapData(&f);
             curNoFingerprintFilters++;
           }
           break;
@@ -987,8 +987,10 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
   int pos = 0;
   for (int i = 0; i < numFilters; i++) {
     f->borrowedData = true;
-    sscanf(buffer + pos, "%x,%x,%x", &f->filterType,
-        &f->filterOption, &f->antiFilterOption);
+    sscanf(buffer + pos, "%x,%x,%x",
+        reinterpret_cast<unsigned int*>(&f->filterType),
+        reinterpret_cast<unsigned int*>(&f->filterOption),
+        reinterpret_cast<unsigned int*>(&f->antiFilterOption));
     pos += static_cast<int>(strlen(buffer + pos)) + 1;
 
     if (*(buffer + pos) == '\0') {

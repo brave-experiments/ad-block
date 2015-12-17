@@ -1,7 +1,7 @@
 {
   "name": "abp-filter-parser-cpp",
   "main": "include.js",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "C++ Adblock Plus filter parser for lists like EasyList",
   "directories": {
     "test": "test"

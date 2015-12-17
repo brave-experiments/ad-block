@@ -8,7 +8,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <algorithm>
 #include "./base.h"
 #include "./BloomFilter.h"
 
@@ -76,7 +75,7 @@ friend class ABPFilterParser;
   ~Filter();
 
   // Swaps the data members for 'this' and the passed in filter
-  void swap(Filter&f);
+  void swapData(Filter *f);
 
   // Checks to see if any filter matches the input but does not match
   // any exception rule You may want to call the first overload to be

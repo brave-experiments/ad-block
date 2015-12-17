@@ -5,12 +5,11 @@
 
 #include <string.h>
 #include <math.h>
-#include <algorithm>
 #include "./filter.h"
 #include "./hashFn.h"
 #include "./ABPFilterParser.h"
 
-#ifndef DISABLE_REGEX
+#ifdef ENABLE_REGEX
 #include <string>
 #include <regex> // NOLINT
 #endif
@@ -85,7 +84,7 @@ Filter::Filter(const Filter &other) {
   }
 }
 
-void Filter::swap(Filter &other) {
+void Filter::swapData(Filter *other) {
   FilterType tempFilterType = filterType;
   FilterOption tempFilterOption = filterOption;
   FilterOption tempAntiFilterOption = antiFilterOption;
@@ -94,21 +93,21 @@ void Filter::swap(Filter &other) {
   char *tempDomainList = domainList;
   char *tempHost = host;
 
-  filterType = other.filterType;
-  filterOption = other.filterOption;
-  antiFilterOption = other.antiFilterOption;
-  data = other.data;
-  dataLen = other.dataLen;
-  domainList = other.domainList;
-  host = other.host;
+  filterType = other->filterType;
+  filterOption = other->filterOption;
+  antiFilterOption = other->antiFilterOption;
+  data = other->data;
+  dataLen = other->dataLen;
+  domainList = other->domainList;
+  host = other->host;
 
-  other.filterType = tempFilterType;
-  other.filterOption = tempFilterOption;
-  other.antiFilterOption = tempAntiFilterOption;
-  other.data = tempData;
-  other.dataLen = tempDataLen;
-  other.domainList = tempDomainList;
-  other.host = tempHost;
+  other->filterType = tempFilterType;
+  other->filterOption = tempFilterOption;
+  other->antiFilterOption = tempAntiFilterOption;
+  other->data = tempData;
+  other->dataLen = tempDataLen;
+  other->domainList = tempDomainList;
+  other->host = tempHost;
 }
 
 bool isDomain(const char *input, int len, const char *domain, bool anti) {
@@ -492,7 +491,7 @@ bool Filter::matches(const char *input, int inputLen,
 
   // Check for a regex match
   if (filterType & FTRegex) {
-#ifndef DISABLE_REGEX
+#ifdef ENABLE_REGEX
     std::smatch m;
     std::regex e(data, std::regex_constants::extended);
     return std::regex_search(std::string(input), m, e);

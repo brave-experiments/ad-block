@@ -140,8 +140,8 @@
           'cflags_cc': [ '-fexceptions' ]
         }
       ],
-      ['OS=="linux"', {
-        "defines": ["DISABLE_REGEX"],
+      ['OS!="linux"', {
+        "defines": ["ENABLE_REGEX"],
       }, {
       }]
     ],

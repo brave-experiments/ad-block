@@ -201,7 +201,7 @@ TEST(parser, parseFilterMatchesFilter) {
       "http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82"
     },
     {}));
-#ifndef DISABLE_REGEX
+#ifdef ENABLE_REGEX
   CHECK(testFilter("/banner[0-9]+/",
     FTRegex,
     FONoFilterOption,
