@@ -12,12 +12,15 @@
     "hashset-cpp": "^0.2.0",
     "nan": "^2.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "pre-commit": "^1.1.2"
+  },
   "scripts": {
     "test": "make test",
     "build": "make",
     "preinstall": "npm install nan && npm install cppunitlite && npm install bloom-filter-cpp && npm install hashset-cpp",
     "install": "node-gyp rebuild",
+    "lint": "./scripts/cpplint.py",
     "prepublish": "make sample && make clean"
   },
   "repository": {
@@ -30,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/bbondy/ABPFilterParser.cpp/issues"
   },
-  "homepage": "https://github.com/bbondy/ABPFilterParser.cpp#readme"
+  "homepage": "https://github.com/bbondy/ABPFilterParser.cpp#readme",
+  "pre-commit": [
+    "lint"
+  ]
 }
