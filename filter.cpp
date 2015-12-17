@@ -1,15 +1,21 @@
+/* Copyright (c) 2015 Brian R. Bondy. Distributed under the MPL2 license.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 #include <string.h>
 #include <math.h>
-#include "filter.h"
-#include "hashFn.h"
-#include "ABPFilterParser.h"
+#include <algorithm>
+#include "./filter.h"
+#include "./hashFn.h"
+#include "./ABPFilterParser.h"
 
 #ifndef DISABLE_REGEX
 #include <string>
-#include <regex>
+#include <regex> // NOLINT
 #endif
 
-const char * getUrlHost(const char *input, int &len);
+const char * getUrlHost(const char *input, int *len);
 
 Filter::Filter() :
   borrowedData(false),
@@ -63,14 +69,16 @@ Filter::Filter(const Filter &other) {
       data = nullptr;
     }
     if (other.domainList) {
-       domainList = new char[strlen(other.domainList) + 1];
-       strcpy(domainList, other.domainList);
+       size_t len = strlen(other.domainList) + 1;
+       domainList = new char[len];
+       snprintf(domainList, len, "%s", other.domainList);
     } else {
       domainList = nullptr;
     }
     if (other.host) {
-      host = new char[strlen(other.host) + 1];
-      strcpy(host, other.host);
+      size_t len = strlen(other.host) + 1;
+      host = new char[len];
+      snprintf(host, len, "%s", other.host);
     } else {
       host = nullptr;
     }
@@ -157,8 +165,7 @@ uint32_t Filter::getDomainCount(bool anti) {
     if (*p == '|') {
       if (*(domainList + startOffset) == '~' && anti) {
         count++;
-      }
-      else if (*(domainList + startOffset) != '~' && !anti) {
+      } else if (*(domainList + startOffset) != '~' && !anti) {
         count++;
       }
       startOffset = len + 1;
@@ -170,8 +177,7 @@ uint32_t Filter::getDomainCount(bool anti) {
 
   if (*(domainList + startOffset) == '~' && anti) {
     count++;
-  }
-  else if (*(domainList + startOffset) != '~' && !anti) {
+  } else if (*(domainList + startOffset) != '~' && !anti) {
     count++;
   }
 
@@ -189,7 +195,7 @@ void Filter::parseOption(const char *input, int len) {
   if (input[0] == '~') {
     pFilterOption = &antiFilterOption;
     pStart++;
-    len --;
+    len--;
   }
 
   if (len >= 7 && !strncmp(pStart, "domain=", 7)) {
@@ -206,9 +212,11 @@ void Filter::parseOption(const char *input, int len) {
   } else if (!strncmp(pStart, "object", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOObject);
   } else if (!strncmp(pStart, "xmlhttprequest", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOXmlHttpRequest);
+    *pFilterOption =
+      static_cast<FilterOption>(*pFilterOption | FOXmlHttpRequest);
   } else if (!strncmp(pStart, "object-subrequest", len)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOObjectSubrequest);
+    *pFilterOption =
+      static_cast<FilterOption>(*pFilterOption | FOObjectSubrequest);
   } else if (!strncmp(pStart, "subdocument", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOSubdocument);
   } else if (!strncmp(pStart, "document", len)) {
@@ -263,7 +271,8 @@ bool endsWith(const char *input, const char *sub, int inputLen, int subLen) {
   return true;
 }
 
-bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen, const char *testHost, int testHostLen) {
+bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen,
+    const char *testHost, int testHostLen) {
   if (!endsWith(testHost, baseContextHost, testHostLen, baseContextHostLen)) {
     return true;
   }
@@ -280,18 +289,21 @@ bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen, const
 // Determines if there's a match based on the options, this doesn't
 // mean that the filter rule should be accepted, just that the filter rule
 // should be considered given the current context.
-// By specifying context params, you can filter out the number of rules which are
-// considered.
-bool Filter::matchesOptions(const char *input, FilterOption context, const char *contextDomain, const char *inputHost, int inputHostLen) {
+// By specifying context params, you can filter out the number of rules
+// which are considered.
+bool Filter::matchesOptions(const char *input, FilterOption context,
+    const char *contextDomain, const char *inputHost, int inputHostLen) {
   // Maybe the user of the library can't determine a context because they're
   // blocking a the HTTP level, don't block here because we don't have enough
   // information
   if (context != FONoFilterOption) {
-    if ((filterOption & ~FOThirdParty) != FONoFilterOption && !(filterOption & context)) {
+    if ((filterOption & ~FOThirdParty) != FONoFilterOption
+        && !(filterOption & context)) {
       return false;
     }
 
-    if ((antiFilterOption & ~FOThirdParty) != FONoFilterOption && (antiFilterOption & context)) {
+    if ((antiFilterOption & ~FOThirdParty) != FONoFilterOption
+        && (antiFilterOption & context)) {
       return false;
     }
   }
@@ -322,8 +334,10 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
     filterDomainList(domainList, shouldBlockDomains, contextDomain, false);
     filterDomainList(domainList, shouldSkipDomains, contextDomain, true);
 
-    int leftOverBlocking = getLeftoverDomainCount(shouldBlockDomains, shouldSkipDomains);
-    int leftOverSkipping = getLeftoverDomainCount(shouldSkipDomains, shouldBlockDomains);
+    int leftOverBlocking =
+      getLeftoverDomainCount(shouldBlockDomains, shouldSkipDomains);
+    int leftOverSkipping =
+      getLeftoverDomainCount(shouldSkipDomains, shouldBlockDomains);
     int shouldBlockDomainsLen = static_cast<int>(strlen(shouldBlockDomains));
     int shouldSkipDomainsLen = static_cast<int>(strlen(shouldSkipDomains));
 
@@ -339,13 +353,16 @@ bool Filter::matchesOptions(const char *input, FilterOption context, const char 
     }
   }
 
-  // If we're in the context of third-party site, then consider third-party option checks
+  // If we're in the context of third-party site, then consider
+  // third-party option checks
   if (context & (FOThirdParty | FONotThirdParty)) {
     if ((filterOption & FOThirdParty) && host) {
       if (!inputHost) {
-        inputHost = getUrlHost(input, inputHostLen);
+        inputHost = getUrlHost(input, &inputHostLen);
       }
-      bool inputHostIsThirdParty = isThirdPartyHost(host, static_cast<int>(strlen(host)), inputHost, inputHostLen);
+      bool inputHostIsThirdParty =
+        isThirdPartyHost(host, static_cast<int>(strlen(host)),
+            inputHost, inputHostLen);
       if (inputHostIsThirdParty || !(context & FOThirdParty)) {
         return false;
       }
@@ -364,7 +381,8 @@ const char * getNextPos(const char *input, char separator, const char *end) {
   return p;
 }
 
-int indexOf(const char *source, const char *filterPartStart, const char *filterPartEnd) {
+int indexOf(const char *source, const char *filterPartStart,
+    const char *filterPartEnd) {
   const char *s = source;
   const char *fStart = filterPartStart;
   const char *notCheckedSource = source;
@@ -395,7 +413,8 @@ int indexOf(const char *source, const char *filterPartStart, const char *filterP
  * Similar to str1.indexOf(filter, startingPos) but with
  * extra consideration to some ABP filter rules like ^.
  */
-int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, const char *filterPosEnd) {
+int indexOfFilter(const char* input, int inputLen, const char *filterPosStart,
+    const char *filterPosEnd) {
   bool prefixedSeparatorChar = false;
   int filterLen = static_cast<int>(filterPosEnd - filterPosStart);
   int index = 0;
@@ -448,11 +467,16 @@ int indexOfFilter(const char* input, int inputLen, const char *filterPosStart, c
   return beginIndex;
 }
 
-bool Filter::matches(const char *input, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen) {
-  return matches(input, static_cast<int>(strlen(input)), contextOption, contextDomain, inputBloomFilter, inputHost, inputHostLen);
+bool Filter::matches(const char *input, FilterOption contextOption,
+    const char *contextDomain, BloomFilter *inputBloomFilter,
+    const char *inputHost, int inputHostLen) {
+  return matches(input, static_cast<int>(strlen(input)), contextOption,
+      contextDomain, inputBloomFilter, inputHost, inputHostLen);
 }
 
-bool Filter::matches(const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen) {
+bool Filter::matches(const char *input, int inputLen,
+    FilterOption contextOption, const char *contextDomain,
+    BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen) {
   if (!matchesOptions(input, contextOption, contextDomain)) {
     return false;
   }
@@ -470,7 +494,7 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
   if (filterType & FTRegex) {
 #ifndef DISABLE_REGEX
     std::smatch m;
-    std::regex e (data, std::regex_constants::extended);
+    std::regex e(data, std::regex_constants::extended);
     return std::regex_search(std::string(input), m, e);
 #else
     return false;
@@ -498,12 +522,11 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
 
   // Check for domain name anchored
   if (filterType & FTHostAnchored) {
-
     const char *filterPartEnd = data + dataLen;
     int currentHostLen = inputHostLen;
     const char *currentHost = inputHost;
     if (!currentHostLen) {
-      currentHost = getUrlHost(input, currentHostLen);
+      currentHost = getUrlHost(input, &currentHostLen);
     }
     int hostLen = static_cast<int>(strlen(host));
 
@@ -527,14 +550,16 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
     int filterPartLen = static_cast<int>(filterPartEnd - filterPartStart);
 
     if (inputBloomFilter) {
-      for (int i = 1; i < filterPartLen && filterPartEnd - filterPartStart - i >= 2; i++) {
+      for (int i = 1; i < filterPartLen && filterPartEnd -
+          filterPartStart - i >= 2; i++) {
         if (!inputBloomFilter->exists(filterPartStart + i - 1, 2)) {
           return false;
         }
       }
     }
 
-    int newIndex = indexOfFilter(input + index, inputLen - index, filterPartStart, filterPartEnd);
+    int newIndex = indexOfFilter(input + index, inputLen - index,
+        filterPartStart, filterPartEnd);
     if (newIndex == -1) {
       return false;
     }
@@ -555,7 +580,8 @@ bool Filter::matches(const char *input, int inputLen, FilterOption contextOption
   return true;
 }
 
-void Filter::filterDomainList(const char *domainList, char *destBuffer, const char *contextDomain, bool anti) {
+void Filter::filterDomainList(const char *domainList, char *destBuffer,
+    const char *contextDomain, bool anti) {
   if (!domainList) {
     return;
   }
@@ -567,9 +593,10 @@ void Filter::filterDomainList(const char *domainList, char *destBuffer, const ch
   const char *p = domainList;
   while (true) {
     if (*p == '|' || *p == '\0') {
-
       const char *domain = domainList + startOffset;
-      if (!isThirdPartyHost(domain[0] == '~' ? domain + 1 : domain, domain[0] == '~' ? len -1 : len, contextDomain, contextDomainLen)) {
+      if (!isThirdPartyHost(domain[0] == '~'
+            ? domain + 1 : domain, domain[0] == '~'
+            ? len -1 : len, contextDomain, contextDomainLen)) {
         // We're only considering domains, not anti domains
         if (!anti && len > 0 && *domain != '~') {
           memcpy(curDest, domain, len);
@@ -594,7 +621,8 @@ void Filter::filterDomainList(const char *domainList, char *destBuffer, const ch
   }
 }
 
-bool isEveryDomainThirdParty(const char *shouldSkipDomains, const char *shouldBlockDomain, int shouldBlockDomainLen) {
+bool isEveryDomainThirdParty(const char *shouldSkipDomains,
+    const char *shouldBlockDomain, int shouldBlockDomainLen) {
   bool everyDomainThirdParty = true;
   if (!shouldSkipDomains) {
     return false;
@@ -605,14 +633,15 @@ bool isEveryDomainThirdParty(const char *shouldSkipDomains, const char *shouldBl
   const char *p = shouldSkipDomains;
   while (true) {
     if (*p == '|' || *p == '\0') {
-
       const char *domain = shouldSkipDomains + startOffset;
       if (*domain == '~') {
         everyDomainThirdParty = everyDomainThirdParty &&
-          isThirdPartyHost(shouldBlockDomain, shouldBlockDomainLen, domain + 1, len - 1);
+          isThirdPartyHost(shouldBlockDomain, shouldBlockDomainLen,
+              domain + 1, len - 1);
       } else {
         everyDomainThirdParty = everyDomainThirdParty &&
-          isThirdPartyHost(shouldBlockDomain, shouldBlockDomainLen, domain, len);
+          isThirdPartyHost(shouldBlockDomain, shouldBlockDomainLen,
+              domain, len);
       }
 
       startOffset += len + 1;
@@ -629,7 +658,8 @@ bool isEveryDomainThirdParty(const char *shouldSkipDomains, const char *shouldBl
   return everyDomainThirdParty;
 }
 
-int Filter::getLeftoverDomainCount(const char *shouldBlockDomains, const char *shouldSkipDomains) {
+int Filter::getLeftoverDomainCount(const char *shouldBlockDomains,
+    const char *shouldSkipDomains) {
   int leftOverBlocking = 0;
 
   if (strlen(shouldBlockDomains) == 0) {
@@ -643,7 +673,8 @@ int Filter::getLeftoverDomainCount(const char *shouldBlockDomains, const char *s
     if (*p == '|' || *p == '\0') {
       const char *domain = domainList + startOffset;
       if (*domain == '~') {
-        if (isEveryDomainThirdParty(shouldSkipDomains, domain + 1, len - 1)) {
+        if (isEveryDomainThirdParty(shouldSkipDomains,
+              domain + 1, len - 1)) {
           leftOverBlocking++;
         }
       } else {
@@ -680,7 +711,9 @@ uint64_t Filter::hash() const {
 uint32_t Filter::serialize(char *buffer) {
   uint32_t totalSize = 0;
   char sz[64];
-  uint32_t dataLenSize = 1 + sprintf(sz, "%x,%x,%x,%x", dataLen, filterType, filterOption, antiFilterOption);
+  uint32_t dataLenSize = 1 + snprintf(sz, sizeof(sz),
+      "%x,%x,%x,%x", dataLen, filterType,
+      filterOption, antiFilterOption);
   if (buffer) {
     memcpy(buffer + totalSize, sz, dataLenSize);
   }
@@ -726,7 +759,8 @@ uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
   if (!hasNewlineBefore(buffer, bufferSize)) {
     return 0;
   }
-  sscanf(buffer, "%x,%x,%x,%x", &dataLen, &filterType, &filterOption, &antiFilterOption);
+  sscanf(buffer, "%x,%x,%x,%x", &dataLen, &filterType,
+      &filterOption, &antiFilterOption);
   uint32_t consumed = static_cast<uint32_t>(strlen(buffer)) + 1;
   if (consumed + dataLen >= bufferSize) {
     return 0;
@@ -755,4 +789,3 @@ uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
 
   return consumed;
 }
-

@@ -1,17 +1,21 @@
-#pragma once
+/* Copyright (c) 2015 Brian R. Bondy. Distributed under the MPL2 license.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "math.h"
+#ifndef BADFINGERPRINT_H_
+#define BADFINGERPRINT_H_
+
 #include <string.h>
-#include "HashSet.h"
+#include <math.h>
+#include "./HashSet.h"
 
 #ifdef PERF_STATS
 #include <fstream>
-#include <iostream>
-using namespace std;
 #endif
 
 class BadFingerprint {
-public:
+ public:
   uint64_t hash() const {
     return 0;
   }
@@ -21,9 +25,10 @@ public:
       delete[] data;
     }
   }
-  BadFingerprint(const char *data) {
-    this->data = new char[strlen(data) + 1];
-    strcpy(this->data, data);
+  explicit BadFingerprint(const char *data) {
+    size_t len = strlen(data) + 1;
+    this->data = new char[len];
+    snprintf(this->data, len, "%s", data);
   }
 
   BadFingerprint(const BadFingerprint &rhs) {
@@ -63,31 +68,32 @@ public:
 };
 
 class BadFingerprintsHashSet : public HashSet<BadFingerprint> {
-public:
+ public:
   BadFingerprintsHashSet() : HashSet<BadFingerprint>(1) {
   }
 
   void generateHeader(const char *filename) {
 #ifdef PERF_STATS
-    ofstream outFile;
+    std::ofstream outFile;
     outFile.open(filename);
 
     outFile << "#pragma once\n";
     outFile << "/**\n  *\n  * Auto generated bad filters\n  */\n";
     outFile << "const char *badFingerprints[] = {\n";
     for (uint32_t bucketIndex = 0; bucketIndex < bucketCount; bucketIndex++) {
-
       HashItem<BadFingerprint> *hashItem = buckets[bucketIndex];
       while (hashItem) {
         BadFingerprint *badFingerprint = hashItem->hashItemStorage;
-        outFile << "\"" << badFingerprint->data << "\"," << endl;
+        outFile << "\"" << badFingerprint->data << "\"," << std::endl;
         hashItem = hashItem->next;
       }
     }
-    outFile << "};\n" << endl;
-    outFile << "const char *badSubstrings[] = {\"http\", \"www\" };" <<endl;
+    outFile << "};\n" << std::endl;
+    outFile << "const char *badSubstrings[] = {\"http\", \"www\" };"
+      << std::endl;
     outFile.close();
     #endif
   }
-
 };
+
+#endif  // BADFINGERPRINT_H_

@@ -1,40 +1,56 @@
-#include "CppUnitLite/TestHarness.h"
-#include "CppUnitLite/Test.h"
-#include "ABPFilterParser.h"
+/* Copyright (c) 2015 Brian R. Bondy. Distributed under the MPL2 license.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#include <string.h>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <cerrno>
 #include <algorithm>
-#include "util.h"
-#include "string.h"
 #include <iostream>
 #include <set>
+#include "./CppUnitLite/TestHarness.h"
+#include "./CppUnitLite/Test.h"
+#include "./ABPFilterParser.h"
+#include "./util.h"
 
-using namespace std;
+using std::string;
+using std::endl;
+using std::set;
+using std::cout;
 
-bool testFilter(const char *rawFilter, FilterType expectedFilterType, FilterOption expectedFilterOption, const char *expectedData, set<string> &&blocked, set<string> &&notBlocked) {
+bool testFilter(const char *rawFilter, FilterType expectedFilterType,
+    FilterOption expectedFilterOption,
+    const char *expectedData,
+    set<string> &&blocked, // NOLINT
+    set<string> &&notBlocked) { // NOLINT
   Filter filter;
-  parseFilter(rawFilter, filter);
+  parseFilter(rawFilter, &filter);
 
   if (filter.filterOption != expectedFilterOption) {
-    cout << "Actual filter option: " << filter.filterOption << endl << "Expected: " << expectedFilterOption << endl;
+    cout << "Actual filter option: " << filter.filterOption
+      << endl << "Expected: " << expectedFilterOption << endl;
     return false;
   }
 
   if (filter.filterType != expectedFilterType) {
-    cout << "Actual filter type: " << filter.filterType << endl << "Expected: " << expectedFilterType << endl;
+    cout << "Actual filter type: " << filter.filterType
+      << endl << "Expected: " << expectedFilterType << endl;
     return false;
   }
 
   if (strcmp(filter.data, expectedData)) {
-    cout << "Actual filter data: " << filter.data << endl << "Expected: " << expectedData << endl;
+    cout << "Actual filter data: " << filter.data
+      << endl << "Expected: " << expectedData << endl;
     return false;
   }
 
   bool ret = true;
-  std::string lastChecked;
-  std::for_each(blocked.begin(), blocked.end(), [&filter, &ret, &lastChecked](string const &s) {
+  string lastChecked;
+  std::for_each(blocked.begin(), blocked.end(),
+      [&filter, &ret, &lastChecked](string const &s) {
     ret = ret && filter.matches(s.c_str());
     lastChecked = s;
   });
@@ -43,7 +59,8 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType, FilterOpti
     return false;
   }
 
-  std::for_each(notBlocked.begin(), notBlocked.end(), [&filter, &ret, &lastChecked](string const &s) {
+  std::for_each(notBlocked.begin(), notBlocked.end(),
+      [&filter, &ret, &lastChecked](string const &s) {
     ret = ret && !filter.matches(s.c_str());
     lastChecked = s;
   });
@@ -55,8 +72,7 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType, FilterOpti
   return true;
 }
 
-TEST(parser, parseFilterMatchesFilter)
-{
+TEST(parser, parseFilterMatchesFilter) {
   CHECK(testFilter("/banner/*/img",
     FTNoFilterType,
     FONoFilterOption,
@@ -71,8 +87,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/banner/",
       "http://example.com/banner/img",
       "http://example.com/img/banner/",
-    }
-  ));
+    }));
 
   CHECK(testFilter("/banner/*/img^",
     FTNoFilterType,
@@ -86,8 +101,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/banner/img",
       "http://example.com/banner/foo/imgraph",
       "http://example.com/banner/foo/img.gif",
-    }
-  ));
+    }));
 
   CHECK(testFilter("||ads.example.com^",
     static_cast<FilterType>(FTHostAnchored | FTHostOnly),
@@ -100,8 +114,7 @@ TEST(parser, parseFilterMatchesFilter)
     }, {
       "http://ads.example.com.ua/foo.gif",
       "http://example.com/redirect/http://ads.example.com/",
-    }
-  ));
+    }));
 
   CHECK(testFilter("|http://example.com/|",
     static_cast<FilterType>(FTLeftAnchored | FTRightAnchored),
@@ -112,8 +125,7 @@ TEST(parser, parseFilterMatchesFilter)
     }, {
       "http://example.com/foo.gif",
       "http://example.info/redirect/http://example.com/",
-    }
-  ));
+    }));
 
   CHECK(testFilter("swf|",
     FTRightAnchored,
@@ -124,8 +136,7 @@ TEST(parser, parseFilterMatchesFilter)
     },
     {
       "http://example.com/swf/index.html"
-    }
-  ));
+    }));
 
   CHECK(testFilter("|http://baddomain.example/",
     FTLeftAnchored,
@@ -136,8 +147,7 @@ TEST(parser, parseFilterMatchesFilter)
     },
     {
       "http://gooddomain.example/analyze?http://baddomain.example",
-    }
-  ));
+    }));
 
   CHECK(testFilter("||example.com/banner.gif",
     FTHostAnchored,
@@ -153,8 +163,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://gooddomain.example/analyze?http://example.com/banner.gif",
       "http://example.com.au/banner.gif",
       "http://example.com/banner2.gif",
-    }
-  ));
+    }));
 
   CHECK(testFilter("http://example.com^",
     FTNoFilterType,
@@ -164,8 +173,7 @@ TEST(parser, parseFilterMatchesFilter)
       "http://example.com/",
       "http://example.com:8000/ ",
     },
-    {}
-  ));
+    {}));
 
   CHECK(testFilter("^example.com^",
     FTNoFilterType,
@@ -174,8 +182,7 @@ TEST(parser, parseFilterMatchesFilter)
     {
       "http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82",
     },
-    {}
-  ));
+    {}));
   CHECK(testFilter("^%D1%82%D0%B5%D1%81%D1%82^",
     FTNoFilterType,
     FONoFilterOption,
@@ -185,8 +192,7 @@ TEST(parser, parseFilterMatchesFilter)
     },
     {
       "http://example.com:8000/foo.bar?a=12&b%D1%82%D0%B5%D1%81%D1%823",
-    }
-  ));
+    }));
   CHECK(testFilter("^foo.bar^",
     FTNoFilterType,
     FONoFilterOption,
@@ -194,9 +200,7 @@ TEST(parser, parseFilterMatchesFilter)
     {
       "http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82"
     },
-    {
-    }
-  ));
+    {}));
 #ifndef DISABLE_REGEX
   CHECK(testFilter("/banner[0-9]+/",
     FTRegex,
@@ -209,40 +213,41 @@ TEST(parser, parseFilterMatchesFilter)
     {
       "banners",
       "banners123"
-    }
-  ));
+    }));
 #endif
-  CHECK(testFilter("||static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
+  CHECK(testFilter(
+    "||static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
     FTHostAnchored,
     FONoFilterOption,
     "static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg",
     {
       "http://static.tumblr.com/dhqhfum/WgAn39721/cfh_header_banner_v2.jpg"
     },
-    {}
-  ));
+    {}));
 
   CHECK(testFilter("||googlesyndication.com/safeframe/$third-party",
     FTHostAnchored,
     FOThirdParty,
     "googlesyndication.com/safeframe/",
     {
-      "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html#xpc=sf-gdn-exp-2&p=http%3A//slashdot.org;",
+      "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html"
+      "#xpc=sf-gdn-exp-2&p=http%3A//slashdot.org;",
     },
-    {}
-  ));
+    {}));
   CHECK(testFilter("||googlesyndication.com/safeframe/$third-party,script",
     FTHostAnchored,
     static_cast<FilterOption>(FOThirdParty|FOScript),
     "googlesyndication.com/safeframe/",
     {
-      "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html#xpc=sf-gdn-exp-2&p=http%3A//slashdot.org;",
+      "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html"
+      "#xpc=sf-gdn-exp-2&p=http%3A//slashdot.org;",
     },
-    {}
-  ));
+    {}));
 }
 
-bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlocked) {
+bool checkMatch(const char *rules,
+    set<string> &&blocked, // NOLINT
+    set<string> &&notBlocked) { // NOLINT
   ABPFilterParser parsers[2];
   char * buffer = nullptr;
   for (int i = 0; i < 2; i++) {
@@ -250,14 +255,15 @@ bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlock
     if (i == 0) {
       parser.parse(rules);
       int size;
-      buffer = parsers[0].serialize(size);
+      buffer = parsers[0].serialize(&size);
     } else {
       parser.deserialize(buffer);
     }
 
     bool ret = true;
-    std::string lastChecked;
-    std::for_each(blocked.begin(), blocked.end(), [&parser, &lastChecked, &ret](string const &s) {
+    string lastChecked;
+    std::for_each(blocked.begin(), blocked.end(),
+        [&parser, &lastChecked, &ret](string const &s) {
       ret = ret && parser.matches(s.c_str());
       lastChecked = s;
     });
@@ -267,7 +273,8 @@ bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlock
       return false;
     }
 
-    std::for_each(notBlocked.begin(), notBlocked.end(), [&parser, &ret, &lastChecked](string const &s) {
+    std::for_each(notBlocked.begin(), notBlocked.end(),
+        [&parser, &ret, &lastChecked](string const &s) {
       ret = ret && !parser.matches(s.c_str());
       lastChecked = s;
     });
@@ -281,16 +288,14 @@ bool checkMatch(const char *rules, set<string> &&blocked, set<string> &&notBlock
   return true;
 }
 
-TEST(parser, exceptionRules)
-{
+TEST(parser, exceptionRules) {
   CHECK(checkMatch("adv\n"
                    "@@advice.",
     {
       "http://example.com/advert.html"
     }, {
       "http://example.com/advice.html",
-    }
-  ));
+    }));
 
   CHECK(checkMatch("@@advice.\n"
                    "adv",
@@ -298,8 +303,7 @@ TEST(parser, exceptionRules)
       "http://example.com/advert.html"
     }, {
       "http://example.com/advice.html"
-    }
-  ));
+    }));
   CHECK(checkMatch("@@|http://example.com\n"
                    "@@advice.\n"
                    "adv\n"
@@ -311,12 +315,12 @@ TEST(parser, exceptionRules)
       "http://example.com/advert.html",
       "http://examples.com/advice.html",
       "http://examples.com/#!foo",
-    }
-  ));
+    }));
 }
 
 struct OptionRuleData {
-  OptionRuleData(const char *testUrl, FilterOption context, const char *contextDomain, bool shouldBlock) {
+  OptionRuleData(const char *testUrl, FilterOption context,
+      const char *contextDomain, bool shouldBlock) {
     this->testUrl = testUrl;
     this->context = context;
     this->contextDomain = contextDomain;
@@ -333,15 +337,19 @@ struct OptionRuleData {
   bool shouldBlock;
 };
 
-bool checkOptionRule(const char *rules, set<OptionRuleData> &&optionTests) {
+bool checkOptionRule(const char *rules,
+    set<OptionRuleData> &&optionTests) { // NOLINT
   ABPFilterParser parser;
   parser.parse(rules);
 
   bool fail = false;
-  std::for_each(optionTests.begin(), optionTests.end(), [&parser, &fail](OptionRuleData const &data) {
-    bool matches = parser.matches(data.testUrl, data.context, data.contextDomain);
+  std::for_each(optionTests.begin(), optionTests.end(),
+      [&parser, &fail](OptionRuleData const &data) {
+    bool matches = parser.matches(data.testUrl,
+        data.context, data.contextDomain);
     if (matches != data.shouldBlock) {
-      cout << "Expected to block: " << data.shouldBlock << endl << "Actual blocks: " << matches << endl;
+      cout << "Expected to block: " << data.shouldBlock
+        << endl << "Actual blocks: " << matches << endl;
       fail = true;
       return;
     }
@@ -354,15 +362,13 @@ bool checkOptionRule(const char *rules, set<OptionRuleData> &&optionTests) {
 }
 
 // Option rules
-TEST(parser, optionRules)
-{
+TEST(parser, optionRules) {
   CHECK(checkOptionRule("||example.com",
     {
       OptionRuleData("http://example.com", FOThirdParty, nullptr, true),
       OptionRuleData("http://example2.com", FOThirdParty, nullptr, false),
       OptionRuleData("http://example.com", FONotThirdParty, nullptr, true),
-    }
-  ));
+    }));
 
   CHECK(checkOptionRule("||example.com^$third-party",
     {
@@ -374,122 +380,158 @@ TEST(parser, optionRules)
       OptionRuleData("http://example2.com", FONotThirdParty, nullptr, false),
       OptionRuleData("http://example.com.au", FOThirdParty, nullptr, false),
       OptionRuleData("http://example.com.au", FONotThirdParty, nullptr, false),
-    }
-  ));
+    }));
 
   CHECK(checkOptionRule("||example.com^$third-party,~script",
     {
-      OptionRuleData("http://example.com", static_cast<FilterOption>(FOThirdParty | FOScript), nullptr, false),
+      OptionRuleData("http://example.com",
+          static_cast<FilterOption>(FOThirdParty | FOScript), nullptr, false),
       OptionRuleData("http://example.com", FOOther, nullptr, true),
-      OptionRuleData("http://example2.com", static_cast<FilterOption>(FOThirdParty | FOOther), nullptr, false),
-      OptionRuleData("http://example.com", static_cast<FilterOption>(FONotThirdParty | FOOther), nullptr, false),
-    }
-  ));
+      OptionRuleData("http://example2.com",
+          static_cast<FilterOption>(FOThirdParty | FOOther), nullptr, false),
+      OptionRuleData("http://example.com",
+          static_cast<FilterOption>(FONotThirdParty | FOOther), nullptr, false),
+    }));
 
   CHECK(checkOptionRule("adv$domain=example.com|example.net",
     {
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "example.net", true),
-      OptionRuleData("http://somewebsite.com/adv", FONoFilterOption, "example.com", true),
-      OptionRuleData("http://www.example.net/adv", FONoFilterOption, "www.example.net", true),
-      OptionRuleData("http://my.subdomain.example.com/adv", FONoFilterOption, "my.subdomain.example.com", true),
-      OptionRuleData("http://my.subdomain.example.com/adv", FONoFilterOption, "my.subdomain.example.com", true),
-      OptionRuleData("http://example.com/adv", FONoFilterOption, "badexample.com", false),
-      OptionRuleData("http://example.com/adv", FONoFilterOption, "otherdomain.net", false),
-      OptionRuleData("http://example.net/ad", FONoFilterOption, "example.net", false),
-    }
-  ));
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "example.net", true),
+      OptionRuleData("http://somewebsite.com/adv",
+          FONoFilterOption, "example.com", true),
+      OptionRuleData("http://www.example.net/adv",
+          FONoFilterOption, "www.example.net", true),
+      OptionRuleData("http://my.subdomain.example.com/adv",
+          FONoFilterOption, "my.subdomain.example.com", true),
+      OptionRuleData("http://my.subdomain.example.com/adv",
+          FONoFilterOption, "my.subdomain.example.com", true),
+      OptionRuleData("http://example.com/adv",
+          FONoFilterOption, "badexample.com", false),
+      OptionRuleData("http://example.com/adv",
+          FONoFilterOption, "otherdomain.net", false),
+      OptionRuleData("http://example.net/ad",
+          FONoFilterOption, "example.net", false),
+    }));
 
   CHECK(checkOptionRule("adv$domain=example.com|~foo.example.com",
     {
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "example.com", true),
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "foo.example.com", false),
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "www.foo.example.com", false),
-    }
-  ));
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "example.com", true),
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "foo.example.com", false),
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "www.foo.example.com", false),
+    }));
 
   CHECK(checkOptionRule("adv$domain=~example.com|foo.example.com",
     {
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "example.com", false),
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "foo.example.com", true),
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "www.foo.example.com", true),
-    }
-  ));
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "example.com", false),
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "foo.example.com", true),
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "www.foo.example.com", true),
+    }));
 
   CHECK(checkOptionRule("adv$domain=~example.com",
     {
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "otherdomain.com", true),
-      OptionRuleData("http://somewebsite.com/adv", FONoFilterOption, "example.com", false),
-    }
-  ));
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "otherdomain.com", true),
+      OptionRuleData("http://somewebsite.com/adv",
+          FONoFilterOption, "example.com", false),
+    }));
 
   CHECK(checkOptionRule("adv$domain=~example.com|~example.net",
     {
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "example.net", false),
-      OptionRuleData("http://somewebsite.com/adv", FONoFilterOption, "example.com", false),
-      OptionRuleData("http://www.example.net/adv", FONoFilterOption, "www.example.net", false),
-      OptionRuleData("http://my.subdomain.example.com/adv", FONoFilterOption, "my.subdomain.example.com", false),
-      OptionRuleData("http://example.com/adv", FONoFilterOption, "badexample.com", true),
-      OptionRuleData("http://example.com/adv", FONoFilterOption, "otherdomain.net", true),
-      OptionRuleData("http://example.net/ad", FONoFilterOption, "example.net", false),
-    }
-  ));
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "example.net", false),
+      OptionRuleData("http://somewebsite.com/adv",
+          FONoFilterOption, "example.com", false),
+      OptionRuleData("http://www.example.net/adv",
+          FONoFilterOption, "www.example.net", false),
+      OptionRuleData("http://my.subdomain.example.com/adv",
+          FONoFilterOption, "my.subdomain.example.com", false),
+      OptionRuleData("http://example.com/adv",
+          FONoFilterOption, "badexample.com", true),
+      OptionRuleData("http://example.com/adv",
+          FONoFilterOption, "otherdomain.net", true),
+      OptionRuleData("http://example.net/ad",
+          FONoFilterOption, "example.net", false),
+    }));
 
   CHECK(checkOptionRule("adv$domain=example.com|~example.net",
     {
-      OptionRuleData("http://example.net/adv", FONoFilterOption, "example.net", false),
-      OptionRuleData("http://somewebsite.com/adv", FONoFilterOption, "example.com", true),
-      OptionRuleData("http://www.example.net/adv", FONoFilterOption, "www.example.net", false),
-      OptionRuleData("http://my.subdomain.example.com/adv", FONoFilterOption, "my.subdomain.example.com", true),
-      OptionRuleData("http://example.com/adv", FONoFilterOption, "badexample.com", false),
-      OptionRuleData("http://example.com/adv", FONoFilterOption, "otherdomain.net", false),
-      OptionRuleData("http://example.net/ad", FONoFilterOption, "example.net", false),
-    }
-  ));
+      OptionRuleData("http://example.net/adv",
+          FONoFilterOption, "example.net", false),
+      OptionRuleData("http://somewebsite.com/adv",
+          FONoFilterOption, "example.com", true),
+      OptionRuleData("http://www.example.net/adv",
+          FONoFilterOption, "www.example.net", false),
+      OptionRuleData("http://my.subdomain.example.com/adv",
+          FONoFilterOption, "my.subdomain.example.com", true),
+      OptionRuleData("http://example.com/adv",
+          FONoFilterOption, "badexample.com", false),
+      OptionRuleData("http://example.com/adv",
+          FONoFilterOption, "otherdomain.net", false),
+      OptionRuleData("http://example.net/ad",
+          FONoFilterOption, "example.net", false),
+    }));
 
-  CHECK(checkOptionRule("adv$domain=example.com|~foo.example.com,script",
+  CHECK(checkOptionRule(
+        "adv$domain=example.com|~foo.example.com,script",
     {
-      OptionRuleData("http://example.net/adv", FOScript, "example.com", true),
-      OptionRuleData("http://example.net/adv", FOScript, "foo.example.com", false),
-      OptionRuleData("http://example.net/adv", FOScript, "www.foo.example.com", false),
-      OptionRuleData("http://example.net/adv", FOOther, "example.com", false),
-      OptionRuleData("http://example.net/adv", FOOther, "foo.example.com", false),
-      OptionRuleData("http://example.net/adv", FOOther, "www.foo.example.com", false),
-    }
-  ));
+      OptionRuleData("http://example.net/adv",
+          FOScript, "example.com", true),
+      OptionRuleData("http://example.net/adv",
+          FOScript, "foo.example.com", false),
+      OptionRuleData("http://example.net/adv",
+          FOScript, "www.foo.example.com", false),
+      OptionRuleData("http://example.net/adv",
+          FOOther, "example.com", false),
+      OptionRuleData("http://example.net/adv",
+          FOOther, "foo.example.com", false),
+      OptionRuleData("http://example.net/adv",
+          FOOther, "www.foo.example.com", false),
+    }));
 
   CHECK(checkOptionRule("adv\n"
                         "@@advice.$~script",
     {
-      OptionRuleData("http://example.com/advice.html", FOOther, nullptr, false),
-      OptionRuleData("http://example.com/advice.html", FOScript, nullptr, true),
-      OptionRuleData("http://example.com/advert.html", FOOther, nullptr, true),
-      OptionRuleData("http://example.com/advert.html", FOScript, nullptr, true),
-    }
-  ));
+      OptionRuleData("http://example.com/advice.html",
+          FOOther, nullptr, false),
+      OptionRuleData("http://example.com/advice.html",
+          FOScript, nullptr, true),
+      OptionRuleData("http://example.com/advert.html",
+          FOOther, nullptr, true),
+      OptionRuleData("http://example.com/advert.html",
+          FOScript, nullptr, true),
+    }));
 
   // Single matching context domain to domain list
-  CHECK(checkOptionRule("||mzstatic.com^$image,object-subrequest,domain=dailymotion.com",
+  CHECK(checkOptionRule(
+        "||mzstatic.com^$image,object-subrequest,domain=dailymotion.com",
     {
-      OptionRuleData("http://www.dailymotion.com", FONoFilterOption, "dailymotion.com", false),
-    }
-  ));
+      OptionRuleData("http://www.dailymotion.com",
+          FONoFilterOption, "dailymotion.com", false),
+    }));
 }
 
 // Should parse EasyList without failing
-TEST(parser, parse)
-{
-  std::string &&fileContents = getFileContents("./test/data/easylist.txt");
+TEST(parser, parse) {
+  string && fileContents = // NOLINT
+    getFileContents("./test/data/easylist.txt");
   ABPFilterParser parser;
   parser.parse(fileContents.c_str());
 
-  CHECK(compareNums(parser.numFilters + parser.numNoFingerprintFilters, 12710));
+  CHECK(compareNums(parser.numFilters +
+        parser.numNoFingerprintFilters, 12710));
   CHECK(compareNums(parser.numHtmlRuleFilters, 26455));
-  CHECK(compareNums(parser.numExceptionFilters + + parser.numNoFingerprintExceptionFilters, 2547));
+  CHECK(compareNums(parser.numExceptionFilters +
+        parser.numNoFingerprintExceptionFilters, 2547));
 }
 
 // Calling parse amongst 2 different lists should preserve both sets of rules
-TEST(multipleParse, multipleParse2)
-{
+TEST(multipleParse, multipleParse2) {
   ABPFilterParser parser;
   parser.parse("adv\n"
                "@@test\n"
@@ -501,70 +543,77 @@ TEST(multipleParse, multipleParse2)
                "@@test3\n"
                "###test3");
 
-  CHECK(compareNums(parser.numFilters + parser.numNoFingerprintFilters, 3));
+  CHECK(compareNums(parser.numFilters +
+        parser.numNoFingerprintFilters, 3));
   CHECK(compareNums(parser.numHtmlRuleFilters, 3));
-  CHECK(compareNums(parser.numExceptionFilters + parser.numNoFingerprintExceptionFilters, 3));
+  CHECK(compareNums(parser.numExceptionFilters +
+        parser.numNoFingerprintExceptionFilters, 3));
 }
 
 // Demo app test
-TEST(demoApp, demoApp2)
-{
+TEST(demoApp, demoApp2) {
   ABPFilterParser parser;
   parser.parse("||googlesyndication.com/safeframe/$third-party");
-  const char *urlToCheck = "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html";
+  const char *urlToCheck =
+    "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html";
   const char *currentPageDomain = "slashdot.org";
   CHECK(parser.matches(urlToCheck, FOScript, currentPageDomain));
-
 }
 
-TEST(hostAnchoredFiltersParseCorrectly, hostAnchoredFiltersParseCorrectly2)
-{
+TEST(hostAnchoredFiltersParseCorrectly, hostAnchoredFiltersParseCorrectly2) {
   // Host anchor is calculated correctly
   Filter filter;
-  parseFilter("||test.com$third-party", filter);
+  parseFilter("||test.com$third-party", &filter);
   CHECK(!strcmp("test.com", filter.host));
 
   Filter filter2;
-  parseFilter("||test.com/ok$third-party", filter2);
+  parseFilter("||test.com/ok$third-party", &filter2);
   CHECK(!strcmp("test.com", filter2.host));
 
   Filter filter3;
-  parseFilter("||test.com/ok", filter3);
+  parseFilter("||test.com/ok", &filter3);
   CHECK(!strcmp("test.com", filter3.host));
 }
 
-TEST(misc, misc2)
-{
+TEST(misc, misc2) {
   for (int i = 0; i < 256; i++) {
-    if (i == (int)':' || i == (int)'?' || i == (int)'/' ||
-        i == (int)'=' || i == (int)'^' || i == (int)'$') {
-      CHECK(isSeparatorChar((char)i));
+    if (i == static_cast<int>(':') || i == static_cast<int>('?') ||
+        i == static_cast<int>('/') ||
+        i == static_cast<int>('=') || i == static_cast<int>('^') ||
+        i == static_cast<int>('$')) {
+      CHECK(isSeparatorChar(static_cast<char>(i)));
     } else {
-      CHECK(!isSeparatorChar((int)(char)i));
+      CHECK(!isSeparatorChar(static_cast<int>(static_cast<char>(i))));
     }
   }
 }
 
 
-TEST(serializationTests, serializationTests2)
-{
+TEST(serializationTests, serializationTests2) {
   ABPFilterParser parser;
-  parser.parse("||googlesyndication.com$third-party\n@@||googlesyndication.ca");
+  parser.parse(
+      "||googlesyndication.com$third-party\n@@||googlesyndication.ca");
   int size;
-  char * buffer = parser.serialize(size);
+  char * buffer = parser.serialize(&size);
 
   ABPFilterParser parser2;
   parser2.deserialize(buffer);
 
-  Filter f(static_cast<FilterType>(FTHostAnchored | FTHostOnly), FOThirdParty, FONoFilterOption, "googlesyndication.com", 21, nullptr, "googlesyndication.com");
-  Filter f2(FTNoFilterType, FOThirdParty, FONoFilterOption, "googleayndication.com", 21, nullptr, "googleayndication.com");
+  Filter f(static_cast<FilterType>(FTHostAnchored | FTHostOnly), FOThirdParty,
+      FONoFilterOption, "googlesyndication.com", 21, nullptr,
+      "googlesyndication.com");
+  Filter f2(FTNoFilterType, FOThirdParty, FONoFilterOption,
+      "googleayndication.com", 21, nullptr, "googleayndication.com");
   CHECK(parser.hostAnchoredHashSet->exists(f));
   CHECK(parser2.hostAnchoredHashSet->exists(f));
   CHECK(!parser.hostAnchoredHashSet->exists(f2));
   CHECK(!parser2.hostAnchoredHashSet->exists(f2));
 
-  Filter f3(static_cast<FilterType>(FTHostAnchored | FTHostOnly | FTException), FONoFilterOption, FONoFilterOption, "googlesyndication.ca", 20, nullptr, "googlesyndication.ca");
-  Filter f4(FTNoFilterType, FONoFilterOption, FONoFilterOption, "googleayndication.ca", 20, nullptr, "googleayndication.ca");
+  Filter f3(static_cast<FilterType>(FTHostAnchored | FTHostOnly | FTException),
+      FONoFilterOption, FONoFilterOption, "googlesyndication.ca",
+      20, nullptr, "googlesyndication.ca");
+  Filter f4(FTNoFilterType, FONoFilterOption, FONoFilterOption,
+      "googleayndication.ca", 20, nullptr, "googleayndication.ca");
   CHECK(parser.hostAnchoredExceptionHashSet->exists(f3));
   CHECK(parser2.hostAnchoredExceptionHashSet->exists(f3));
   CHECK(!parser.hostAnchoredExceptionHashSet->exists(f4));

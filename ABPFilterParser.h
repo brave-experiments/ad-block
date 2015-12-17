@@ -1,24 +1,31 @@
-#pragma once
+/* Copyright (c) 2015 Brian R. Bondy. Distributed under the MPL2 license.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "filter.h"
-#include "BloomFilter.h"
-#include "HashSet.h"
-#include "badFingerprint.h"
-#include "cosmeticFilter.h"
+#ifndef ABPFILTERPARSER_H_
+#define ABPFILTERPARSER_H_
 
-class ABPFilterParser
-{
-public:
+#include "./filter.h"
+#include "./BloomFilter.h"
+#include "./HashSet.h"
+#include "./badFingerprint.h"
+#include "./cosmeticFilter.h"
+
+class ABPFilterParser {
+ public:
   ABPFilterParser();
   ~ABPFilterParser();
 
   bool parse(const char *input);
-  bool matches(const char *input, FilterOption contextOption = FONoFilterOption, const char *contextDomain = nullptr);
+  bool matches(const char *input, FilterOption contextOption = FONoFilterOption,
+      const char *contextDomain = nullptr);
   // Serializes a the parsed data and bloom filter data into a single buffer.
   // The returned buffer should be deleted.
-  char * serialize(int &size, bool ignoreHTMLFilters = true);
-  // Deserializes the buffer, a size is not needed since a serialized buffer is self described
-  void deserialize(char *);
+  char * serialize(int *size, bool ignoreHTMLFilters = true);
+  // Deserializes the buffer, a size is not needed since a serialized
+  // buffer is self described
+  void deserialize(char *buffer);
 
   void enableBadFingerprintDetection();
 
@@ -49,20 +56,25 @@ public:
   unsigned int numExceptionFalsePositives;
   unsigned int numBloomFilterSaves;
   unsigned int numExceptionBloomFilterSaves;
-protected:
-  // Determines if a passed in array of filter pointers matches for any of the input
-  bool hasMatchingFilters(Filter *filter, int &numFilters, const char *input, int inputLen, FilterOption contextOption, const char *contextDomain, BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen);
+
+ protected:
+  // Determines if a passed in array of filter pointers matches for any of
+  // the input
+  bool hasMatchingFilters(Filter *filter, int numFilters, const char *input,
+      int inputLen, FilterOption contextOption, const char *contextDomain,
+      BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen);
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
   void initHashSet(HashSet<Filter>**, char *buffer, int len);
 };
 
 // Fast hash function applicable to 2 byte char checks
 class HashFn2Byte : public HashFn {
-public:
-  HashFn2Byte() : HashFn (0) {
+ public:
+  HashFn2Byte() : HashFn(0) {
   }
 
-  virtual uint64_t operator()(const char *input, int len, unsigned char lastCharCode, uint64_t lastHash) {
+  virtual uint64_t operator()(const char *input, int len,
+      unsigned char lastCharCode, uint64_t lastHash) {
     return (((uint64_t)input[1]) << 8) | input[0];  }
 
   virtual uint64_t operator()(const char *input, int len) {
@@ -71,7 +83,19 @@ public:
 };
 
 extern const char *separatorCharacters;
-void parseFilter(const char *input, const char *end, Filter&, BloomFilter *bloomFilter = nullptr, BloomFilter *exceptionBloomFilter = nullptr, HashSet<Filter> *hostAnchoredHashSet = nullptr, HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr, HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr);
-void parseFilter(const char *input, Filter&, BloomFilter *bloomFilter = nullptr, BloomFilter *exceptionBloomFilter = nullptr, HashSet<Filter> *hostAnchoredHashSet = nullptr, HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr, HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr);
+void parseFilter(const char *input, const char *end, Filter *f,
+    BloomFilter *bloomFilter = nullptr,
+    BloomFilter *exceptionBloomFilter = nullptr,
+    HashSet<Filter> *hostAnchoredHashSet = nullptr,
+    HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr,
+    HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr);
+void parseFilter(const char *input, Filter *f,
+    BloomFilter *bloomFilter = nullptr,
+    BloomFilter *exceptionBloomFilter = nullptr,
+    HashSet<Filter> *hostAnchoredHashSet = nullptr,
+    HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr,
+    HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr);
 bool isSeparatorChar(char c);
 int findFirstSeparatorChar(const char *input, const char *end);
+
+#endif  // ABPFILTERPARSER_H_

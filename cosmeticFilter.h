@@ -1,12 +1,17 @@
-#pragma once
+/* Copyright (c) 2015 Brian R. Bondy. Distributed under the MPL2 license.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "math.h"
-#include "string.h"
+#ifndef COSMETICFILTER_H_
+#define COSMETICFILTER_H_
+
+#include <math.h>
 #include <string.h>
-#include "HashSet.h"
+#include "./HashSet.h"
 
 class CosmeticFilter {
-public:
+ public:
   uint64_t hash() const;
 
   ~CosmeticFilter() {
@@ -14,9 +19,10 @@ public:
       delete[] data;
     }
   }
-  CosmeticFilter(const char *data) {
-    this->data = new char[strlen(data) + 1];
-    strcpy(this->data, data);
+  explicit CosmeticFilter(const char *data) {
+    size_t len = strlen(data) + 1;
+    this->data = new char[len];
+    snprintf(this->data, len, "%s", data);
   }
 
   CosmeticFilter(const CosmeticFilter &rhs) {
@@ -56,29 +62,28 @@ public:
 };
 
 class CosmeticFilterHashSet : public HashSet<CosmeticFilter> {
-public:
+ public:
   CosmeticFilterHashSet() : HashSet<CosmeticFilter>(1000) {
   }
-  char * toStylesheet(uint32_t &len) {
-    len = fillStylesheetBuffer(nullptr);
-    char *buffer = new char[len];
-    memset(buffer, 0, len);
+  char * toStylesheet(uint32_t *len) {
+    *len = fillStylesheetBuffer(nullptr);
+    char *buffer = new char[*len];
+    memset(buffer, 0, *len);
     fillStylesheetBuffer(buffer);
     return buffer;
   }
 
-private:
-
+ private:
   uint32_t fillStylesheetBuffer(char *buffer) {
     uint32_t len = 0;
     for (uint32_t bucketIndex = 0; bucketIndex < bucketCount; bucketIndex++) {
-
       HashItem<CosmeticFilter> *hashItem = buckets[bucketIndex];
       len = 0;
       while (hashItem) {
         CosmeticFilter *cosmeticFilter = hashItem->hashItemStorage;
         // [cosmeticFilter],[space]
-        int cosmeticFilterLen = static_cast<int>(strlen(cosmeticFilter->data));
+        int cosmeticFilterLen =
+          static_cast<int>(strlen(cosmeticFilter->data));
         if (buffer) {
           memcpy(buffer + len, cosmeticFilter->data, cosmeticFilterLen);
         }
@@ -95,3 +100,5 @@ private:
     return len;
   }
 };
+
+#endif  // COSMETICFILTER_H_

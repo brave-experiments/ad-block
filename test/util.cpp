@@ -1,16 +1,22 @@
-#include "CppUnitLite/TestHarness.h"
+/* Copyright (c) 2015 Brian R. Bondy. Distributed under the MPL2 license.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include "util.h"
+#include <string>
+#include "./CppUnitLite/TestHarness.h"
+#include "./util.h"
 
-using namespace std;
+using std::cout;
+using std::endl;
 
-string getFileContents(const char *filename)
-{
-  ifstream in(filename, ios::in);
+std::string getFileContents(const char *filename) {
+  std::ifstream in(filename, std::ios::in);
   if (in) {
-    ostringstream contents;
+    std::ostringstream contents;
     contents << in.rdbuf();
     in.close();
     return(contents.str());
