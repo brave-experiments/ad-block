@@ -1,27 +1,28 @@
 .PHONY: build
-.PHONY: build-debug
 .PHONY: test
-.PHONY: static
+.PHONY: sample
 .PHONY: perf
+.PHONY: xcode-proj
+.PHONY: clean
 
 build:
-	 node-gyp configure && node-gyp build
+	 ./node_modules/.bin/node-gyp configure && node-gyp build
 
-build-debug:
-	 node-gyp configure -debug && node-gyp build
+build-other:
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja other.gyp
+	ninja -C build/out/Default -f build.ninja
 
-test:
-	 node-gyp configure -debug && node-gyp build && ./build/Debug/test
+test: build-other
+	./build/out/Default/test || [ $$? -eq 0 ]
 
-sample:
-	 node-gyp configure && node-gyp build && ./build/Release/sample
+sample: build-other
+	./build/out/Default/sample
 
-perf:
-	 node-gyp configure && node-gyp build && ./build/Release/perf
+perf: build-other
+	./build/out/Default/perf
 
 xcode-proj:
 	node-gyp configure -- -f xcode
 
 clean:
-	node-gyp clean
-
+	rm -Rf build
