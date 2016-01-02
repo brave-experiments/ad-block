@@ -1,14 +1,20 @@
 {
   "targets": [{
     "target_name": "abp-filter-parser-cpp",
-    "type": "static_library",
     "sources": [
+      "addon.cpp",
+      "ABPFilterParserWrap.cpp",
+      "ABPFilterParserWrap.h",
       "ABPFilterParser.cpp",
       "ABPFilterParser.h",
       "cosmeticFilter.cpp",
       "cosmeticFilter.h",
       "filter.cpp",
       "filter.h",
+      "./node_modules/bloom-filter-cpp/BloomFilter.cpp",
+      "./node_modules/bloom-filter-cpp/BloomFilter.h",
+      "./node_modules/hashset-cpp/HashSet.cpp",
+      "./node_modules/hashset-cpp/HashSet.h"
     ],
     "include_dirs": [
       ".",
