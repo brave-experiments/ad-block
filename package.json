@@ -26,15 +26,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bbondy/ABPFilterParser.cpp.git"
+    "url": "git+https://github.com/bbondy/abp-filter-parser-cpp.git"
   },
   "author": "Brian R. Bondy <netzen@gmail.com> (http://www.brianbondy.com)",
   "license": "MPL-2.0",
   "gypfile": true,
   "bugs": {
-    "url": "https://github.com/bbondy/ABPFilterParser.cpp/issues"
+    "url": "https://github.com/bbondy/abp-filter-parser-cpp/issues"
   },
-  "homepage": "https://github.com/bbondy/ABPFilterParser.cpp#readme",
+  "homepage": "https://github.com/bbondy/abp-filter-parser-cpp#readme",
   "pre-commit": [
     "lint"
   ]
