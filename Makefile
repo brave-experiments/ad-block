@@ -9,7 +9,7 @@ build:
 	 ./node_modules/.bin/node-gyp configure && node-gyp build
 
 build-other:
-	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja other.gyp
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja other/binding.gyp
 	ninja -C build/out/Default -f build.ninja
 
 test: build-other
@@ -22,7 +22,7 @@ perf: build-other
 	./build/out/Default/perf
 
 xcode-proj:
-	node-gyp configure -- -f xcode
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f xcode other/binding.gyp
 
 clean:
 	rm -Rf build
