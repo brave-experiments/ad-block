@@ -1,7 +1,7 @@
 {
   "name": "abp-filter-parser-cpp",
   "main": "./build/Release/abp-filter-parser-cpp",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "C++ Adblock Plus filter parser for lists like EasyList",
   "directories": {
     "test": "test"
@@ -13,8 +13,8 @@
     "nan": "^2.1.0"
   },
   "devDependencies": {
-    "pre-commit": "^1.1.2",
-    "node-gyp": "^3.2.1"
+    "node-gyp": "^3.2.1",
+    "pre-commit": "^1.1.2"
   },
   "scripts": {
     "test": "make test",
