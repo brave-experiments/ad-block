@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <node_buffer.h>
 #include "ABPFilterParserWrap.h"
 
 namespace ABPFilterParserWrap {
@@ -12,12 +13,16 @@ using v8::FunctionCallbackInfo;
 using v8::FunctionTemplate;
 using v8::Isolate;
 using v8::Local;
+using v8::MaybeLocal;
 using v8::Int32;
 using v8::Object;
 using v8::Persistent;
 using v8::String;
 using v8::Boolean;
 using v8::Value;
+using v8::Exception;
+
+char *deserializedData = nullptr;
 
 Persistent<Function> ABPFilterParserWrap::constructor;
 
@@ -38,6 +43,10 @@ void ABPFilterParserWrap::Init(Local<Object> exports) {
   // Prototype
   NODE_SET_PROTOTYPE_METHOD(tpl, "parse", ABPFilterParserWrap::Parse);
   NODE_SET_PROTOTYPE_METHOD(tpl, "matches", ABPFilterParserWrap::Matches);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", ABPFilterParserWrap::Serialize);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "deserialize",
+    ABPFilterParserWrap::Deserialize);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "cleanup", ABPFilterParserWrap::Cleanup);
 
   Local<Object> filterOptions = Object::New(isolate);
   filterOptions->Set(String::NewFromUtf8(isolate, "noFilterOption"),
@@ -123,5 +132,58 @@ void ABPFilterParserWrap::Matches(const FunctionCallbackInfo<Value>& args) {
   args.GetReturnValue().Set(Boolean::New(isolate, matches));
 }
 
+
+void ABPFilterParserWrap::Serialize(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+
+  int totalSize = 0;
+  // Serialize data
+  char* data = obj->serialize(&totalSize);
+  if (nullptr == data) {
+    isolate->ThrowException(Exception::TypeError(
+      String::NewFromUtf8(isolate, "Could not serialize")));
+    return;
+  }
+
+  MaybeLocal<Object> buffer = node::Buffer::New(isolate, totalSize);
+  Local<Object> localBuffer;
+  if (!buffer.ToLocal(&localBuffer)) {
+    isolate->ThrowException(Exception::TypeError(
+      String::NewFromUtf8(isolate, "Could not convert MaybeLocal to Local")));
+    return;
+  }
+  memcpy(node::Buffer::Data(localBuffer), data, totalSize);
+  delete[] data;
+  args.GetReturnValue().Set(localBuffer);
+}
+
+void ABPFilterParserWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+
+  if (args.Length() < 1) {
+    isolate->ThrowException(Exception::TypeError(
+      String::NewFromUtf8(isolate, "Wrong number of arguments")));
+    return;
+  }
+  unsigned char *buf = (unsigned char *)node::Buffer::Data(args[0]);
+  size_t length = node::Buffer::Length(args[0]);
+  if (nullptr != deserializedData) {
+    delete []deserializedData;
+  }
+  deserializedData = new char[length];
+  memcpy(deserializedData, buf, length);
+  obj->deserialize(deserializedData);
+}
+
+void ABPFilterParserWrap::Cleanup(const FunctionCallbackInfo<Value>&) {
+  if (nullptr != deserializedData) {
+    delete []deserializedData;
+    deserializedData = nullptr;
+  }
+}
 
 }  // namespace ABPFilterParserWrap
