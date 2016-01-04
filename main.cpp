@@ -4,6 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <algorithm>
+#include <cerrno>
 #include <iostream>
 #include <fstream>
 #include <sstream>

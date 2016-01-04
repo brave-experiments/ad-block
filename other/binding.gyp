@@ -34,6 +34,9 @@
       "MACOSX_DEPLOYMENT_TARGET": "10.9",
       "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
     },
+    "cflags": [
+      "-std=c++11"
+    ],
   }, {
     "target_name": "perf",
     "type": "executable",
@@ -70,6 +73,9 @@
       "MACOSX_DEPLOYMENT_TARGET": "10.9",
       "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
     },
+    "cflags": [
+      "-std=c++11"
+    ]
   }, {
     "target_name": "test",
     "type": "executable",
@@ -120,5 +126,8 @@
       "MACOSX_DEPLOYMENT_TARGET": "10.9",
       "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
     },
+    "cflags": [
+      "-std=c++11"
+    ]
   }]
 }
