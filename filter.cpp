@@ -14,6 +14,8 @@
 #include <regex> // NOLINT
 #endif
 
+static HashFn h(19);
+
 const char * getUrlHost(const char *input, int *len);
 
 Filter::Filter() :
@@ -697,14 +699,13 @@ int Filter::getLeftoverDomainCount(const char *shouldBlockDomains,
 }
 
 uint64_t Filter::hash() const {
-  HashFn fn(19);
   if (!host && !data) {
     return 0;
   } else if (host) {
-    return fn(host, static_cast<int>(strlen(host)));
+    return h(host, static_cast<int>(strlen(host)));
   }
 
-  return fn(data, dataLen);
+  return h(data, dataLen);
 }
 
 uint32_t Filter::serialize(char *buffer) {

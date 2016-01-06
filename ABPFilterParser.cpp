@@ -29,6 +29,8 @@ enum FilterParseState {
 
 static const int kFingerprintSize = 6;
 
+static HashFn2Byte hashFn2Byte;
+
 /**
  * Finds the host within the passed in URL and returns its length
  */
@@ -491,7 +493,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption,
   // Optmization for the manual filter checks which are needed.
   // Avoid having to check individual filters if the filter parts are not found
   // inside the input bloom filter.
-  HashFn2Byte hashFns[] = { HashFn2Byte() };
+  HashFn2Byte hashFns[] = { hashFn2Byte };
   BloomFilter inputBloomFilter(10, 1024, hashFns, 1);
   for (int i = 1; i < inputLen; i++) {
     inputBloomFilter.add(input + i - 1, 2);

@@ -5817,6 +5817,8 @@ const char *badFingerprints[] = {
 "ns/use",
 "ns/aut",
 "s/auto",
+"tomati",
+"data=a",
 };
 
 const char *badSubstrings[] = {"http", "www" };

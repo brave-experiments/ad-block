@@ -70,7 +70,7 @@ class ABPFilterParser {
 // Fast hash function applicable to 2 byte char checks
 class HashFn2Byte : public HashFn {
  public:
-  HashFn2Byte() : HashFn(0) {
+  HashFn2Byte() : HashFn(0, false) {
   }
 
   virtual uint64_t operator()(const char *input, int len,

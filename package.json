@@ -1,15 +1,15 @@
 {
   "name": "abp-filter-parser-cpp",
   "main": "./build/Release/abp-filter-parser-cpp",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "C++ Adblock Plus filter parser for lists like EasyList",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "bloom-filter-cpp": "^1.0.18",
+    "bloom-filter-cpp": "^1.0.19",
     "cppunitlite": "^1.0.0",
-    "hashset-cpp": "^1.0.12",
+    "hashset-cpp": "^1.0.13",
     "nan": "^2.1.0"
   },
   "devDependencies": {
