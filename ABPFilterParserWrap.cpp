@@ -69,7 +69,7 @@ void ABPFilterParserWrap::Init(Local<Object> exports) {
     Int32::New(isolate, 0200));
   filterOptions->Set(String::NewFromUtf8(isolate, "other"),
     Int32::New(isolate, 0400));
-  filterOptions->Set(String::NewFromUtf8(isolate, "xBL"),
+  filterOptions->Set(String::NewFromUtf8(isolate, "xbl"),
     Int32::New(isolate, 01000));
   filterOptions->Set(String::NewFromUtf8(isolate, "collapse"),
     Int32::New(isolate, 02000));
