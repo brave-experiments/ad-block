@@ -2,27 +2,28 @@
 .PHONY: test
 .PHONY: sample
 .PHONY: perf
-.PHONY: xcode-proj
 .PHONY: clean
 
 build:
 	 ./node_modules/.bin/node-gyp configure && node-gyp build
 
-build-other:
-	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja other/binding.gyp
+test:
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja test/binding.gyp
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f xcode test/binding.gyp
 	ninja -C build/out/Default -f build.ninja
-
-test: build-other
 	./build/out/Default/test || [ $$? -eq 0 ]
 
-sample: build-other
+sample:
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja sample/binding.gyp
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f xcode sample/binding.gyp
+	ninja -C build/out/Default -f build.ninja
 	./build/out/Default/sample
 
-perf: build-other
+perf:
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja perf/binding.gyp
+	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f xcode perf/binding.gyp
+	ninja -C build/out/Default -f build.ninja
 	./build/out/Default/perf
-
-xcode-proj:
-	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f xcode other/binding.gyp
 
 clean:
 	rm -Rf build
