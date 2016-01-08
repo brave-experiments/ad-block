@@ -8,7 +8,7 @@
 
 #include <string.h>
 #include <math.h>
-#include "./HashSet.h"
+#include "HashSet.h"
 
 #ifdef PERF_STATS
 #include <fstream>

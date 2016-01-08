@@ -7,8 +7,8 @@
 #define ABPFILTERPARSER_H_
 
 #include "./filter.h"
-#include "./BloomFilter.h"
-#include "./HashSet.h"
+#include "BloomFilter.h"
+#include "HashSet.h"
 #include "./badFingerprint.h"
 #include "./cosmeticFilter.h"
 

@@ -4,7 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "./cosmeticFilter.h"
-#include "./hashFn.h"
+#include "hashFn.h"
 
 static HashFn fn(19);
 
