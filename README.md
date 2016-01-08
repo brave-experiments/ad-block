@@ -106,7 +106,7 @@ int main(int argc, char**argv) {
 ## Developing abp-filter-parser-cpp
 
 ````
-git clone abp-filter-parser-cpp
+git clone --recursive abp-filter-parser-cpp
 cd abp-filter-parser-cpp
 npm install
 ```
