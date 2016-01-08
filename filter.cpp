@@ -6,7 +6,7 @@
 #include <string.h>
 #include <math.h>
 #include "./filter.h"
-#include "./hashFn.h"
+#include "hashFn.h"
 #include "./ABPFilterParser.h"
 
 #ifdef ENABLE_REGEX

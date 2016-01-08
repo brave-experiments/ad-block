@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "./base.h"
-#include "./BloomFilter.h"
+#include "BloomFilter.h"
 
 enum FilterType {
   FTNoFilterType = 0,
