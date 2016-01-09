@@ -1,8 +1,8 @@
 [![Build Status](https://travis-ci.org/bbondy/abp-filter-parser-cpp.svg?branch=master)](https://travis-ci.org/bbondy/abp-filter-parser-cpp)
 
-# ABPFilterParser.cpp
+# abp-filter-parser-cpp
 
-C++ Adblock Plus filter parser for lists like EasyList
+Native node module, and C++ library for Adblock Plus filter parsing for lists like EasyList.
 
 This is a straight port of the prototype done in JS here:
 https://github.com/bbondy/abp-filter-parser
@@ -16,7 +16,7 @@ npm install --save abp-filter-parser-cpp
 ```
 
 
-## Sample
+## C++ Sample
 
 ```c++
 #include "ABPFilterParser.h"
@@ -112,16 +112,10 @@ npm install
 ```
 
 
-## Build everything in release
+## Make the node module
 
 ```
 make
-```
-
-## Build everything in debug
-
-```
-make build-debug
 ```
 
 ## Running sample (which also generates a .dat file for deserializing)
