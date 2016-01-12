@@ -15,6 +15,20 @@ It uses a bloom filter and Rabin-Karp algorithm to be super fast.
 npm install --save abp-filter-parser-cpp
 ```
 
+## JS Sample
+
+```javascript
+var ABPFilterParser = ABPFilterParserLib.ABPFilterParser
+var FilterOptions = ABPFilterParserLib.FilterOptions
+
+var parser = new ABPFilterParser()
+parser.parse('/public/ad/*$domain=slashdot.org')
+parser.parse('/public/ad3/*$script')
+var b1 = parser.matches('http://www.brianbondy.com/public/ad/some-ad', FilterOptions.script, 'slashdot.org')
+var b2 = parser.matches('http://www.brianbondy.com/public/ad/some-ad', FilterOptions.script, 'digg.com')
+console.log('public/ad/* should match b1.  Actual: ', b1)
+console.log('public/ad/* should not match b2.  Actual: ', b2)
+```
 
 ## C++ Sample
 
