@@ -15,21 +15,6 @@ It uses a bloom filter and Rabin-Karp algorithm to be super fast.
 npm install --save abp-filter-parser-cpp
 ```
 
-
-## Installation
-
-1. Clone the git repository from GitHub:
-
-        git clone https://github.com/bbondy/abp-filter-parser-cpp
-
-2. Open the working directory:
-
-        abp-filter-parser-cpp
-
-3. Install the Node (v5+) dependencies:
-
-        npm install
-
 ## JS Sample
 
 ```javascript
@@ -134,11 +119,17 @@ int main(int argc, char**argv) {
 
 ## Developing abp-filter-parser-cpp
 
-````
-git clone --recursive abp-filter-parser-cpp
-cd abp-filter-parser-cpp
-npm install
-```
+1. Clone the git repository from GitHub:
+
+    git clone --recursive abp-filter-parser-cpp
+
+2. Open the working directory:
+
+    cd abp-filter-parser-cpp
+
+3. Install the Node (v5+) dependencies:
+
+    npm install
 
 
 ## Make the node module
