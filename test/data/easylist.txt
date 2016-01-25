@@ -47656,3 +47656,7 @@ accounts.google.com#@#.adwords
 ! *** easylist:easylist_adult/adult_whitelist_popup.txt ***
 @@||imagebam.com/image/$popup
 @@||supportchat.contentabc.com^$popup,domain=brazzerssupport.com
+
+
+! Brave custom
+||ntv.io^$third-party
