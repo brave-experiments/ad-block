@@ -47660,3 +47660,4 @@ accounts.google.com#@#.adwords
 
 ! Brave custom
 ||ntv.io^$third-party
+@@||creative.sonobi.com
