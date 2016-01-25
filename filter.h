@@ -52,21 +52,24 @@ friend class ABPFilterParser;
   Filter();
   Filter(const Filter &other);
   Filter(const char * data, int dataLen, char *domainList = nullptr,
-      const char * host = nullptr) :
+      const char * host = nullptr, int hostLen = -1) :
       borrowedData(true), filterType(FTNoFilterType),
       filterOption(FONoFilterOption),
       antiFilterOption(FONoFilterOption), data(const_cast<char*>(data)),
-      dataLen(dataLen), domainList(domainList), host(const_cast<char*>(host)) {
+      dataLen(dataLen), domainList(domainList), host(const_cast<char*>(host)),
+      hostLen(hostLen) {
     domainCount = 0;
     antiDomainCount = 0;
   }
   Filter(FilterType filterType, FilterOption filterOption,
          FilterOption antiFilterOption,
          const char * data, int dataLen,
-         char *domainList = nullptr, const char * host = nullptr) :
+         char *domainList = nullptr, const char * host = nullptr,
+         int hostLen = -1) :
     borrowedData(true), filterType(filterType), filterOption(filterOption),
     antiFilterOption(antiFilterOption), data(const_cast<char*>(data)),
-      dataLen(dataLen), domainList(domainList), host(const_cast<char *>(host)) {
+      dataLen(dataLen), domainList(domainList), host(const_cast<char *>(host)),
+      hostLen(hostLen) {
     domainCount = 0;
     antiDomainCount = 0;
   }
@@ -112,8 +115,10 @@ friend class ABPFilterParser;
     }
     */
 
-    int hostLen = static_cast<int>(strlen(host));
-    int rhsHostLen = static_cast<int>(strlen(rhs.host));
+    int hostLen = this->hostLen == -1 ?
+      static_cast<int>(strlen(host)) : this->hostLen;
+    int rhsHostLen = rhs.hostLen == -1 ?
+      static_cast<int>(strlen(rhs.host)) : rhs.hostLen;
 
     if (hostLen != rhsHostLen) {
       return false;
@@ -143,6 +148,7 @@ friend class ABPFilterParser;
   char *host;
   uint32_t domainCount;
   uint32_t antiDomainCount;
+  int hostLen;
 
  protected:
   // Filters the domain list down to what's applicable for the context domain

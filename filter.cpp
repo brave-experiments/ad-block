@@ -28,7 +28,8 @@ Filter::Filter() :
   domainList(nullptr),
   host(nullptr),
   domainCount(0),
-  antiDomainCount(0) {
+  antiDomainCount(0),
+  hostLen(-1) {
 }
 
 Filter::~Filter() {
@@ -54,6 +55,7 @@ Filter::Filter(const Filter &other) {
   dataLen = other.dataLen;
   domainCount = other.domainCount;
   antiDomainCount = other.antiDomainCount;
+  hostLen = other.hostLen;
   if (other.dataLen == -1 && other.data) {
     dataLen = static_cast<int>(strlen(other.data));
   }
@@ -94,6 +96,7 @@ void Filter::swapData(Filter *other) {
   int tempDataLen = dataLen;
   char *tempDomainList = domainList;
   char *tempHost = host;
+  int tempHostLen = hostLen;
 
   filterType = other->filterType;
   filterOption = other->filterOption;
@@ -102,6 +105,7 @@ void Filter::swapData(Filter *other) {
   dataLen = other->dataLen;
   domainList = other->domainList;
   host = other->host;
+  hostLen = other->hostLen;
 
   other->filterType = tempFilterType;
   other->filterOption = tempFilterOption;
@@ -110,6 +114,7 @@ void Filter::swapData(Filter *other) {
   other->dataLen = tempDataLen;
   other->domainList = tempDomainList;
   other->host = tempHost;
+  other->hostLen = tempHostLen;
 }
 
 bool isDomain(const char *input, int len, const char *domain, bool anti) {
@@ -529,7 +534,8 @@ bool Filter::matches(const char *input, int inputLen,
     if (!currentHostLen) {
       currentHost = getUrlHost(input, &currentHostLen);
     }
-    int hostLen = static_cast<int>(strlen(host));
+    int hostLen = this->hostLen == -1 ?
+      static_cast<int>(strlen(host)) : this->hostLen;
 
     if (inputBloomFilter) {
       for (int i = 1; i < hostLen; i++) {
@@ -702,7 +708,7 @@ uint64_t Filter::hash() const {
   if (!host && !data) {
     return 0;
   } else if (host) {
-    return h(host, static_cast<int>(strlen(host)));
+    return h(host, hostLen == -1 ? static_cast<int>(strlen(host)) : hostLen);
   }
 
   return h(data, dataLen);
@@ -724,7 +730,8 @@ uint32_t Filter::serialize(char *buffer) {
   totalSize += dataLen;
 
   if (host) {
-    int hostLen = static_cast<int>(strlen(host));
+    int hostLen = this->hostLen == -1 ?
+      static_cast<int>(strlen(host)) : this->hostLen;
     if (buffer) {
       memcpy(buffer + totalSize, host, hostLen + 1);
     }
