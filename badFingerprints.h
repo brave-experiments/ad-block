@@ -5819,6 +5819,13 @@ const char *badFingerprints[] = {
 "s/auto",
 "tomati",
 "data=a",
+"ads/la",
+"-ad-co",
+"/ads/r",
+"transa",
+"oter.h",
+"ads/re",
+"ter.ht",
 };
 
 const char *badSubstrings[] = {"http", "www" };
