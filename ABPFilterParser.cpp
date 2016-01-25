@@ -490,6 +490,17 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption,
   int inputHostLen;
   const char *inputHost = getUrlHost(input, &inputHostLen);
 
+  if (contextDomain) {
+    if (isThirdPartyHost(contextDomain, strlen(contextDomain),
+        inputHost, inputHostLen)) {
+      contextOption =
+        static_cast<FilterOption>(contextOption | FOThirdParty);
+    } else {
+      contextOption =
+        static_cast<FilterOption>(contextOption | FONotThirdParty);
+    }
+  }
+
   // Optmization for the manual filter checks which are needed.
   // Avoid having to check individual filters if the filter parts are not found
   // inside the input bloom filter.

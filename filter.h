@@ -42,9 +42,8 @@ enum FilterOption {
   FOCollapse = 02000,
   FODoNotTrack = 04000,
   FOElemHide = 010000,
-  FOThirdParty = 020000,
-  // both options because the not present case is reated as unknown
-  FONotThirdParty = 040000
+  FOThirdParty = 020000,  // Used internally only, do not use
+  FONotThirdParty = 040000  // Used internally only, do not use
 };
 
 class Filter {
@@ -156,5 +155,10 @@ friend class ABPFilterParser;
   // Parses a single option
   void parseOption(const char *input, int len);
 };
+
+bool isThirdPartyHost(const char *baseContextHost,
+    int baseContextHostLen,
+    const char *testHost,
+    int testHostLen);
 
 #endif  // FILTER_H_
