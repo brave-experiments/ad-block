@@ -372,14 +372,15 @@ TEST(parser, optionRules) {
 
   CHECK(checkOptionRule("||example.com^$third-party",
     {
-      OptionRuleData("http://example.com", FOThirdParty, nullptr, true),
-      OptionRuleData("http://example.com", FONotThirdParty, nullptr, false),
-      OptionRuleData("http://ad.example.com", FOThirdParty, nullptr, true),
-      OptionRuleData("http://ad.example.com", FONotThirdParty, nullptr, false),
-      OptionRuleData("http://example2.com", FOThirdParty, nullptr, false),
-      OptionRuleData("http://example2.com", FONotThirdParty, nullptr, false),
-      OptionRuleData("http://example.com.au", FOThirdParty, nullptr, false),
-      OptionRuleData("http://example.com.au", FONotThirdParty, nullptr, false),
+      OptionRuleData("http://example.com", FOScript, "brianbondy.com", true),
+      OptionRuleData("http://example.com", FOScript, "example.com", false),
+      OptionRuleData("http://ad.example.com", FOScript, "brianbondy.com", true),
+      OptionRuleData("http://ad.example.com", FOScript, "example.com", false),
+      OptionRuleData("http://example2.com", FOScript, "brianbondy.com", false),
+      OptionRuleData("http://example2.com", FOScript, "example.com", false),
+      OptionRuleData("http://example.com.au", FOScript,
+          "brianbondy.com", false),
+      OptionRuleData("http://example.com.au", FOScript, "example.com", false),
     }));
 
   CHECK(checkOptionRule("||example.com^$third-party,~script",

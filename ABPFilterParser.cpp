@@ -467,7 +467,7 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
     if (*(start - 1) == '.') {
       Filter *filter = hashSet->find(Filter(start,
             static_cast<int>(inputHost + inputHostLen - start),
-            nullptr, start, inputHostLen));
+            nullptr, start, inputHostLen - (start - inputHost)));
       if (filter && filter->matches(input, inputLen,
             contextOption, contextDomain)) {
         return false;
