@@ -304,12 +304,12 @@ bool Filter::matchesOptions(const char *input, FilterOption context,
   // information
   if (context != FONoFilterOption) {
     if ((filterOption & ~FOThirdParty) != FONoFilterOption
-        && !(filterOption & context)) {
+        && !(filterOption & FOResourcesOnly & context)) {
       return false;
     }
 
     if ((antiFilterOption & ~FOThirdParty) != FONoFilterOption
-        && (antiFilterOption & context)) {
+        && (antiFilterOption & FOResourcesOnly & context)) {
       return false;
     }
   }

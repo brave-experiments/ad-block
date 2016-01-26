@@ -515,6 +515,14 @@ TEST(parser, optionRules) {
       OptionRuleData("http://www.dailymotion.com",
           FONoFilterOption, "dailymotion.com", false),
     }));
+
+  // Single matching context domain to domain list
+  CHECK(checkOptionRule(
+        "||s1.wp.com^$subdocument,third-party",
+    {
+      OptionRuleData("http://s1.wp.com/_static",
+          FOScript, "windsorstar.com", false),
+    }));
 }
 
 // Should parse EasyList without failing

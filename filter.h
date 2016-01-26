@@ -43,7 +43,9 @@ enum FilterOption {
   FODoNotTrack = 04000,
   FOElemHide = 010000,
   FOThirdParty = 020000,  // Used internally only, do not use
-  FONotThirdParty = 040000  // Used internally only, do not use
+  FONotThirdParty = 040000,  // Used internally only, do not use
+  FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
+    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL
 };
 
 class Filter {
