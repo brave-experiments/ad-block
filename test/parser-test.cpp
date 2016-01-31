@@ -516,28 +516,84 @@ TEST(parser, optionRules) {
           FONoFilterOption, "dailymotion.com", false),
     }));
 
-  // Single matching context domain to domain list
+  // Third party flags work correctly
   CHECK(checkOptionRule(
         "||s1.wp.com^$subdocument,third-party",
     {
       OptionRuleData("http://s1.wp.com/_static",
           FOScript, "windsorstar.com", false),
     }));
+
+  // Third party flags work correctly
+  CHECK(checkOptionRule(
+        "/scripts/ad.",
+    {
+      OptionRuleData("http://a.fsdn.com/sd/js/scripts/ad.js?release_20160112",
+          FOScript, "slashdot.org", true),
+    }));
 }
 
+struct ListCounts {
+  size_t filters;
+  size_t htmlRules;
+  size_t exceptions;
+};
+
+ListCounts easyList = { 12710, 26455, 2547 };
+ListCounts ublockUnbreak = { 122, 5, 34 };
+
 // Should parse EasyList without failing
-TEST(parser, parse) {
+TEST(parser, parse_easylist) {
   string && fileContents = // NOLINT
     getFileContents("./test/data/easylist.txt");
   ABPFilterParser parser;
   parser.parse(fileContents.c_str());
 
   CHECK(compareNums(parser.numFilters +
-        parser.numNoFingerprintFilters, 12710));
-  CHECK(compareNums(parser.numHtmlRuleFilters, 26455));
+        parser.numNoFingerprintFilters, easyList.filters));
+  CHECK(compareNums(parser.numHtmlRuleFilters, easyList.htmlRules));
   CHECK(compareNums(parser.numExceptionFilters +
-        parser.numNoFingerprintExceptionFilters, 2547));
+        parser.numNoFingerprintExceptionFilters, easyList.exceptions));
 }
+
+// Should parse ublock-unbreak list without failing
+TEST(parser, parse_ublock_unbreak) {
+  string && fileContents = // NOLINT
+    getFileContents("./test/data/ublock-unbreak.txt");
+  ABPFilterParser parser;
+  parser.parse(fileContents.c_str());
+
+  CHECK(compareNums(parser.numFilters +
+        parser.numNoFingerprintFilters, ublockUnbreak.filters));
+  CHECK(compareNums(parser.numHtmlRuleFilters, ublockUnbreak.htmlRules));
+  CHECK(compareNums(parser.numExceptionFilters +
+        parser.numNoFingerprintExceptionFilters, ublockUnbreak.exceptions));
+}
+
+
+// Should parse ublock-unbreak list without failing
+TEST(parser, parse_multiList) {
+  string && fileContentsEasylist = // NOLINT
+    getFileContents("./test/data/easylist.txt");
+
+  string && fileContentsUblockUnbreak = // NOLINT
+    getFileContents("./test/data/ublock-unbreak.txt");
+
+  ABPFilterParser parser;
+  parser.parse(fileContentsEasylist.c_str());
+  parser.parse(fileContentsUblockUnbreak.c_str());
+
+  CHECK(compareNums(parser.numFilters +
+        parser.numNoFingerprintFilters,
+        easyList.filters + ublockUnbreak.filters));
+  CHECK(compareNums(parser.numHtmlRuleFilters,
+        easyList.htmlRules + ublockUnbreak.htmlRules));
+  CHECK(compareNums(parser.numExceptionFilters +
+        parser.numNoFingerprintExceptionFilters,
+        easyList.exceptions + ublockUnbreak.exceptions));
+}
+
+
 
 // Calling parse amongst 2 different lists should preserve both sets of rules
 TEST(multipleParse, multipleParse2) {

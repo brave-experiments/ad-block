@@ -6247,6 +6247,19 @@ const char *badFingerprints[] = {
 "om/for",
 "xt.com",
 "m/forb",
+"/csp/d",
+"csp/dt",
+"sp/dta",
+"p/dtag",
+"/dtag?",
+"inkedi",
+"nkedin",
+"kedin.",
+"edin.c",
+"din.co",
+"com/cs",
+"om/csp",
+"m/csp/",
 };
 
 const char *badSubstrings[] = {"http", "www" };
