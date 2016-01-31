@@ -39,6 +39,9 @@ void writeFile(const char *filename, const char *buffer, int length) {
 
 int main(int argc, char**argv) {
   std::string && easyListTxt = getFileContents("./test/data/easylist.txt");
+  std::string && ublockUnblockTxt =
+    getFileContents("./test/data/ublock-unbreak.txt");
+
   const char *urlsToCheck[] = {
     // ||pagead2.googlesyndication.com^$~object-subrequest
     "http://pagead2.googlesyndication.com/pagead/show_ads.js",
@@ -54,9 +57,10 @@ int main(int argc, char**argv) {
   // URL being checked.
   const char *currentPageDomain = "slashdot.org";
 
-  // Parse easylist
+  // Parse ublockUnblockTxt and easylist
   ABPFilterParser parser;
   parser.parse(easyListTxt.c_str());
+  parser.parse(ublockUnblockTxt.c_str());
 
   // Do the checks
   std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck)
