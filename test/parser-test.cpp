@@ -316,6 +316,13 @@ TEST(parser, exceptionRules) {
       "http://examples.com/advice.html",
       "http://examples.com/#!foo",
     }));
+  CHECK(checkMatch("/ads/freewheel/*\n"
+                   "@@||turner.com^*/ads/freewheel/*/"
+                     "AdManager.js$domain=cnn.com",
+    {
+    }, {
+      "http://z.cdn.turner.com/xslo/cvp/ads/freewheel/js/0/AdManager.js",
+    }));
 }
 
 struct OptionRuleData {
@@ -365,7 +372,8 @@ bool checkOptionRule(const char *rules,
 TEST(parser, optionRules) {
   CHECK(checkOptionRule("||example.com",
     {
-      OptionRuleData("http://example.com", FOThirdParty, nullptr, true),
+      OptionRuleData("http://example.com",
+        FOThirdParty, nullptr, true),
       OptionRuleData("http://example2.com", FOThirdParty, nullptr, false),
       OptionRuleData("http://example.com", FONotThirdParty, nullptr, true),
     }));

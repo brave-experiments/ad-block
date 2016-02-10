@@ -545,8 +545,9 @@ bool Filter::matches(const char *input, int inputLen,
       }
     }
 
-    return !isThirdPartyHost(host, hostLen, currentHost, currentHostLen) &&
-      indexOfFilter(input, inputLen, data, filterPartEnd) != -1;
+    if (isThirdPartyHost(host, hostLen, currentHost, currentHostLen)) {
+      return false;
+    }
   }
 
   // Wildcard match comparison
@@ -572,7 +573,7 @@ bool Filter::matches(const char *input, int inputLen,
     }
     newIndex += index;
 
-    if (*filterPartEnd == '\0') {
+    if (*filterPartEnd == '\0' || filterPartEnd == data + dataLen) {
       break;
     }
     const char *temp = getNextPos(filterPartEnd + 1, '*', data + dataLen);
