@@ -548,7 +548,7 @@ struct ListCounts {
 };
 
 ListCounts easyList = { 19408, 28441, 3889 };
-ListCounts ublockUnbreak = { 123, 6, 69 };
+ListCounts ublockUnbreak = { 0, 6, 69 };
 ListCounts braveUnbreak = { 1, 0, 2 };
 
 // Should parse EasyList without failing

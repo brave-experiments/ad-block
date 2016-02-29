@@ -253,7 +253,7 @@ void parseFilter(const char *input, const char *end, Filter *f,
         case '[':
           if (parseState == FPStart || parseState == FPPastWhitespace) {
             f->filterType = FTComment;
-            // Wed don't care about comments right now
+            // We don't care about comments right now
             return;
           }
           break;
@@ -285,6 +285,15 @@ void parseFilter(const char *input, const char *end, Filter *f,
           earlyBreak = true;
           continue;
         case '#':
+          // ublock uses some comments of the form #[space]
+          if (parseState == FPStart || parseState == FPPastWhitespace) {
+            if (*(p+1) == ' ') {
+              f->filterType = FTComment;
+              // We don't care about comments right now
+              return;
+            }
+          }
+
           if (*(p+1) == '#' || *(p+1) == '@') {
             if (i != 0) {
               f->domainList = new char[i + 1];
