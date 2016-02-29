@@ -1,0 +1,3 @@
+||ntv.io^$third-party
+@@||creative.sonobi.com
+@@||adm.fwmrm.net^*/AdManager.js$domain=msnbc.com|sky.com|cnbc.com

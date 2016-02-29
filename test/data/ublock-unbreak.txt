@@ -1,4 +1,3 @@
-# License: https://raw.githubusercontent.com/gorhill/uBlock/master/LICENSE.txt
 # Needed to unbreak web sites, mostly because of hosts file-based filters:
 #   Dan Pollock's, MVPS, Peter Lowe's
 
@@ -261,3 +260,9 @@ marketwatch.com#@#.advertisement
 # https://twitter.com/SeanHood/status/692387495993024512
 # To counter `207.net` in Peter Lowe's, Disconnect‎'s Malvertising filter list
 @@||ticketmaster.122.2o7.net$image,domain=ticketweb.co.uk
+
+# https://forums.lanik.us/viewtopic.php?f=64&t=28590
+phoronix.com#@#div[style^="text-align: center;"]
+
+# https://forums.lanik.us/viewtopic.php?f=64&t=28701
+@@||files.explosm.net/files/$image,first-party

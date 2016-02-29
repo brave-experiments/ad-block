@@ -41,6 +41,8 @@ int main(int argc, char**argv) {
   std::string && easyListTxt = getFileContents("./test/data/easylist.txt");
   std::string && ublockUnblockTxt =
     getFileContents("./test/data/ublock-unbreak.txt");
+  std::string && braveUnblockTxt =
+    getFileContents("./test/data/brave-unbreak.txt");
 
   const char *urlsToCheck[] = {
     // ||pagead2.googlesyndication.com^$~object-subrequest
@@ -57,10 +59,11 @@ int main(int argc, char**argv) {
   // URL being checked.
   const char *currentPageDomain = "slashdot.org";
 
-  // Parse ublockUnblockTxt and easylist
+  // Parse filter lists
   ABPFilterParser parser;
   parser.parse(easyListTxt.c_str());
   parser.parse(ublockUnblockTxt.c_str());
+  parser.parse(braveUnblockTxt.c_str());
 
   // Do the checks
   std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck)

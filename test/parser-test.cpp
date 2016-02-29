@@ -547,8 +547,9 @@ struct ListCounts {
   size_t exceptions;
 };
 
-ListCounts easyList = { 12710, 26455, 2547 };
-ListCounts ublockUnbreak = { 122, 5, 34 };
+ListCounts easyList = { 19408, 28441, 3889 };
+ListCounts ublockUnbreak = { 123, 6, 69 };
+ListCounts braveUnbreak = { 1, 0, 2 };
 
 // Should parse EasyList without failing
 TEST(parser, parse_easylist) {
@@ -558,10 +559,14 @@ TEST(parser, parse_easylist) {
   parser.parse(fileContents.c_str());
 
   CHECK(compareNums(parser.numFilters +
-        parser.numNoFingerprintFilters, easyList.filters));
+          parser.numNoFingerprintFilters +
+          parser.hostAnchoredHashSet->size(),
+        easyList.filters));
   CHECK(compareNums(parser.numHtmlRuleFilters, easyList.htmlRules));
   CHECK(compareNums(parser.numExceptionFilters +
-        parser.numNoFingerprintExceptionFilters, easyList.exceptions));
+          parser.numNoFingerprintExceptionFilters +
+          parser.hostAnchoredExceptionHashSet->size(),
+        easyList.exceptions));
 }
 
 // Should parse ublock-unbreak list without failing
@@ -572,14 +577,36 @@ TEST(parser, parse_ublock_unbreak) {
   parser.parse(fileContents.c_str());
 
   CHECK(compareNums(parser.numFilters +
-        parser.numNoFingerprintFilters, ublockUnbreak.filters));
+         parser.numNoFingerprintFilters +
+          parser.hostAnchoredHashSet->size(),
+        ublockUnbreak.filters));
   CHECK(compareNums(parser.numHtmlRuleFilters, ublockUnbreak.htmlRules));
   CHECK(compareNums(parser.numExceptionFilters +
-        parser.numNoFingerprintExceptionFilters, ublockUnbreak.exceptions));
+          parser.numNoFingerprintExceptionFilters +
+          parser.hostAnchoredExceptionHashSet->size(),
+        ublockUnbreak.exceptions));
 }
 
+// Should parse brave-unbreak list without failing
+TEST(parser, parse_brave_unbreak) {
+  string && fileContents = // NOLINT
+    getFileContents("./test/data/brave-unbreak.txt");
+  ABPFilterParser parser;
+  parser.parse(fileContents.c_str());
 
-// Should parse ublock-unbreak list without failing
+  CHECK(compareNums(parser.numFilters +
+          parser.numNoFingerprintFilters +
+          parser.hostAnchoredHashSet->size(),
+        braveUnbreak.filters));
+  CHECK(compareNums(parser.numHtmlRuleFilters, braveUnbreak.htmlRules));
+  CHECK(compareNums(parser.numExceptionFilters +
+          parser.numNoFingerprintExceptionFilters +
+          parser.hostAnchoredExceptionHashSet->size(),
+        braveUnbreak.exceptions));
+}
+/*
+
+// Should parse lists without failing
 TEST(parser, parse_multiList) {
   string && fileContentsEasylist = // NOLINT
     getFileContents("./test/data/easylist.txt");
@@ -587,19 +614,23 @@ TEST(parser, parse_multiList) {
   string && fileContentsUblockUnbreak = // NOLINT
     getFileContents("./test/data/ublock-unbreak.txt");
 
+  string && fileContentsBraveUnbreak = // NOLINT
+    getFileContents("./test/data/brave-unbreak.txt");
+
   ABPFilterParser parser;
   parser.parse(fileContentsEasylist.c_str());
   parser.parse(fileContentsUblockUnbreak.c_str());
 
   CHECK(compareNums(parser.numFilters +
         parser.numNoFingerprintFilters,
-        easyList.filters + ublockUnbreak.filters));
+        easyList.filters + ublockUnbreak.filters + braveUnbreak.filters));
   CHECK(compareNums(parser.numHtmlRuleFilters,
-        easyList.htmlRules + ublockUnbreak.htmlRules));
+        easyList.htmlRules + ublockUnbreak.htmlRules + braveUnbreak.htmlRules));
   CHECK(compareNums(parser.numExceptionFilters +
         parser.numNoFingerprintExceptionFilters,
-        easyList.exceptions + ublockUnbreak.exceptions));
+        easyList.exceptions + ublockUnbreak.exceptions + braveUnbreak.exceptions));
 }
+*/
 
 
 
