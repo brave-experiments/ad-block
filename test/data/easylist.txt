@@ -35858,7 +35858,7 @@ coingamez.com,mangaumaru.com,milfzr.com,pencurimovie.cc#@#div[id^="div-gpt-ad-"]
 |https://$script,third-party,xmlhttprequest,domain=1337x.to
 ! watchseries.li
 @@||connect.facebook.net^$script,domain=watchseries.li
-@@||platform.twitter.com^$script,domain=watchseries.li
+
 |http://$script,third-party,domain=watchseries.li
 |https://$script,third-party,domain=watchseries.li
 ! briskfile.com
