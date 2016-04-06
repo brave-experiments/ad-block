@@ -528,7 +528,6 @@ bool Filter::matches(const char *input, int inputLen,
 
   // Check for domain name anchored
   if (filterType & FTHostAnchored) {
-    const char *filterPartEnd = data + dataLen;
     int currentHostLen = inputHostLen;
     const char *currentHost = inputHost;
     if (!currentHostLen) {
