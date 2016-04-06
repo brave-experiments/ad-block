@@ -38,6 +38,9 @@ tags
 
 # output from sample which can be used for importing
 ABPFilterParserData.dat
+SafeBrowsingData.dat
 
 # Python compiled files
 *.pyc
+
+.DS_Store

@@ -7,6 +7,7 @@
 #include <cerrno>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include <sstream>
 #include <string>
 #include "./ABPFilterParser.h"
@@ -36,38 +37,17 @@ void writeFile(const char *filename, const char *buffer, int length) {
   throw(errno);
 }
 
-
-int main(int argc, char**argv) {
-  std::string && easyListTxt = getFileContents("./test/data/easylist.txt");
-  std::string && ublockUnblockTxt =
-    getFileContents("./test/data/ublock-unbreak.txt");
-  std::string && braveUnblockTxt =
-    getFileContents("./test/data/brave-unbreak.txt");
-
-  const char *urlsToCheck[] = {
-    // ||pagead2.googlesyndication.com^$~object-subrequest
-    "http://pagead2.googlesyndication.com/pagead/show_ads.js",
-    // Should be blocked by: ||googlesyndication.com/safeframe/$third-party
-    "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html",
-    // Should be blocked by: ||googletagservices.com/tag/js/gpt_$third-party
-    "http://www.googletagservices.com/tag/js/gpt_mobile.js",
-    // Shouldn't be blocked
-    "http://www.brianbondy.com"
-  };
+int checkForParser(ABPFilterParser *pParser, const char *outputPath,
+    const std::vector<std::string> &urlsToCheck) {
+  ABPFilterParser &parser = *pParser;
 
   // This is the site who's URLs are being checked, not the domain of the
   // URL being checked.
   const char *currentPageDomain = "slashdot.org";
 
-  // Parse filter lists
-  ABPFilterParser parser;
-  parser.parse(easyListTxt.c_str());
-  parser.parse(ublockUnblockTxt.c_str());
-  parser.parse(braveUnblockTxt.c_str());
 
   // Do the checks
-  std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck)
-      / sizeof(urlsToCheck[0]),
+  std::for_each(urlsToCheck.begin(), urlsToCheck.end(),
       [&parser, currentPageDomain](std::string const &urlToCheck) {
     if (parser.matches(urlToCheck.c_str(),
           FONoFilterOption, currentPageDomain)) {
@@ -81,15 +61,14 @@ int main(int argc, char**argv) {
   // This buffer is allocate on the heap, you must call delete[] when
   // you're done using it.
   char *buffer = parser.serialize(&size);
-  writeFile("./ABPFilterParserData.dat", buffer, size);
+  writeFile(outputPath, buffer, size);
 
   ABPFilterParser parser2;
   // Deserialize uses the buffer directly for subsequent matches, do not free
   // until all matches are done.
   parser2.deserialize(buffer);
   // Prints the same as parser.matches would
-  std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck)
-      / sizeof(urlsToCheck[0]),
+  std::for_each(urlsToCheck.begin(), urlsToCheck.end(),
       [&parser2, currentPageDomain](std::string const &urlToCheck) {
     if (parser2.matches(urlToCheck.c_str(),
           FONoFilterOption, currentPageDomain)) {
@@ -99,5 +78,45 @@ int main(int argc, char**argv) {
     }
   });
   delete[] buffer;
+  return 0;
+}
+
+
+int main(int argc, char**argv) {
+  std::string && easyListTxt = getFileContents("./test/data/easylist.txt");
+  std::string && ublockUnblockTxt =
+    getFileContents("./test/data/ublock-unbreak.txt");
+  std::string && braveUnblockTxt =
+    getFileContents("./test/data/brave-unbreak.txt");
+  std::string && spam404MainBlacklistTxt =
+    getFileContents("./test/data/spam404-main-blacklist.txt");
+  std::string && disconnectSimpleMalwareTxt =
+    getFileContents("./test/data/disconnect-simple-malware.txt");
+
+  // Parse filter lists for adblock
+  ABPFilterParser adBlockParser;
+  adBlockParser.parse(easyListTxt.c_str());
+  adBlockParser.parse(ublockUnblockTxt.c_str());
+  adBlockParser.parse(braveUnblockTxt.c_str());
+  std::vector<std::string> checkVector;
+  checkVector.push_back(
+      "http://pagead2.googlesyndication.com/pagead/show_ads.js");
+  checkVector.push_back(
+      "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html");
+  checkVector.push_back(
+      "http://www.googletagservices.com/tag/js/gpt_mobile.js");
+  checkVector.push_back("http://www.brianbondy.com");
+  checkForParser(&adBlockParser, "./ABPFilterParserData.dat", checkVector);
+
+  // Parse filter lists for malware
+  ABPFilterParser malwareParser;
+  malwareParser.parse(spam404MainBlacklistTxt.c_str());
+  malwareParser.parse(disconnectSimpleMalwareTxt.c_str());
+  std::vector<std::string> checkVector2;
+  checkVector2.push_back("http://freexblcode.com/test");
+  checkVector2.push_back("https://malware-check.disconnect.me");
+  checkVector2.push_back("http://www.brianbondy.com");
+  checkForParser(&malwareParser, "./SafeBrowsingData.dat", checkVector2);
+
   return 0;
 }

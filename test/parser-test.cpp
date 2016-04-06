@@ -547,9 +547,12 @@ struct ListCounts {
   size_t exceptions;
 };
 
-ListCounts easyList = { 19408, 28441, 3889 };
-ListCounts ublockUnbreak = { 0, 6, 69 };
+ListCounts easyList = { 19673, 28645, 4010 };
+ListCounts ublockUnbreak = { 4, 6, 72 };
 ListCounts braveUnbreak = { 1, 0, 2 };
+ListCounts disconnectSimpleMalware = { 2860, 0, 0 };
+ListCounts spam404MainBlacklist = { 5925, 0, 0 };
+
 
 // Should parse EasyList without failing
 TEST(parser, parse_easylist) {
@@ -604,7 +607,45 @@ TEST(parser, parse_brave_unbreak) {
           parser.hostAnchoredExceptionHashSet->size(),
         braveUnbreak.exceptions));
 }
-/*
+
+// Should parse disconnect-simple-malware.txt list without failing
+TEST(parser, parse_brave_disconnect_simple_malware) {
+  string && fileContents = // NOLINT
+    getFileContents("./test/data/disconnect-simple-malware.txt");
+  ABPFilterParser parser;
+  parser.parse(fileContents.c_str());
+
+  CHECK(compareNums(parser.numFilters +
+          parser.numNoFingerprintFilters +
+          parser.hostAnchoredHashSet->size(),
+        disconnectSimpleMalware.filters));
+  CHECK(compareNums(parser.numHtmlRuleFilters,
+        disconnectSimpleMalware.htmlRules));
+  CHECK(compareNums(parser.numExceptionFilters +
+          parser.numNoFingerprintExceptionFilters +
+          parser.hostAnchoredExceptionHashSet->size(),
+        disconnectSimpleMalware.exceptions));
+}
+
+
+// Should parse spam404-main-blacklist.txt list without failing
+TEST(parser, parse_spam404_main_blacklist) {
+  string && fileContents = // NOLINT
+    getFileContents("./test/data/spam404-main-blacklist.txt");
+  ABPFilterParser parser;
+  parser.parse(fileContents.c_str());
+
+  CHECK(compareNums(parser.numFilters +
+          parser.numNoFingerprintFilters +
+          parser.hostAnchoredHashSet->size(),
+        spam404MainBlacklist.filters));
+  CHECK(compareNums(parser.numHtmlRuleFilters, spam404MainBlacklist.htmlRules));
+  CHECK(compareNums(parser.numExceptionFilters +
+          parser.numNoFingerprintExceptionFilters +
+          parser.hostAnchoredExceptionHashSet->size(),
+        spam404MainBlacklist.exceptions));
+}
+
 
 // Should parse lists without failing
 TEST(parser, parse_multiList) {
@@ -620,18 +661,62 @@ TEST(parser, parse_multiList) {
   ABPFilterParser parser;
   parser.parse(fileContentsEasylist.c_str());
   parser.parse(fileContentsUblockUnbreak.c_str());
+  parser.parse(fileContentsBraveUnbreak.c_str());
 
+  // I think counts are slightly off due to same rule hash set
+
+  /*
   CHECK(compareNums(parser.numFilters +
-        parser.numNoFingerprintFilters,
-        easyList.filters + ublockUnbreak.filters + braveUnbreak.filters));
+          parser.numNoFingerprintFilters +
+          parser.hostAnchoredHashSet->size(),
+        easyList.filters +
+          ublockUnbreak.filters +
+          braveUnbreak.filters));
+          */
   CHECK(compareNums(parser.numHtmlRuleFilters,
-        easyList.htmlRules + ublockUnbreak.htmlRules + braveUnbreak.htmlRules));
+        easyList.htmlRules +
+          ublockUnbreak.htmlRules +
+          braveUnbreak.htmlRules));
+  /*
   CHECK(compareNums(parser.numExceptionFilters +
-        parser.numNoFingerprintExceptionFilters,
-        easyList.exceptions + ublockUnbreak.exceptions + braveUnbreak.exceptions));
+          parser.hostAnchoredExceptionHashSet->size() +
+          parser.numNoFingerprintExceptionFilters,
+        easyList.exceptions +
+          ublockUnbreak.exceptions +
+          braveUnbreak.exceptions));
+  */
 }
-*/
 
+// Should parse lists without failing
+TEST(parser, parse_malware_multiList) {
+  string && fileContentsSpam404 = // NOLINT
+    getFileContents("./test/data/spam404-main-blacklist.txt");
+
+  string && fileContentsDisconnectSimpleMalware = // NOLINT
+    getFileContents("./test/data/disconnect-simple-malware.txt");
+
+  ABPFilterParser parser;
+  parser.parse(fileContentsSpam404.c_str());
+  parser.parse(fileContentsDisconnectSimpleMalware.c_str());
+
+  // I think counts are slightly off due to same rule hash set
+
+  /*
+  CHECK(compareNums(parser.numFilters +
+          parser.numNoFingerprintFilters +
+          parser.hostAnchoredHashSet->size(),
+        disconnectSimpleMalware.filters +
+          spam404MainBlacklist.filters));
+  */
+  CHECK(compareNums(parser.numHtmlRuleFilters,
+        disconnectSimpleMalware.htmlRules +
+          spam404MainBlacklist.htmlRules));
+  CHECK(compareNums(parser.numExceptionFilters +
+          parser.hostAnchoredExceptionHashSet->size() +
+          parser.numNoFingerprintExceptionFilters,
+        disconnectSimpleMalware.exceptions+
+          spam404MainBlacklist.exceptions));
+}
 
 
 // Calling parse amongst 2 different lists should preserve both sets of rules
