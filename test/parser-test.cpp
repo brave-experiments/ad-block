@@ -644,6 +644,10 @@ TEST(parser, parse_spam404_main_blacklist) {
           parser.numNoFingerprintExceptionFilters +
           parser.hostAnchoredExceptionHashSet->size(),
         spam404MainBlacklist.exceptions));
+
+  const char *urlToCheck = "http://excellentmovies.net/";
+  const char *currentPageDomain = "excellentmovies.net";
+  CHECK(parser.matches(urlToCheck, FODocument, currentPageDomain));
 }
 
 
