@@ -28,6 +28,9 @@ class ABPFilterParser {
   void deserialize(char *buffer);
 
   void enableBadFingerprintDetection();
+  const char * getDeserializedBuffer() {
+    return deserializedBuffer;
+  }
 
   Filter *filters;
   Filter *htmlRuleFilters;
@@ -65,6 +68,7 @@ class ABPFilterParser {
       BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen);
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
   void initHashSet(HashSet<Filter>**, char *buffer, int len);
+  char *deserializedBuffer;
 };
 
 // Fast hash function applicable to 2 byte char checks

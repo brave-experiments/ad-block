@@ -22,8 +22,6 @@ using v8::Boolean;
 using v8::Value;
 using v8::Exception;
 
-char *deserializedData = nullptr;
-
 Persistent<Function> ABPFilterParserWrap::constructor;
 
 ABPFilterParserWrap::ABPFilterParserWrap() {
@@ -171,19 +169,24 @@ void ABPFilterParserWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
   }
   unsigned char *buf = (unsigned char *)node::Buffer::Data(args[0]);
   size_t length = node::Buffer::Length(args[0]);
-  if (nullptr != deserializedData) {
-    delete []deserializedData;
+  const char *oldDeserializedData = obj->getDeserializedBuffer();
+  if (nullptr != oldDeserializedData) {
+    delete []oldDeserializedData;
   }
-  deserializedData = new char[length];
+  char *deserializedData = new char[length];
   memcpy(deserializedData, buf, length);
   obj->deserialize(deserializedData);
 }
 
-void ABPFilterParserWrap::Cleanup(const FunctionCallbackInfo<Value>&) {
+void ABPFilterParserWrap::Cleanup(const FunctionCallbackInfo<Value>& args) {
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  const char *deserializedData = obj->getDeserializedBuffer();
   if (nullptr != deserializedData) {
     delete []deserializedData;
     deserializedData = nullptr;
   }
+  delete obj;
 }
 
 }  // namespace ABPFilterParserWrap

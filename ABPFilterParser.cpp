@@ -378,7 +378,8 @@ ABPFilterParser::ABPFilterParser() : filters(nullptr),
   numFalsePositives(0),
   numExceptionFalsePositives(0),
   numBloomFilterSaves(0),
-  numExceptionBloomFilterSaves(0) {
+  numExceptionBloomFilterSaves(0),
+  deserializedBuffer(nullptr) {
 }
 
 ABPFilterParser::~ABPFilterParser() {
@@ -1045,6 +1046,7 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
 }
 
 void ABPFilterParser::deserialize(char *buffer) {
+  deserializedBuffer = buffer;
   int bloomFilterSize = 0, exceptionBloomFilterSize = 0,
       hostAnchoredHashSetSize = 0, hostAnchoredExceptionHashSetSize = 0;
   int pos = 0;
