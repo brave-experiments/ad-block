@@ -1087,3 +1087,12 @@ void ABPFilterParser::enableBadFingerprintDetection() {
     badFingerprintsHashSet->add(BadFingerprint(badFingerprints[i]));
   }
 }
+
+  uint64_t HashFn2Byte::operator()(const char *input, int len,
+      unsigned char lastCharCode, uint64_t lastHash) {
+    return (((uint64_t)input[1]) << 8) | input[0];  }
+
+  uint64_t HashFn2Byte::operator()(const char *input, int len) {
+    return (((uint64_t)input[1]) << 8) | input[0];
+  }
+

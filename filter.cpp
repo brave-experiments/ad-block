@@ -47,6 +47,30 @@ Filter::~Filter() {
   }
 }
 
+Filter::Filter(const char * data, int dataLen, char *domainList,
+      const char * host, int hostLen) :
+      borrowedData(true), filterType(FTNoFilterType),
+      filterOption(FONoFilterOption),
+      antiFilterOption(FONoFilterOption), data(const_cast<char*>(data)),
+      dataLen(dataLen), domainList(domainList), host(const_cast<char*>(host)),
+      hostLen(hostLen) {
+    domainCount = 0;
+    antiDomainCount = 0;
+  }
+
+Filter::Filter(FilterType filterType, FilterOption filterOption,
+         FilterOption antiFilterOption,
+         const char * data, int dataLen,
+         char *domainList, const char * host,
+         int hostLen) :
+    borrowedData(true), filterType(filterType), filterOption(filterOption),
+    antiFilterOption(antiFilterOption), data(const_cast<char*>(data)),
+      dataLen(dataLen), domainList(domainList), host(const_cast<char *>(host)),
+      hostLen(hostLen) {
+    domainCount = 0;
+    antiDomainCount = 0;
+  }
+
 Filter::Filter(const Filter &other) {
   borrowedData = other.borrowedData;
   filterType = other.filterType;
@@ -528,7 +552,6 @@ bool Filter::matches(const char *input, int inputLen,
 
   // Check for domain name anchored
   if (filterType & FTHostAnchored) {
-    const char *filterPartEnd = data + dataLen;
     int currentHostLen = inputHostLen;
     const char *currentHost = inputHost;
     if (!currentHostLen) {
@@ -545,8 +568,9 @@ bool Filter::matches(const char *input, int inputLen,
       }
     }
 
-    return !isThirdPartyHost(host, hostLen, currentHost, currentHostLen) &&
-      indexOfFilter(input, inputLen, data, filterPartEnd) != -1;
+    if (isThirdPartyHost(host, hostLen, currentHost, currentHostLen)) {
+      return false;
+    }
   }
 
   // Wildcard match comparison
@@ -572,7 +596,7 @@ bool Filter::matches(const char *input, int inputLen,
     }
     newIndex += index;
 
-    if (*filterPartEnd == '\0') {
+    if (*filterPartEnd == '\0' || filterPartEnd == data + dataLen) {
       break;
     }
     const char *temp = getNextPos(filterPartEnd + 1, '*', data + dataLen);

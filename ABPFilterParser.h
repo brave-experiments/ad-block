@@ -73,13 +73,10 @@ class HashFn2Byte : public HashFn {
   HashFn2Byte() : HashFn(0, false) {
   }
 
-  virtual uint64_t operator()(const char *input, int len,
-      unsigned char lastCharCode, uint64_t lastHash) {
-    return (((uint64_t)input[1]) << 8) | input[0];  }
+  uint64_t operator()(const char *input, int len,
+      unsigned char lastCharCode, uint64_t lastHash) override;
 
-  virtual uint64_t operator()(const char *input, int len) {
-    return (((uint64_t)input[1]) << 8) | input[0];
-  }
+  uint64_t operator()(const char *input, int len) override;
 };
 
 extern const char *separatorCharacters;

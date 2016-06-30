@@ -10,6 +10,10 @@
 #define nullptr 0
 #endif
 
+#if !defined(uint64_t)
+#define uint64_t unsigned long long
+#endif
+
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #include <stdarg.h>
 #include <stdio.h>
