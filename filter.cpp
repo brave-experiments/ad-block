@@ -47,6 +47,30 @@ Filter::~Filter() {
   }
 }
 
+Filter::Filter(const char * data, int dataLen, char *domainList,
+      const char * host, int hostLen) :
+      borrowedData(true), filterType(FTNoFilterType),
+      filterOption(FONoFilterOption),
+      antiFilterOption(FONoFilterOption), data(const_cast<char*>(data)),
+      dataLen(dataLen), domainList(domainList), host(const_cast<char*>(host)),
+      hostLen(hostLen) {
+    domainCount = 0;
+    antiDomainCount = 0;
+  }
+
+Filter::Filter(FilterType filterType, FilterOption filterOption,
+         FilterOption antiFilterOption,
+         const char * data, int dataLen,
+         char *domainList, const char * host,
+         int hostLen) :
+    borrowedData(true), filterType(filterType), filterOption(filterOption),
+    antiFilterOption(antiFilterOption), data(const_cast<char*>(data)),
+      dataLen(dataLen), domainList(domainList), host(const_cast<char *>(host)),
+      hostLen(hostLen) {
+    domainCount = 0;
+    antiDomainCount = 0;
+  }
+
 Filter::Filter(const Filter &other) {
   borrowedData = other.borrowedData;
   filterType = other.filterType;
