@@ -10,9 +10,7 @@
 #define nullptr 0
 #endif
 
-#if __STDC_VERSION__ >= 199901L
-#define uint64_t unsigned long long // NOLINT
-#endif
+#include <stdint.h>
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #include <stdarg.h>
