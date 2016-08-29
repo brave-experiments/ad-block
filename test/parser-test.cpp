@@ -549,7 +549,7 @@ struct ListCounts {
 
 ListCounts easyList = { 20370, 29374, 4209 };
 ListCounts ublockUnbreak = { 3, 6, 72 };
-ListCounts braveUnbreak = { 1, 0, 2 };
+ListCounts braveUnbreak = { 3, 0, 2 };
 ListCounts disconnectSimpleMalware = { 3009, 0, 0 };
 ListCounts spam404MainBlacklist = { 5294, 169, 0 };
 
