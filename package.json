@@ -26,7 +26,8 @@
     "install": "node-gyp rebuild",
     "lint": "./scripts/cpplint.py",
     "checks": "npm run check-security",
-    "check-security": "nsp check"
+    "check-security": "nsp check",
+    "data-files": "node scripts/generateDataFiles.js"
   },
   "repository": {
     "type": "git",
