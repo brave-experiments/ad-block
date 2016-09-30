@@ -6919,6 +6919,9 @@ const char *badFingerprints[] = {
 "m/Affi",
 "quantc",
 "uantca",
+"antcas",
+"ntcast",
+"tcast.",
 };
 
 const char *badSubstrings[] = {"http", "www" };
