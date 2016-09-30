@@ -44,3 +44,5 @@ SafeBrowsingData.dat
 *.pyc
 
 .DS_Store
+
+out
