@@ -8,6 +8,9 @@
 *.gch
 *.pch
 
+# Program databases
+*.pdb
+
 # Compiled Dynamic libraries
 *.so
 *.dylib
@@ -35,3 +38,9 @@ run
 
 # ctags
 tags
+
+# Built data files
+out
+
+# Generated data files
+*.dat
