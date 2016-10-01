@@ -11,7 +11,9 @@ const generateDataFileFromString = (filterRuleData, outputDATFilename) => {
   } else {
     parser.parse(filterRuleData)
   }
-  // checkSiteList(parser, top500URLList20k)
+
+  console.log('Parsing stats:', parser.getParsingStats())
+  checkSiteList(parser, top500URLList20k)
   const serializedData = parser.serialize()
   if (!fs.existsSync('out')) {
     fs.mkdirSync('./out')
@@ -49,6 +51,7 @@ const checkSiteList = (parser, siteList) => {
     // console.log('matches: ', parser.matches(site,  FilterOptions.image, 'slashdot.org'))
     parser.matches(site,  FilterOptions.image, 'slashdot.org')
   })
+  console.log('Matching stats:', parser.getMatchingStats())
   const end = new Date().getTime();
   const time = end - start;
   console.log('done, time: ', time, 'ms')

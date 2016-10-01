@@ -44,6 +44,10 @@ void ABPFilterParserWrap::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", ABPFilterParserWrap::Serialize);
   NODE_SET_PROTOTYPE_METHOD(tpl, "deserialize",
     ABPFilterParserWrap::Deserialize);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "getParsingStats",
+    ABPFilterParserWrap::GetParsingStats);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "getMatchingStats",
+    ABPFilterParserWrap::GetMatchingStats);
   NODE_SET_PROTOTYPE_METHOD(tpl, "cleanup", ABPFilterParserWrap::Cleanup);
 
   Local<Object> filterOptions = Object::New(isolate);
@@ -176,6 +180,46 @@ void ABPFilterParserWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
   char *deserializedData = new char[length];
   memcpy(deserializedData, buf, length);
   obj->deserialize(deserializedData);
+}
+
+void ABPFilterParserWrap::GetParsingStats(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  Local<Object> stats = Object::New(isolate);
+  stats->Set(String::NewFromUtf8(isolate, "numFilters"),
+    Int32::New(isolate, obj->numFilters));
+  stats->Set(String::NewFromUtf8(isolate, "numHtmlRuleFilters"),
+    Int32::New(isolate, obj->numHtmlRuleFilters));
+  stats->Set(String::NewFromUtf8(isolate, "numExceptionFilters"),
+    Int32::New(isolate, obj->numExceptionFilters));
+  stats->Set(String::NewFromUtf8(isolate, "numNoFingerprintFilters"),
+    Int32::New(isolate, obj->numNoFingerprintFilters));
+  stats->Set(String::NewFromUtf8(isolate, "numNoFingerprintExceptionFilters"),
+    Int32::New(isolate, obj->numNoFingerprintExceptionFilters));
+  stats->Set(String::NewFromUtf8(isolate, "numHostAnchoredFilters"),
+    Int32::New(isolate, obj->numHostAnchoredFilters));
+  stats->Set(String::NewFromUtf8(isolate, "numHostAnchoredExceptionFilters"),
+    Int32::New(isolate, obj->numHostAnchoredExceptionFilters));
+  args.GetReturnValue().Set(stats);
+}
+
+void ABPFilterParserWrap::GetMatchingStats(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  Local<Object> stats = Object::New(isolate);
+  stats->Set(String::NewFromUtf8(isolate, "numFalsePositives"),
+    Int32::New(isolate, obj->numFalsePositives));
+  stats->Set(String::NewFromUtf8(isolate, "numExceptionFalsePositives"),
+    Int32::New(isolate, obj->numExceptionFalsePositives));
+  stats->Set(String::NewFromUtf8(isolate, "numBloomFilterSaves"),
+    Int32::New(isolate, obj->numBloomFilterSaves));
+  stats->Set(String::NewFromUtf8(isolate, "numExceptionBloomFilterSaves"),
+    Int32::New(isolate, obj->numExceptionBloomFilterSaves));
+  args.GetReturnValue().Set(stats);
 }
 
 void ABPFilterParserWrap::Cleanup(const FunctionCallbackInfo<Value>& args) {
