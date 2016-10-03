@@ -26,6 +26,7 @@ class ABPFilterParserWrap : public ABPFilterParser, public node::ObjectWrap {
 
   static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  static void Clear(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void Parse(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void Matches(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void Serialize(const v8::FunctionCallbackInfo<v8::Value>& args);

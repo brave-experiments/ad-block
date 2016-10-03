@@ -383,36 +383,63 @@ ABPFilterParser::ABPFilterParser() : filters(nullptr),
 }
 
 ABPFilterParser::~ABPFilterParser() {
+  clear();
+}
+
+// Clears all data and stats from the ABPFilterParser
+void ABPFilterParser::clear() {
   if (filters) {
     delete[] filters;
+    filters = nullptr;
   }
   if (htmlRuleFilters) {
     delete[] htmlRuleFilters;
+    htmlRuleFilters = nullptr;
   }
   if (exceptionFilters) {
     delete[] exceptionFilters;
+    exceptionFilters = nullptr;
   }
   if (noFingerprintFilters) {
     delete[] noFingerprintFilters;
+    noFingerprintFilters = nullptr;
   }
   if (noFingerprintExceptionFilters) {
     delete[] noFingerprintExceptionFilters;
+    noFingerprintExceptionFilters = nullptr;
   }
   if (bloomFilter) {
     delete bloomFilter;
+    bloomFilter = nullptr;
   }
   if (exceptionBloomFilter) {
     delete exceptionBloomFilter;
+    exceptionBloomFilter = nullptr;
   }
   if (hostAnchoredHashSet) {
     delete hostAnchoredHashSet;
+    hostAnchoredHashSet = nullptr;
   }
   if (hostAnchoredExceptionHashSet) {
     delete hostAnchoredExceptionHashSet;
+    hostAnchoredExceptionHashSet = nullptr;
   }
   if (badFingerprintsHashSet) {
     delete badFingerprintsHashSet;
+    badFingerprintsHashSet = nullptr;
   }
+
+  numFilters = 0;
+  numHtmlRuleFilters = 0;
+  numExceptionFilters = 0;
+  numNoFingerprintFilters = 0;
+  numNoFingerprintExceptionFilters = 0;
+  numHostAnchoredFilters = 0;
+  numHostAnchoredExceptionFilters = 0;
+  numFalsePositives = 0;
+  numExceptionFalsePositives = 0;
+  numBloomFilterSaves = 0;
+  numExceptionBloomFilterSaves = 0;
 }
 
 bool ABPFilterParser::hasMatchingFilters(Filter *filter, int numFilters,

@@ -39,6 +39,7 @@ void ABPFilterParserWrap::Init(Local<Object> exports) {
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   // Prototype
+  NODE_SET_PROTOTYPE_METHOD(tpl, "clear", ABPFilterParserWrap::Clear);
   NODE_SET_PROTOTYPE_METHOD(tpl, "parse", ABPFilterParserWrap::Parse);
   NODE_SET_PROTOTYPE_METHOD(tpl, "matches", ABPFilterParserWrap::Matches);
   NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", ABPFilterParserWrap::Serialize);
@@ -106,6 +107,12 @@ void ABPFilterParserWrap::New(const FunctionCallbackInfo<Value>& args) {
     Local<Function> cons = Local<Function>::New(isolate, constructor);
     args.GetReturnValue().Set(cons->NewInstance(argc, argv));
   }
+}
+
+void ABPFilterParserWrap::Clear(const FunctionCallbackInfo<Value>& args) {
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  obj->clear();
 }
 
 void ABPFilterParserWrap::Parse(const FunctionCallbackInfo<Value>& args) {

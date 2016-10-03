@@ -17,6 +17,7 @@ class ABPFilterParser {
   ABPFilterParser();
   ~ABPFilterParser();
 
+  void clear();
   bool parse(const char *input);
   bool matches(const char *input, FilterOption contextOption = FONoFilterOption,
       const char *contextDomain = nullptr);
