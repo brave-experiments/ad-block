@@ -4,6 +4,10 @@ const fs = require('fs')
 const regions = require('../lib/regions')
 const request = require('request');
 
+let totalExceptionFalsePositives = 0
+let totalNumFalsePositives = 0
+let totalTime = 0
+
 const generateDataFileFromString = (filterRuleData, outputDATFilename) => {
   const parser = new ABPFilterParser()
   if (filterRuleData.constructor === Array) {
@@ -13,7 +17,9 @@ const generateDataFileFromString = (filterRuleData, outputDATFilename) => {
   }
 
   console.log('Parsing stats:', parser.getParsingStats())
+  parser.enableBadFingerprintDetection()
   checkSiteList(parser, top500URLList20k)
+  parser.generateBadFingerprintsHeader("badFingerprints.h")
   const serializedData = parser.serialize()
   if (!fs.existsSync('out')) {
     fs.mkdirSync('./out')
@@ -22,12 +28,22 @@ const generateDataFileFromString = (filterRuleData, outputDATFilename) => {
 }
 
 const generateDataFileFromURL = (listURL, outputDATFilename) => {
-  request.get(listURL, function (error, response, body) {
-    if (response.statusCode !== 200) {
-      console.error(`Error status code ${response.statusCode} returned for URL: ${listURL}`)
-      return
-    }
-    generateDataFileFromString(body, outputDATFilename)
+  return new Promise((resolve, reject) => {
+    console.log(`${listURL}...`)
+    request.get(listURL, function (error, response, body) {
+      if (error) {
+        console.error(`Request error: ${error}`)
+        reject()
+        return
+      }
+      if (response.statusCode !== 200) {
+        console.error(`Error status code ${response.statusCode} returned for URL: ${listURL}`)
+        reject()
+        return
+      }
+      generateDataFileFromString(body, outputDATFilename)
+      resolve()
+    })
   })
 }
 
@@ -41,19 +57,31 @@ const generateDataFileFromPath = (filePath, outputDATFilename) => {
   generateDataFileFromString(filterRuleData, outputDATFilename)
 }
 
-const generateDataFilesForAllRegions = () =>
-  regions.forEach((region) =>
-    generateDataFileFromURL(region.listURL, `${region.uuid}.dat`))
+const generateDataFilesForAllRegions = () => {
+  let p = Promise.resolve()
+  regions.forEach((region) => {
+    p = p.then(generateDataFileFromURL.bind(null, region.listURL, `${region.uuid}.dat`))
+  })
+  p = p.then(() => {
+    console.log(`Total time: ${totalTime/1000}s ${totalTime%1000}ms`)
+    console.log(`Num false positives: ${totalNumFalsePositives}`)
+    console.log(`Num exception false positives: ${totalExceptionFalsePositives}`)
+  })
+}
 
 const checkSiteList = (parser, siteList) => {
   const start = new Date().getTime();
   siteList.forEach(site => {
     // console.log('matches: ', parser.matches(site,  FilterOptions.image, 'slashdot.org'))
-    parser.matches(site,  FilterOptions.image, 'slashdot.org')
+    parser.matches(site,  FilterOptions.noFilterOption, 'slashdot.org')
   })
-  console.log('Matching stats:', parser.getMatchingStats())
+  const stats = parser.getMatchingStats()
+  console.log('Matching stats:', stats)
+  totalNumFalsePositives += stats.numFalsePositives
+  totalExceptionFalsePositives += stats.numExceptionFalsePositives
   const end = new Date().getTime();
   const time = end - start;
+  totalTime += time
   console.log('done, time: ', time, 'ms')
 }
 

@@ -49,6 +49,10 @@ void ABPFilterParserWrap::Init(Local<Object> exports) {
     ABPFilterParserWrap::GetParsingStats);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getMatchingStats",
     ABPFilterParserWrap::GetMatchingStats);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "enableBadFingerprintDetection",
+    ABPFilterParserWrap::EnableBadFingerprintDetection);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "generateBadFingerprintsHeader",
+    ABPFilterParserWrap::GenerateBadFingerprintsHeader);
   NODE_SET_PROTOTYPE_METHOD(tpl, "cleanup", ABPFilterParserWrap::Cleanup);
 
   Local<Object> filterOptions = Object::New(isolate);
@@ -227,6 +231,22 @@ void ABPFilterParserWrap::GetMatchingStats(
   stats->Set(String::NewFromUtf8(isolate, "numExceptionBloomFilterSaves"),
     Int32::New(isolate, obj->numExceptionBloomFilterSaves));
   args.GetReturnValue().Set(stats);
+}
+
+void ABPFilterParserWrap::EnableBadFingerprintDetection(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  obj->enableBadFingerprintDetection();
+}
+
+void ABPFilterParserWrap::GenerateBadFingerprintsHeader(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  String::Utf8Value str(args[0]->ToString());
+  const char * filename = *str;
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  obj->badFingerprintsHashSet->generateHeader(filename);
 }
 
 void ABPFilterParserWrap::Cleanup(const FunctionCallbackInfo<Value>& args) {
