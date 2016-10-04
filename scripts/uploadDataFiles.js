@@ -17,7 +17,7 @@ const uploadFile = (filename) => {
       // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
       s3Params: {
         Bucket: 'adblock-data',
-        Key: `test/${filename}`,
+        Key: `2/${filename}`,
         ACL: 'public-read'
       },
     }
