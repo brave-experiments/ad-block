@@ -7,7 +7,7 @@ const client = s3.createClient({
   multipartUploadThreshold: 20971520,
   multipartUploadSize: 15728640,
   // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Config.html#constructor-property
-  s3Options: {},
+  s3Options: {}
 })
 
 const uploadFile = (filename) => {
@@ -19,15 +19,15 @@ const uploadFile = (filename) => {
         Bucket: 'adblock-data',
         Key: `2/${filename}`,
         ACL: 'public-read'
-      },
+      }
     }
     var uploader = client.uploadFile(params)
     process.stdout.write(`Started uploading to: ${params.s3Params.Key}... `)
-    uploader.on('error', function(err) {
-      console.error("unable to upload:", err.stack, 'Do you have ~/.aws/credentials filled out?')
+    uploader.on('error', function (err) {
+      console.error('Unable to upload:', err.stack, 'Do you have ~/.aws/credentials filled out?')
       reject()
     })
-    uploader.on('end', function(params) {
+    uploader.on('end', function (params) {
       console.log('completed')
       resolve()
     })

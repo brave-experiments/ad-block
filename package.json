@@ -14,8 +14,9 @@
   },
   "devDependencies": {
     "node-gyp": "^3.4.0",
+    "nsp": "^2.3.0",
     "pre-commit": "^1.1.2",
-    "nsp": "^2.3.0"
+    "standard": "^8.4.0"
   },
   "scripts": {
     "test": "make test",
@@ -24,7 +25,9 @@
     "perf": "make perf",
     "preinstall": "npm install bloom-filter-cpp && npm install hashset-cpp",
     "install": "node-gyp rebuild",
-    "lint": "./scripts/cpplint.py",
+    "lint": "npm run lint-cpp && npm run lint-js",
+    "lint-cpp": "./scripts/cpplint.py",
+    "lint-js": "standard",
     "checks": "npm run check-security",
     "check-security": "nsp check",
     "data-files": "node scripts/generateDataFiles.js"
@@ -41,6 +44,7 @@
   },
   "homepage": "https://github.com/bbondy/abp-filter-parser-cpp#readme",
   "pre-commit": [
-    "lint"
+    "lint-cpp",
+    "lint-js"
   ]
 }
