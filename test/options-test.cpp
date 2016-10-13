@@ -233,6 +233,12 @@ TEST(options, optionsFromFilter) {
     {},
     {}))
 
+  CHECK(testFilterOptions("https:$ping",
+    static_cast<FilterOption>(FOPing),
+    FONoFilterOption,
+    {},
+    {}))
+
   CHECK(testFilterOptions(
       "||tst.net^$object-subrequest,third-party,domain=domain1.com|domain5.com",
     static_cast<FilterOption>(FOObjectSubrequest | FOThirdParty),
