@@ -391,6 +391,12 @@ TEST(parser, optionRules) {
       OptionRuleData("http://example.com.au", FOScript, "example.com", false),
     }));
 
+  // Make sure we ignore ping requests for now
+  CHECK(checkOptionRule("||example.com^$ping",
+    {
+      OptionRuleData("http://example.com", FOPing, "example.com", false),
+    }));
+
   CHECK(checkOptionRule("||example.com^$third-party,~script",
     {
       OptionRuleData("http://example.com",

@@ -263,6 +263,8 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOElemHide);
   } else if (!strncmp(pStart, "third-party", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOThirdParty);
+  } else if (!strncmp(pStart, "ping", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPing);
   }
   // Otherwise just ignore the option, maybe something new we don't support yet
 }
@@ -323,6 +325,9 @@ bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen,
 // which are considered.
 bool Filter::matchesOptions(const char *input, FilterOption context,
     const char *contextDomain, const char *inputHost, int inputHostLen) {
+  if ((filterOption & FOUnsupported) != 0) {
+    return false;
+  }
   // Maybe the user of the library can't determine a context because they're
   // blocking a the HTTP level, don't block here because we don't have enough
   // information
