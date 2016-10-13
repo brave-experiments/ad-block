@@ -703,35 +703,37 @@ bool ABPFilterParser::parse(const char *input) {
     if (*p == '\n' || *p == '\0') {
       Filter f;
       parseFilter(lineStart, p, &f);
-      switch (f.filterType & FTListTypesMask) {
-        case FTException:
-          if (f.filterType & FTHostOnly) {
-            newNumHostAnchoredExceptionFilters++;
-          } else if (getFingerprint(nullptr, f)) {
-            newNumExceptionFilters++;
-          } else {
-            newNumNoFingerprintExceptionFilters++;
-          }
-          break;
-        case FTElementHiding:
-          newNumHtmlRuleFilters++;
-          break;
-        case FTElementHidingException:
-          newNumHtmlRuleFilters++;
-          break;
-        case FTEmpty:
-        case FTComment:
-          // No need to store comments
-          break;
-        default:
-          if (f.filterType & FTHostOnly) {
-            newNumHostAnchoredFilters++;
-          } else if (getFingerprint(nullptr, f)) {
-            newNumFilters++;
-          } else {
-            newNumNoFingerprintFilters++;
-          }
-          break;
+      if (!f.hasUnsupportedOptions()) {
+        switch (f.filterType & FTListTypesMask) {
+          case FTException:
+            if (f.filterType & FTHostOnly) {
+              newNumHostAnchoredExceptionFilters++;
+            } else if (getFingerprint(nullptr, f)) {
+              newNumExceptionFilters++;
+            } else {
+              newNumNoFingerprintExceptionFilters++;
+            }
+            break;
+          case FTElementHiding:
+            newNumHtmlRuleFilters++;
+            break;
+          case FTElementHidingException:
+            newNumHtmlRuleFilters++;
+            break;
+          case FTEmpty:
+          case FTComment:
+            // No need to store comments
+            break;
+          default:
+            if (f.filterType & FTHostOnly) {
+              newNumHostAnchoredFilters++;
+            } else if (getFingerprint(nullptr, f)) {
+              newNumFilters++;
+            } else {
+              newNumNoFingerprintFilters++;
+            }
+            break;
+        }
       }
       lineStart = p + 1;
     }
@@ -851,38 +853,40 @@ bool ABPFilterParser::parse(const char *input) {
           hostAnchoredHashSet,
           hostAnchoredExceptionHashSet,
           &simpleCosmeticFilters);
-      switch (f.filterType & FTListTypesMask) {
-        case FTException:
-          if (f.filterType & FTHostOnly) {
-            // do nothing, handled by hash set.
-          } else if (getFingerprint(nullptr, f)) {
-            (*curExceptionFilters).swapData(&f);
-            curExceptionFilters++;
-          } else {
-            (*curNoFingerprintExceptionFilters).swapData(&f);
-            curNoFingerprintExceptionFilters++;
-          }
-          break;
-        case FTElementHiding:
-        case FTElementHidingException:
-          (*curHtmlRuleFilters).swapData(&f);
-          curHtmlRuleFilters++;
-          break;
-        case FTEmpty:
-        case FTComment:
-          // No need to store
-          break;
-        default:
-          if (f.filterType & FTHostOnly) {
-            // Do nothing
-          } else if (getFingerprint(nullptr, f)) {
-            (*curFilters).swapData(&f);
-            curFilters++;
-          } else {
-            (*curNoFingerprintFilters).swapData(&f);
-            curNoFingerprintFilters++;
-          }
-          break;
+      if (!f.hasUnsupportedOptions()) {
+        switch (f.filterType & FTListTypesMask) {
+          case FTException:
+            if (f.filterType & FTHostOnly) {
+              // do nothing, handled by hash set.
+            } else if (getFingerprint(nullptr, f)) {
+              (*curExceptionFilters).swapData(&f);
+              curExceptionFilters++;
+            } else {
+              (*curNoFingerprintExceptionFilters).swapData(&f);
+              curNoFingerprintExceptionFilters++;
+            }
+            break;
+          case FTElementHiding:
+          case FTElementHidingException:
+            (*curHtmlRuleFilters).swapData(&f);
+            curHtmlRuleFilters++;
+            break;
+          case FTEmpty:
+          case FTComment:
+            // No need to store
+            break;
+          default:
+            if (f.filterType & FTHostOnly) {
+              // Do nothing
+            } else if (getFingerprint(nullptr, f)) {
+              (*curFilters).swapData(&f);
+              curFilters++;
+            } else {
+              (*curNoFingerprintFilters).swapData(&f);
+              curNoFingerprintFilters++;
+            }
+            break;
+        }
       }
       lineStart = p + 1;
     }

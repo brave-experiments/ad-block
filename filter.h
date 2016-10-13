@@ -44,7 +44,7 @@ enum FilterOption {
   FOElemHide = 010000,
   FOThirdParty = 020000,  // Used internally only, do not use
   FONotThirdParty = 040000,  // Used internally only, do not use
-  FOPing = 100000,  // Not supported, but we will ignore these rules
+  FOPing = 0100000,  // Not supported, but we will ignore these rules
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
     FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL,
   FOUnsupported = FOPing
@@ -84,6 +84,7 @@ friend class ABPFilterParser;
 
   // Nothing needs to be updated when a filter is added multiple times
   void update(const Filter &) {}
+  bool hasUnsupportedOptions() const;
 
   // Checks to see if the filter options match for the passed in data
   bool matchesOptions(const char *input, FilterOption contextOption,

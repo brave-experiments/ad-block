@@ -318,6 +318,10 @@ bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen,
   return c != '.' && testHostLen != baseContextHostLen;
 }
 
+bool Filter::hasUnsupportedOptions() const {
+  return (filterOption & FOUnsupported) != 0;
+}
+
 // Determines if there's a match based on the options, this doesn't
 // mean that the filter rule should be accepted, just that the filter rule
 // should be considered given the current context.
@@ -325,7 +329,7 @@ bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen,
 // which are considered.
 bool Filter::matchesOptions(const char *input, FilterOption context,
     const char *contextDomain, const char *inputHost, int inputHostLen) {
-  if ((filterOption & FOUnsupported) != 0) {
+  if (hasUnsupportedOptions()) {
     return false;
   }
   // Maybe the user of the library can't determine a context because they're
