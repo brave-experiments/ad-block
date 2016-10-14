@@ -201,6 +201,15 @@ TEST(parser, parseFilterMatchesFilter) {
       "http://example.com:8000/foo.bar?a=12&b=%D1%82%D0%B5%D1%81%D1%82"
     },
     {}));
+  CHECK(testFilter("^promotion^",
+    FTNoFilterType,
+    FONoFilterOption,
+    "^promotion^",
+    {
+      "http://test.com/promotion/test"
+    },
+    {
+    }));
 #ifdef ENABLE_REGEX
   CHECK(testFilter("/banner[0-9]+/",
     FTRegex,
@@ -323,6 +332,10 @@ TEST(parser, exceptionRules) {
     }, {
       "http://z.cdn.turner.com/xslo/cvp/ads/freewheel/js/0/AdManager.js",
     }));
+  CHECK(checkMatch("^promotion^",
+    {
+      "http://yahoo.co.jp/promotion/imgs"
+    }, {}));
 }
 
 struct OptionRuleData {

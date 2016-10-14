@@ -592,7 +592,9 @@ bool Filter::matches(const char *input, int inputLen,
     if (inputBloomFilter) {
       for (int i = 1; i < filterPartLen && filterPartEnd -
           filterPartStart - i >= 2; i++) {
-        if (!inputBloomFilter->exists(filterPartStart + i - 1, 2)) {
+        if (!isSeparatorChar(*(filterPartStart + i - 1)) &&
+            !isSeparatorChar(*(filterPartStart + i)) &&
+            !inputBloomFilter->exists(filterPartStart + i - 1, 2)) {
           return false;
         }
       }
