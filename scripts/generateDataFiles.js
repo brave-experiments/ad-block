@@ -3,6 +3,7 @@ const path = require('path')
 const fs = require('fs')
 const regions = require('../lib/regions')
 const request = require('request')
+const braveUnbreakPath = './test/data/brave-unbreak.txt'
 
 let totalExceptionFalsePositives = 0
 let totalNumFalsePositives = 0
@@ -41,7 +42,8 @@ const generateDataFileFromURL = (listURL, outputDATFilename) => {
         reject()
         return
       }
-      generateDataFileFromString(body, outputDATFilename)
+      const braveUnbreakBody = fs.readFileSync(braveUnbreakPath, 'utf8')
+      generateDataFileFromString([body, braveUnbreakBody], outputDATFilename)
       resolve()
     })
   })
@@ -88,7 +90,7 @@ const checkSiteList = (parser, siteList) => {
 const defaultAdblockLists = [
   './test/data/easylist.txt',
   './test/data/ublock-unbreak.txt',
-  './test/data/brave-unbreak.txt'
+  braveUnbreakPath
 ]
 
 const defaultMalwareLists = [

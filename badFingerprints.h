@@ -7133,6 +7133,8 @@ const char *badFingerprints[] = {
 "yopenx",
 ".org/s",
 "penx.c",
+"org/st",
+"enx.co",
 };
 
 const char *badSubstrings[] = {"http", "www" };
