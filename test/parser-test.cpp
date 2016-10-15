@@ -566,11 +566,11 @@ struct ListCounts {
   size_t exceptions;
 };
 
-ListCounts easyList = { 20370, 29374, 4209 };
+ListCounts easyList = { 21437, 30166, 4602 };
 ListCounts ublockUnbreak = { 4, 8, 95 };
 ListCounts braveUnbreak = { 3, 0, 2 };
-ListCounts disconnectSimpleMalware = { 3009, 0, 0 };
-ListCounts spam404MainBlacklist = { 5294, 169, 0 };
+ListCounts disconnectSimpleMalware = { 2911, 0, 0 };
+ListCounts spam404MainBlacklist = { 5464, 169, 0 };
 
 
 // Should parse EasyList without failing
