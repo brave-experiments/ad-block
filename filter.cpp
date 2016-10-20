@@ -385,7 +385,7 @@ bool Filter::matchesOptions(const char *input, FilterOption context,
       delete[] shouldSkipDomains;
     }
 
-    if ((shouldBlockDomainsLen == 0 && getDomainCount() != 0) ||
+    if (
         (shouldBlockDomainsLen > 0 && leftOverBlocking == 0) ||
         (shouldSkipDomainsLen > 0 && leftOverSkipping > 0)) {
       return false;
