@@ -297,5 +297,84 @@ phoronix.com#@#div[style^="text-align: center;"]
 # To counter `||analytics.edgekey.net^` in EasyPrivacy.
 @@||analytics.edgekey.net/html5/akamaihtml5-min.js$script,domain=weather.com
 
-# https://github.com/gorhill/uBlock/issues/1522
-||tags.tiqcdn.com/utag/*.js$script,redirect=noopjs,domain=cnet.com
+! https://github.com/gorhill/uBlock/issues/1540
+@@||tfag.de^$script,domain=chip.de
+
+# https://github.com/uBlockOrigin/uAssets/issues/16
+@@||nav.files.bbci.co.uk/nav-analytics/*$script,domain=bbc.com|bbc.co.uk
+
+# https://adblockplus.org/forum/viewtopic.php?f=1&t=44930
+@@||data.cnn.com/jsonp/cfg/*/videoconfig/cnn/desktop/domesticsectionconfig.json$script,domain=cnn.com
+@@||cnn.com/.element/apps/cvp/3.0/cfg/spider/cnn/expansion/ad_policy.xml$xmlhttprequest,domain=cnn.com
+@@||z.cdn.turner.com/analytics/cnnexpan/jsmd.min.js$script,domain=cnn.com
+
+# https://github.com/uBlockOrigin/uAssets/issues/20
+@@||gamespot.com/*/trackingWithCT.js$script,first-party
+
+# http://www.slideshare.net/aidanajoyce/adblocking-blocking-more-than-ads
+||ggwebcast.com/*/kaltura/ga/urchin.js$script,redirect=noopjs
+umbro.com#@##ad_main
+
+# https://twitter.com/komandorTarkin/status/723234211444973569
+@@||shop.puppetlabs.com/store/js/services/googleAnalytics.js$script,first-party
+
+! https://github.com/uBlockOrigin/uAssets/issues/33
+flightradar24.com#@#.twitter-feed
+
+! https://github.com/uBlockOrigin/uAssets/issues/34
+@@||premium.soundcloud.com/*/js/tracking.js$script,first-party
+
+! https://github.com/gorhill/uBlock/issues/1608
+||stats.bbc.co.uk/o.gif$object,domain=bbc.com|bbc.co.uk,redirect=1x1-transparent.gif
+
+! https://github.com/gorhill/uBlock/issues/1626
+@@||boldchat.com^
+
+! https://github.com/uBlockOrigin/uAssets/issues/46
+@@||snoobi.com^$script,domain=kartta.hel.fi
+
+! https://github.com/uBlockOrigin/uAssets/issues/47
+@@||esellerate.net^$first-party
+
+! https://twitter.com/AMReese/status/733524545085181952
+@@||dw.cbsi.com/anonc.js$script,domain=giantbomb.com
+
+! https://github.com/gorhill/uBlock/issues/1737
+@@||googletagmanager.com/gtm.js?$domain=willyweather.com.au
+
+! https://www.reddit.com/r/portugal/comments/4qud2t/problemas_com_a_extens%C3%A3o_ublock_origin_em_sites/
+@@||data.netscope.marktest.pt/netscope-gemius.js$script,domain=ojogo.pt
+@@||gapt.hit.gemius.pl/xlgemius.js$script,domain=ojogo.pt
+
+! https://twitter.com/AmberLynneGirl/status/751099123411980289
+! To counter `naiadsystems.com` in Peter Lowe's
+@@||naiadsystems.com$object,domain=streamate.com
+
+! https://github.com/gorhill/uBlock/issues/1803
+@@||static.adf.ly^$image,script,stylesheet,domain=q.gs
+
+! https://twitter.com/JoshMacFarlane/status/756573821931585536
+! To counter Peter Lowe's `emarketer.com`
+@@||emarketer.com^$first-party
+
+! https://github.com/uBlockOrigin/uAssets/issues/86
+@@||snoobi.com^$script,domain=sato.fi
+
+! https://twitter.com/bdarfler/status/768540430988378112
+! To counter Peter Lowe's `tapad.com`
+@@||tapad.com^$first-party
+
+! Reported in Chrome store: "Computershopper.com [...] 'this page did not fully render due to a plugin you have installed.'"
+@@||sp.computershopper.com/xyz?$image,~third-party
+
+! https://twitter.com/bdarfler/status/776058551777329152
+@@||localytics.com^$first-party
+
+! https://github.com/uBlockOrigin/uAssets/issues/148
+@@||media2.intoday.in/aajtak/$script,domain=aajtak.intoday.in|indiatoday.intoday.in
+
+! https://twitter.com/SathyaBhat/status/785727665508487168
+@@||styletagassets.com/vendor/angular-google-analytics.min.js$script,domain=styletag.com
+
+! https://twitter.com/moritzlost/status/789155425405075456
+@@||app.focalmark.com/bower_components/angulartics-google-analytics/dist/angulartics-ga.min.js$script,first-party
