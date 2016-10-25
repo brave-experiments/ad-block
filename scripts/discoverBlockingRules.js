@@ -4,7 +4,7 @@
 
 // Example invocations:
 // node scripts/discoverBlockingRules.js  --uuid 03F91310-9244-40FA-BCF6-DA31B832F34D --host slashdot.org --location https://s.yimg.jp/images/ds/ult/toppage/rapidjp-1.0.0.js
-// node scripts/discoverBlockingRules.js  --host slashdot.org --location https://s.yimg.jp/images/ds/ult/toppage/rapidjp-1.0.0.js
+// node scripts/discoverBlockingRules.js  --host www.cnet.com --location https://s0.2mdn.net/instream/html5/ima3.js
 
 const commander = require('commander')
 const {makeAdBlockClientFromListUUID, makeAdBlockClientFromFilePath} = require('../lib/util')
