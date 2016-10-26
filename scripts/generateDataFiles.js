@@ -2,8 +2,10 @@ const {ABPFilterParser, FilterOptions} = require('..')
 const path = require('path')
 const fs = require('fs')
 const regions = require('../lib/regions')
+const malware = require('../lib/malware')
 const request = require('request')
 const braveUnbreakPath = './test/data/brave-unbreak.txt'
+const {getListBufferFromURL} = require('../lib/util')
 
 let totalExceptionFalsePositives = 0
 let totalNumFalsePositives = 0
@@ -28,7 +30,7 @@ const generateDataFileFromString = (filterRuleData, outputDATFilename) => {
   fs.writeFileSync(path.join('out', outputDATFilename), serializedData)
 }
 
-const generateDataFileFromURL = (listURL, outputDATFilename) => {
+const generateDataFileFromURL = (listURL, outputDATFilename, filter) => {
   return new Promise((resolve, reject) => {
     console.log(`${listURL}...`)
     request.get(listURL, function (error, response, body) {
@@ -43,6 +45,9 @@ const generateDataFileFromURL = (listURL, outputDATFilename) => {
         return
       }
       const braveUnbreakBody = fs.readFileSync(braveUnbreakPath, 'utf8')
+      if (filter) {
+        body = filter(body)
+      }
       generateDataFileFromString([body, braveUnbreakBody], outputDATFilename)
       resolve()
     })
@@ -71,6 +76,19 @@ const generateDataFilesForAllRegions = () => {
   })
 }
 
+const generateDataFilesForMalware = () => {
+  let promises = []
+  malware.forEach((l) => {
+    console.log(l)
+    promises.push(getListBufferFromURL(l.listURL, l.filter))
+  })
+  Promise.all(promises).then((listBuffers) => {
+    generateDataFileFromString(listBuffers, 'SafeBrowsingData.dat')
+  }).catch((e) => {
+    console.log('Erorr', e)
+  })
+}
+
 const checkSiteList = (parser, siteList) => {
   const start = new Date().getTime()
   siteList.forEach(site => {
@@ -93,14 +111,9 @@ const defaultAdblockLists = [
   braveUnbreakPath
 ]
 
-const defaultMalwareLists = [
-  './test/data/spam404-main-blacklist.txt',
-  './test/data/disconnect-simple-malware.txt'
-]
-
 const top500URLList20k = fs.readFileSync('./test/data/sitelist.txt', 'utf8').split('\n')
 // const shortURLList = fs.readFileSync('./test/data/short-sitelist.txt', 'utf8').split('\n')
 
 generateDataFileFromPath(defaultAdblockLists, 'ABPFilterParserData.dat')
-generateDataFileFromPath(defaultMalwareLists, 'SafeBrowsingData.dat')
+generateDataFilesForMalware()
 generateDataFilesForAllRegions()
