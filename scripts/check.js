@@ -8,12 +8,13 @@
 // node scripts/check.js --dat ./out/SafeBrowsingData.dat --host excellentmovies.net --location https://excellentmovies.net
 
 const commander = require('commander')
-const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromFilePath} = require('../lib/util')
+const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromFilePath, makeAdBlockClientFromString} = require('../lib/util')
 const {FilterOptions} = require('..')
 
 commander
   .option('-u, --uuid [uuid]', 'UUID of the list to use')
   .option('-d, --dat [dat]', 'file path of the adblock .dat file')
+  .option('-f, --filter [filter]', 'Brave filter rules')
   .option('-h, --host [host]', 'host of the page that is being loaded')
   .option('-l, --location [location]', 'URL to use for the check')
   .parse(process.argv)
@@ -23,8 +24,10 @@ let p = Promise.reject('Usage: node check.js --location <location> --host <host>
 if (commander.host && commander.location) {
   if (commander.uuid) {
     p = makeAdBlockClientFromListUUID(commander.uuid)
-  } else if (commander.uuid) {
+  } else if (commander.dat) {
     p = makeAdBlockClientFromDATFile(commander.dat)
+  } else if (commander.filter) {
+    p = Promise.resolve(makeAdBlockClientFromString(commander.filter))
   } else {
     const defaultAdblockLists = [
       './test/data/easylist.txt',
