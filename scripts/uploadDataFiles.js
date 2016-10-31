@@ -1,5 +1,8 @@
 const fs = require('fs')
 const s3 = require('s3')
+const commander = require('commander')
+const path = require('path')
+
 const client = s3.createClient({
   maxAsyncS3: 20,
   s3RetryCount: 3,
@@ -10,10 +13,10 @@ const client = s3.createClient({
   s3Options: {}
 })
 
-const uploadFile = (filename) => {
+const uploadFile = (filePath, filename) => {
   return new Promise((resolve, reject) => {
     var params = {
-      localFile: `out/${filename}`,
+      localFile: filePath,
       // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
       s3Params: {
         Bucket: 'adblock-data',
@@ -34,9 +37,18 @@ const uploadFile = (filename) => {
   })
 }
 
+commander
+  .option('-d, --dat [dat]', 'file path of the adblock .dat file to upload')
+  .parse(process.argv)
+
 // Queue up all the uploads one at a time to easily spot errors
 let p = Promise.resolve()
-const dataFilenames = fs.readdirSync('out')
-dataFilenames.forEach((filename) => {
-  p = p.then(uploadFile.bind(null, filename))
-})
+
+if (commander.dat) {
+  p = p.then(uploadFile.bind(null, commander.dat, path.basename(commander.dat)))
+} else {
+  const dataFilenames = fs.readdirSync('out')
+  dataFilenames.forEach((filename) => {
+    p = p.then(uploadFile.bind(null, `out/${filename}`, filename))
+  })
+}
