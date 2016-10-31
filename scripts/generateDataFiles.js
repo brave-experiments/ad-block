@@ -79,7 +79,6 @@ const generateDataFilesForAllRegions = () => {
 const generateDataFilesForMalware = () => {
   let promises = []
   malware.forEach((l) => {
-    console.log(l)
     promises.push(getListBufferFromURL(l.listURL, l.filter))
   })
   Promise.all(promises).then((listBuffers) => {

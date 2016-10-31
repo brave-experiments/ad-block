@@ -17,17 +17,19 @@ commander
   .option('-f, --filter [filter]', 'Brave filter rules')
   .option('-h, --host [host]', 'host of the page that is being loaded')
   .option('-l, --location [location]', 'URL to use for the check')
+  .option('-o, --output [output]', 'Optionally saves a DAT file')
   .parse(process.argv)
 
 let p = Promise.reject('Usage: node check.js --location <location> --host <host> [--uuid <uuid>]')
 
 if (commander.host && commander.location) {
+  p.catch(() => {})
   if (commander.uuid) {
     p = makeAdBlockClientFromListUUID(commander.uuid)
   } else if (commander.dat) {
     p = makeAdBlockClientFromDATFile(commander.dat)
   } else if (commander.filter) {
-    p = Promise.resolve(makeAdBlockClientFromString(commander.filter))
+    p = makeAdBlockClientFromString(commander.filter)
   } else {
     const defaultAdblockLists = [
       './test/data/easylist.txt',
@@ -41,6 +43,9 @@ if (commander.host && commander.location) {
 p.then((adBlockClient) => {
   console.log('Parsing stats:', adBlockClient.getParsingStats())
   console.log('Matches: ', adBlockClient.matches(commander.location, FilterOptions.noFilterOption, commander.host))
+  if (commander.output) {
+    require('fs').writeFileSync(commander.output, adBlockClient.serialize())
+  }
 }).catch((e) => {
   console.log('Error:', e)
 })
