@@ -566,8 +566,11 @@ bool Filter::matches(const char *input, int inputLen,
     if (!currentHostLen) {
       currentHost = getUrlHost(input, &currentHostLen);
     }
-    int hostLen = this->hostLen == -1 ?
-      static_cast<int>(strlen(host)) : this->hostLen;
+    int hostLen = 0;
+    if (host) {
+      hostLen = this->hostLen == -1 ?
+        static_cast<int>(strlen(host)) : this->hostLen;
+    }
 
     if (inputBloomFilter) {
       for (int i = 1; i < hostLen; i++) {

@@ -785,6 +785,10 @@ TEST(hostAnchoredFiltersParseCorrectly, hostAnchoredFiltersParseCorrectly2) {
   Filter filter3;
   parseFilter("||test.com/ok", &filter3);
   CHECK(!strcmp("test.com", filter3.host));
+
+  Filter filter4;
+  Filter filter5;
+  CHECK(filter4 == filter5);
 }
 
 TEST(misc, misc2) {

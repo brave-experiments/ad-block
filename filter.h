@@ -106,10 +106,16 @@ friend class ABPFilterParser;
     }
     */
 
-    int hostLen = this->hostLen == -1 ?
-      static_cast<int>(strlen(host)) : this->hostLen;
-    int rhsHostLen = rhs.hostLen == -1 ?
-      static_cast<int>(strlen(rhs.host)) : rhs.hostLen;
+    int hostLen = 0;
+    if (host) {
+      hostLen = this->hostLen == -1 ?
+        static_cast<int>(strlen(host)) : this->hostLen;
+    }
+    int rhsHostLen = 0;
+    if (rhs.host) {
+      rhsHostLen = rhs.hostLen == -1 ?
+        static_cast<int>(strlen(rhs.host)) : rhs.hostLen;
+    }
 
     if (hostLen != rhsHostLen) {
       return false;
