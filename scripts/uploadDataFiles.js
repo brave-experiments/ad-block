@@ -2,6 +2,7 @@ const fs = require('fs')
 const s3 = require('s3')
 const commander = require('commander')
 const path = require('path')
+const dataFileVersion = 2
 
 const client = s3.createClient({
   maxAsyncS3: 20,
@@ -20,7 +21,7 @@ const uploadFile = (filePath, filename) => {
       // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
       s3Params: {
         Bucket: 'adblock-data',
-        Key: `2/${filename}`,
+        Key: `${commander.prod ? dataFileVersion : 'test'}/${filename}`,
         ACL: 'public-read'
       }
     }
@@ -39,6 +40,7 @@ const uploadFile = (filePath, filename) => {
 
 commander
   .option('-d, --dat [dat]', 'file path of the adblock .dat file to upload')
+  .option('-p, --prod', 'whether the upload is for prod, if not specified uploads to the test location')
   .parse(process.argv)
 
 // Queue up all the uploads one at a time to easily spot errors
