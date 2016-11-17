@@ -19,12 +19,18 @@ class ABPFilterParser {
 
   void clear();
   bool parse(const char *input);
-  bool matches(const char *input, FilterOption contextOption = FONoFilterOption,
+  bool matches(const char *input,
+      FilterOption contextOption = FONoFilterOption,
       const char *contextDomain = nullptr);
+  bool findMatchingFilters(const char *input,
+      FilterOption contextOption,
+      const char *contextDomain,
+      Filter **matchingFilter,
+      Filter **matchingExceptionFilter);
   // Serializes a the parsed data and bloom filter data into a single buffer.
   // The returned buffer should be deleted.
   char * serialize(int *size, bool ignoreHTMLFilters = true);
-  // Deserializes the buffer, a size is not needed since a serialized
+  // Deserializes the buffer, a size is not needed since a serialized.
   // buffer is self described
   void deserialize(char *buffer);
 
@@ -66,7 +72,8 @@ class ABPFilterParser {
   // the input
   bool hasMatchingFilters(Filter *filter, int numFilters, const char *input,
       int inputLen, FilterOption contextOption, const char *contextDomain,
-      BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen);
+      BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen,
+      Filter **matchingFilter = nullptr);
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
   void initHashSet(HashSet<Filter>**, char *buffer, int len);
   char *deserializedBuffer;

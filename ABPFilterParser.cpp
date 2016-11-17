@@ -449,13 +449,20 @@ bool ABPFilterParser::hasMatchingFilters(Filter *filter, int numFilters,
     const char *contextDomain,
     BloomFilter *inputBloomFilter,
     const char *inputHost,
-    int inputHostLen) {
+    int inputHostLen,
+    Filter **matchingFilter) {
   for (int i = 0; i < numFilters; i++) {
     if (filter->matches(input, inputLen, contextOption,
           contextDomain, inputBloomFilter, inputHost, inputHostLen)) {
+      if (matchingFilter) {
+        *matchingFilter = filter;
+      }
       return true;
     }
     filter++;
+  }
+  if (matchingFilter) {
+    *matchingFilter = nullptr;
   }
   return false;
 }
@@ -630,6 +637,45 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption,
   }
 
   return false;
+}
+
+/**
+ * Obtains the first matching filter or nullptrl, and if one is found, finds
+ * the first matching exception filter or nullptr.
+ *
+ * @return true if the filter should be blocked
+ */
+bool ABPFilterParser::findMatchingFilters(const char *input,
+    FilterOption contextOption,
+    const char *contextDomain,
+    Filter **matchingFilter,
+    Filter **matchingExceptionFilter) {
+  *matchingFilter = nullptr;
+  *matchingExceptionFilter = nullptr;
+  int inputLen = static_cast<int>(strlen(input));
+  int inputHostLen;
+  const char *inputHost = getUrlHost(input, &inputHostLen);
+  hasMatchingFilters(noFingerprintFilters,
+    numNoFingerprintFilters, input, inputLen, contextOption,
+    contextDomain, nullptr, inputHost, inputHostLen, matchingFilter);
+  if (!*matchingFilter) {
+    hasMatchingFilters(filters,
+      numFilters, input, inputLen, contextOption,
+      contextDomain, nullptr, inputHost, inputHostLen, matchingFilter);
+  }
+  if (!*matchingFilter) {
+    return false;
+  }
+
+  hasMatchingFilters(noFingerprintExceptionFilters,
+    numNoFingerprintExceptionFilters, input, inputLen, contextOption,
+    contextDomain, nullptr, inputHost, inputHostLen, matchingExceptionFilter);
+  if (!*matchingExceptionFilter) {
+    hasMatchingFilters(exceptionFilters,
+      numExceptionFilters, input, inputLen, contextOption,
+      contextDomain, nullptr, inputHost, inputHostLen, matchingExceptionFilter);
+  }
+  return !*matchingExceptionFilter;
 }
 
 void ABPFilterParser::initBloomFilter(BloomFilter **pp,

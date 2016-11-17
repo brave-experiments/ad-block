@@ -42,6 +42,8 @@ void ABPFilterParserWrap::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "clear", ABPFilterParserWrap::Clear);
   NODE_SET_PROTOTYPE_METHOD(tpl, "parse", ABPFilterParserWrap::Parse);
   NODE_SET_PROTOTYPE_METHOD(tpl, "matches", ABPFilterParserWrap::Matches);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "findMatchingFilters",
+      ABPFilterParserWrap::FindMatchingFilters);
   NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", ABPFilterParserWrap::Serialize);
   NODE_SET_PROTOTYPE_METHOD(tpl, "deserialize",
     ABPFilterParserWrap::Deserialize);
@@ -145,6 +147,36 @@ void ABPFilterParserWrap::Matches(const FunctionCallbackInfo<Value>& args) {
   args.GetReturnValue().Set(Boolean::New(isolate, matches));
 }
 
+void ABPFilterParserWrap::FindMatchingFilters(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  String::Utf8Value str(args[0]->ToString());
+  const char * buffer = *str;
+  int32_t filterOption = static_cast<FilterOption>(args[1]->Int32Value());
+  String::Utf8Value currentPageDomain(args[2]->ToString());
+  const char * currentPageDomainBuffer = *currentPageDomain;
+
+  Filter *matchingFilter;
+  Filter *matchingExceptionFilter;
+  ABPFilterParserWrap* obj =
+    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  bool matches = obj->findMatchingFilters(buffer,
+    static_cast<FilterOption>(filterOption),
+    currentPageDomainBuffer, &matchingFilter, &matchingExceptionFilter);
+
+  Local<Object> foundData = Object::New(isolate);
+  foundData->Set(String::NewFromUtf8(isolate, "matches"),
+    Boolean::New(isolate, matches));
+  if (matchingFilter) {
+    foundData->Set(String::NewFromUtf8(isolate, "machingFilter"),
+      String::NewFromUtf8(isolate, matchingFilter->data));
+  }
+  if (matchingExceptionFilter) {
+    foundData->Set(String::NewFromUtf8(isolate, "matchingExceptionFilter"),
+      String::NewFromUtf8(isolate, matchingExceptionFilter->data));
+  }
+  args.GetReturnValue().Set(foundData);
+}
 
 void ABPFilterParserWrap::Serialize(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
@@ -171,7 +203,6 @@ void ABPFilterParserWrap::Serialize(const FunctionCallbackInfo<Value>& args) {
   delete[] data;
   args.GetReturnValue().Set(localBuffer);
 }
-
 void ABPFilterParserWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   ABPFilterParserWrap* obj =
