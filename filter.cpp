@@ -804,8 +804,8 @@ uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
   if (!hasNewlineBefore(buffer, bufferSize)) {
     return 0;
   }
-  sscanf(buffer, "%x,%x,%x,%x", &dataLen, &filterType,
-      &filterOption, &antiFilterOption);
+  sscanf(buffer, "%x,%x,%x,%x", &dataLen, (unsigned int*)&filterType,
+      (unsigned int*)&filterOption, (unsigned int*)&antiFilterOption);
   uint32_t consumed = static_cast<uint32_t>(strlen(buffer)) + 1;
   if (consumed + dataLen >= bufferSize) {
     return 0;
