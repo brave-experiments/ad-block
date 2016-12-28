@@ -688,14 +688,17 @@ void ABPFilterParser::initBloomFilter(BloomFilter **pp,
   }
 }
 
-void ABPFilterParser::initHashSet(HashSet<Filter> **pp, char *buffer, int len) {
+bool ABPFilterParser::initHashSet(HashSet<Filter> **pp, char *buffer, int len) {
   if (*pp) {
     delete *pp;
   }
   if (len > 0) {
     *pp = new HashSet<Filter>(0);
-    (*pp)->deserialize(buffer, len);
+
+    return (*pp)->deserialize(buffer, len);
   }
+
+  return true;
 }
 
 void setFilterBorrowedMemory(Filter *filters, int numFilters) {
@@ -1122,7 +1125,7 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
   return pos;
 }
 
-void ABPFilterParser::deserialize(char *buffer) {
+bool ABPFilterParser::deserialize(char *buffer) {
   deserializedBuffer = buffer;
   int bloomFilterSize = 0, exceptionBloomFilterSize = 0,
       hostAnchoredHashSetSize = 0, hostAnchoredExceptionHashSetSize = 0;
@@ -1156,12 +1159,18 @@ void ABPFilterParser::deserialize(char *buffer) {
   initBloomFilter(&exceptionBloomFilter,
       buffer + pos, exceptionBloomFilterSize);
   pos += exceptionBloomFilterSize;
-  initHashSet(&hostAnchoredHashSet,
-      buffer + pos, hostAnchoredHashSetSize);
+  if (!initHashSet(&hostAnchoredHashSet,
+        buffer + pos, hostAnchoredHashSetSize)) {
+      return false;
+  }
   pos += hostAnchoredHashSetSize;
-  initHashSet(&hostAnchoredExceptionHashSet,
-      buffer + pos, hostAnchoredExceptionHashSetSize);
+  if (!initHashSet(&hostAnchoredExceptionHashSet,
+        buffer + pos, hostAnchoredExceptionHashSetSize)) {
+      return false;
+  }
   pos += hostAnchoredExceptionHashSetSize;
+
+  return true;
 }
 
 void ABPFilterParser::enableBadFingerprintDetection() {
@@ -1183,4 +1192,3 @@ void ABPFilterParser::enableBadFingerprintDetection() {
   uint64_t HashFn2Byte::operator()(const char *input, int len) {
     return (((uint64_t)input[1]) << 8) | input[0];
   }
-

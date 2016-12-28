@@ -66,7 +66,11 @@ int checkForParser(ABPFilterParser *pParser, const char *outputPath,
   ABPFilterParser parser2;
   // Deserialize uses the buffer directly for subsequent matches, do not free
   // until all matches are done.
-  parser2.deserialize(buffer);
+  if (!parser2.deserialize(buffer)) {
+    cout << "Could not deserialize";
+    delete[] buffer;
+    return 0;
+  }
   // Prints the same as parser.matches would
   std::for_each(urlsToCheck.begin(), urlsToCheck.end(),
       [&parser2, currentPageDomain](std::string const &urlToCheck) {

@@ -32,7 +32,7 @@ class ABPFilterParser {
   char * serialize(int *size, bool ignoreHTMLFilters = true);
   // Deserializes the buffer, a size is not needed since a serialized.
   // buffer is self described
-  void deserialize(char *buffer);
+  bool deserialize(char *buffer);
 
   void enableBadFingerprintDetection();
   const char * getDeserializedBuffer() {
@@ -75,7 +75,7 @@ class ABPFilterParser {
       BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen,
       Filter **matchingFilter = nullptr);
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
-  void initHashSet(HashSet<Filter>**, char *buffer, int len);
+  bool initHashSet(HashSet<Filter>**, char *buffer, int len);
   char *deserializedBuffer;
 };
 

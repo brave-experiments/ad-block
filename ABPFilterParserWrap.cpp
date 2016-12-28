@@ -221,7 +221,7 @@ void ABPFilterParserWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
   }
   char *deserializedData = new char[length];
   memcpy(deserializedData, buf, length);
-  obj->deserialize(deserializedData);
+  args.GetReturnValue().Set(Boolean::New(isolate, obj->deserialize(deserializedData)));
 }
 
 void ABPFilterParserWrap::GetParsingStats(
