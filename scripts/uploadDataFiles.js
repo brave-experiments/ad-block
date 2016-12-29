@@ -14,14 +14,14 @@ const client = s3.createClient({
   s3Options: {}
 })
 
-const uploadFile = (filePath, filename) => {
+const uploadFile = (key, filePath, filename) => {
   return new Promise((resolve, reject) => {
     var params = {
       localFile: filePath,
       // See: http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#putObject-property
       s3Params: {
         Bucket: 'adblock-data',
-        Key: `${commander.prod ? dataFileVersion : 'test'}/${filename}`,
+        Key: `${key}/${filename}`,
         ACL: 'public-read'
       }
     }
@@ -45,12 +45,23 @@ commander
 
 // Queue up all the uploads one at a time to easily spot errors
 let p = Promise.resolve()
+const date = new Date().toISOString().split('.')[0]
 
 if (commander.dat) {
-  p = p.then(uploadFile.bind(null, commander.dat, path.basename(commander.dat)))
+  if (commander.prod) {
+    p = p.then(uploadFile.bind(null, dataFileVersion, commander.dat, path.basename(commander.dat)))
+    p = p.then(uploadFile.bind(null, `backups/${date}`, commander.dat, path.basename(commander.dat)))
+  } else {
+    p = p.then(uploadFile.bind(null, 'test', commander.dat, path.basename(commander.dat)))
+  }
 } else {
   const dataFilenames = fs.readdirSync('out')
   dataFilenames.forEach((filename) => {
-    p = p.then(uploadFile.bind(null, `out/${filename}`, filename))
+    if (commander.prod) {
+      p = p.then(uploadFile.bind(null, dataFileVersion, `out/${filename}`, filename))
+      p = p.then(uploadFile.bind(null, `backups/${date}`, `out/${filename}`, filename))
+    } else {
+      p = p.then(uploadFile.bind(null, 'test', `out/${filename}`, filename))
+    }
   })
 }

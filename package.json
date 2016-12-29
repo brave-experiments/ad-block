@@ -1,8 +1,8 @@
 {
   "name": "abp-filter-parser-cpp",
   "main": "./build/Release/abp-filter-parser-cpp",
-  "version": "1.2.12",
-  "description": "C++ Adblock Plus filter parser for lists like EasyList",
+  "version": "1.2.13",
+  "description": "Ad block engine used in the Brave browser for ABP filter syntax based lists like EasyList.",
   "directories": {
     "test": "test"
   },
@@ -32,7 +32,8 @@
     "lint-js": "standard",
     "checks": "npm run check-security",
     "check-security": "nsp check",
-    "data-files": "node scripts/generateDataFiles.js"
+    "data-files": "node scripts/generateDataFiles.js",
+    "upload": "node scripts/uploadDataFiles.js"
   },
   "repository": {
     "type": "git",
