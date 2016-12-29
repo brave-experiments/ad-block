@@ -265,8 +265,10 @@ bool checkMatch(const char *rules,
       parser.parse(rules);
       int size;
       buffer = parsers[0].serialize(&size);
-    } else {
-      parser.deserialize(buffer);
+    } else if (!parser.deserialize(buffer)) {
+      cout << "Deserialization failed" << endl;
+      delete[] buffer;
+      return false;
     }
 
     bool ret = true;
@@ -813,7 +815,7 @@ TEST(serializationTests, serializationTests2) {
   char * buffer = parser.serialize(&size);
 
   ABPFilterParser parser2;
-  parser2.deserialize(buffer);
+  CHECK(parser2.deserialize(buffer));
 
   Filter f(static_cast<FilterType>(FTHostAnchored | FTHostOnly), FOThirdParty,
       FONoFilterOption, "googlesyndication.com", 21, nullptr,
@@ -873,4 +875,3 @@ TEST(findMatchingFilters, basic) {
   CHECK(!strcmp(matchingFilter->data, "googlesyndication.com/safeframe/"));
   CHECK(!strcmp(matchingExceptionFilter->data, "safeframe"));
 }
-
