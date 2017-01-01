@@ -51,7 +51,7 @@ enum FilterOption {
 };
 
 class Filter {
-friend class ABPFilterParser;
+friend class AdBlockClient;
  public:
   Filter();
   Filter(const Filter &other);

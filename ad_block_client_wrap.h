@@ -3,26 +3,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ABPFILTERPARSERWRAP_H_
-#define ABPFILTERPARSERWRAP_H_
+#ifndef AD_BLOCK_CLIENT_WRAP_H_
+#define AD_BLOCK_CLIENT_WRAP_H_
 
 #include <node.h>
 #include <node_object_wrap.h>
 
-#include "ABPFilterParser.h"
+#include "./ad_block_client.h"
 
-namespace ABPFilterParserWrap {
+namespace ad_block_client_wrap {
 
 /**
- * Wraps Bloom Filter for use in Node
+ * Wraps AdBlockClient for use in Node
  */
-class ABPFilterParserWrap : public ABPFilterParser, public node::ObjectWrap {
+class AdBlockClientWrap : public AdBlockClient, public node::ObjectWrap {
  public:
   static void Init(v8::Local<v8::Object> exports);
 
  private:
-  ABPFilterParserWrap();
-  virtual ~ABPFilterParserWrap();
+  AdBlockClientWrap();
+  virtual ~AdBlockClientWrap();
 
   static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
 
@@ -44,6 +44,6 @@ class ABPFilterParserWrap : public ABPFilterParser, public node::ObjectWrap {
   static v8::Persistent<v8::Function> constructor;
 };
 
-}  // namespace ABPFilterParserWrap
+}  // namespace ad_block_client_wrap
 
-#endif  // ABPFILTERPARSERWRAP_H_
+#endif  // AD_BLOCK_CLIENT_WRAP_H_

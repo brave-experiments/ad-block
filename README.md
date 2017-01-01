@@ -4,9 +4,6 @@
 
 Native node module, and C++ library for Adblock Plus filter parsing for lists like EasyList.
 
-This is a straight port of the prototype done in JS here:
-https://github.com/bbondy/abp-filter-parser
-
 It uses a bloom filter and Rabin-Karp algorithm to be super fast.
 
 ## To include brave/ad-block in your project:
@@ -18,14 +15,13 @@ npm install --save ad-block
 ## JS Sample
 
 ```javascript
-var ABPFilterParser = ABPFilterParserLib.ABPFilterParser
-var FilterOptions = ABPFilterParserLib.FilterOptions
 
-var parser = new ABPFilterParser()
-parser.parse('/public/ad/*$domain=slashdot.org')
-parser.parse('/public/ad3/*$script')
-var b1 = parser.matches('http://www.brianbondy.com/public/ad/some-ad', FilterOptions.script, 'slashdot.org')
-var b2 = parser.matches('http://www.brianbondy.com/public/ad/some-ad', FilterOptions.script, 'digg.com')
+const {AdBlockClient, FilterOptions} = require('ad-block')
+const client = new AdBlockClient()
+client.parse('/public/ad/*$domain=slashdot.org')
+client.parse('/public/ad3/*$script')
+var b1 = client.matches('http://www.brianbondy.com/public/ad/some-ad', FilterOptions.script, 'slashdot.org')
+var b2 = client.matches('http://www.brianbondy.com/public/ad/some-ad', FilterOptions.script, 'digg.com')
 console.log('public/ad/* should match b1.  Actual: ', b1)
 console.log('public/ad/* should not match b2.  Actual: ', b2)
 ```
@@ -33,7 +29,7 @@ console.log('public/ad/* should not match b2.  Actual: ', b2)
 ## C++ Sample
 
 ```c++
-#include "ABPFilterParser.h"
+#include "ad_block_client.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>
@@ -84,12 +80,12 @@ int main(int argc, char**argv) {
   const char *currentPageDomain = "slashdot.org";
 
   // Parse easylist
-  ABPFilterParser parser;
-  parser.parse(easyListTxt.c_str());
+  AdBlockClient client;
+  client.parse(easyListTxt.c_str());
 
   // Do the checks
-  std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck) / sizeof(urlsToCheck[0]), [&parser, currentPageDomain](std::string const &urlToCheck) {
-    if (parser.matches(urlToCheck.c_str(), FONoFilterOption, currentPageDomain)) {
+  std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck) / sizeof(urlsToCheck[0]), [&client, currentPageDomain](std::string const &urlToCheck) {
+    if (client.matches(urlToCheck.c_str(), FONoFilterOption, currentPageDomain)) {
       cout << urlToCheck << ": You should block this URL!" << endl;
     } else {
       cout << urlToCheck << ": You should NOT block this URL!" << endl;
@@ -98,15 +94,15 @@ int main(int argc, char**argv) {
 
   int size;
   // This buffer is allocate on the heap, you must call delete[] when you're done using it.
-  char *buffer = parser.serialize(size);
+  char *buffer = client.serialize(size);
   writeFile("./ABPFilterParserData.dat", buffer, size);
 
-  ABPFilterParser parser2;
+  AdBlockClient client2;
   // Deserialize uses the buffer directly for subsequent matches, do not free until all matches are done.
-  parser2.deserialize(buffer);
-  // Prints the same as parser.matches would
-  std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck) / sizeof(urlsToCheck[0]), [&parser2, currentPageDomain](std::string const &urlToCheck) {
-    if (parser2.matches(urlToCheck.c_str(), FONoFilterOption, currentPageDomain)) {
+  client2.deserialize(buffer);
+  // Prints the same as client.matches would
+  std::for_each(urlsToCheck, urlsToCheck + sizeof(urlsToCheck) / sizeof(urlsToCheck[0]), [&client2, currentPageDomain](std::string const &urlToCheck) {
+    if (client2.matches(urlToCheck.c_str(), FONoFilterOption, currentPageDomain)) {
       cout << urlToCheck << ": You should block this URL!" << endl;
     } else {
       cout << urlToCheck << ": You should NOT block this URL!" << endl;

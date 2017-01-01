@@ -5,7 +5,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include "./ABPFilterParser.h"
+#include "./ad_block_client.h"
 
 #ifdef PERF_STATS
 #include <iostream>
@@ -13,7 +13,7 @@ using std::cout;
 using std::endl;
 #endif
 
-#include "./badFingerprints.h"
+#include "./bad_fingerprints.h"
 
 const int kMaxLineLength = 2048;
 
@@ -358,7 +358,7 @@ void parseFilter(const char *input, const char *end, Filter *f,
 }
 
 
-ABPFilterParser::ABPFilterParser() : filters(nullptr),
+AdBlockClient::AdBlockClient() : filters(nullptr),
   htmlRuleFilters(nullptr),
   exceptionFilters(nullptr),
   noFingerprintFilters(nullptr),
@@ -382,12 +382,12 @@ ABPFilterParser::ABPFilterParser() : filters(nullptr),
   deserializedBuffer(nullptr) {
 }
 
-ABPFilterParser::~ABPFilterParser() {
+AdBlockClient::~AdBlockClient() {
   clear();
 }
 
-// Clears all data and stats from the ABPFilterParser
-void ABPFilterParser::clear() {
+// Clears all data and stats from the AdBlockClient
+void AdBlockClient::clear() {
   if (filters) {
     delete[] filters;
     filters = nullptr;
@@ -442,7 +442,7 @@ void ABPFilterParser::clear() {
   numExceptionBloomFilterSaves = 0;
 }
 
-bool ABPFilterParser::hasMatchingFilters(Filter *filter, int numFilters,
+bool AdBlockClient::hasMatchingFilters(Filter *filter, int numFilters,
     const char *input,
     int inputLen,
     FilterOption contextOption,
@@ -529,7 +529,7 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
   return !filter->matches(input, inputLen, contextOption, contextDomain);
 }
 
-bool ABPFilterParser::matches(const char *input, FilterOption contextOption,
+bool AdBlockClient::matches(const char *input, FilterOption contextOption,
     const char *contextDomain) {
   int inputLen = static_cast<int>(strlen(input));
   int inputHostLen;
@@ -645,7 +645,7 @@ bool ABPFilterParser::matches(const char *input, FilterOption contextOption,
  *
  * @return true if the filter should be blocked
  */
-bool ABPFilterParser::findMatchingFilters(const char *input,
+bool AdBlockClient::findMatchingFilters(const char *input,
     FilterOption contextOption,
     const char *contextDomain,
     Filter **matchingFilter,
@@ -678,7 +678,7 @@ bool ABPFilterParser::findMatchingFilters(const char *input,
   return !*matchingExceptionFilter;
 }
 
-void ABPFilterParser::initBloomFilter(BloomFilter **pp,
+void AdBlockClient::initBloomFilter(BloomFilter **pp,
     const char *buffer, int len) {
   if (*pp) {
     delete *pp;
@@ -688,7 +688,7 @@ void ABPFilterParser::initBloomFilter(BloomFilter **pp,
   }
 }
 
-bool ABPFilterParser::initHashSet(HashSet<Filter> **pp, char *buffer, int len) {
+bool AdBlockClient::initHashSet(HashSet<Filter> **pp, char *buffer, int len) {
   if (*pp) {
     delete *pp;
   }
@@ -709,7 +709,7 @@ void setFilterBorrowedMemory(Filter *filters, int numFilters) {
 
 // Parses the filter data into a few collections of filters and enables efficent
 // querying.
-bool ABPFilterParser::parse(const char *input) {
+bool AdBlockClient::parse(const char *input) {
   // If the user is parsing and we have regex support,
   // then we can determine the fingerprints for the bloom filter.
   // Otherwise it needs to be done manually via initBloomFilter and
@@ -1002,7 +1002,7 @@ int serializeFilters(char * buffer, size_t bufferSizeAvail,
 }
 
 // Returns a newly allocated buffer, caller must manually delete[] the buffer
-char * ABPFilterParser::serialize(int *totalSize, bool ignoreHTMLFilters) {
+char * AdBlockClient::serialize(int *totalSize, bool ignoreHTMLFilters) {
   *totalSize = 0;
   int adjustedNumHTMLFilters = ignoreHTMLFilters ? 0 : numHtmlRuleFilters;
 
@@ -1125,7 +1125,7 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
   return pos;
 }
 
-bool ABPFilterParser::deserialize(char *buffer) {
+bool AdBlockClient::deserialize(char *buffer) {
   deserializedBuffer = buffer;
   int bloomFilterSize = 0, exceptionBloomFilterSize = 0,
       hostAnchoredHashSetSize = 0, hostAnchoredExceptionHashSetSize = 0;
@@ -1173,7 +1173,7 @@ bool ABPFilterParser::deserialize(char *buffer) {
   return true;
 }
 
-void ABPFilterParser::enableBadFingerprintDetection() {
+void AdBlockClient::enableBadFingerprintDetection() {
   if (badFingerprintsHashSet) {
     return;
   }

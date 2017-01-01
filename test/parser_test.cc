@@ -13,7 +13,7 @@
 #include <set>
 #include "./CppUnitLite/TestHarness.h"
 #include "./CppUnitLite/Test.h"
-#include "./ABPFilterParser.h"
+#include "./ad_block_client.h"
 #include "./util.h"
 
 using std::string;
@@ -72,7 +72,7 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType,
   return true;
 }
 
-TEST(parser, parseFilterMatchesFilter) {
+TEST(client, parseFilterMatchesFilter) {
   CHECK(testFilter("/banner/*/img",
     FTNoFilterType,
     FONoFilterOption,
@@ -257,15 +257,15 @@ TEST(parser, parseFilterMatchesFilter) {
 bool checkMatch(const char *rules,
     set<string> &&blocked, // NOLINT
     set<string> &&notBlocked) { // NOLINT
-  ABPFilterParser parsers[2];
+  AdBlockClient clients[2];
   char * buffer = nullptr;
   for (int i = 0; i < 2; i++) {
-    ABPFilterParser &parser = parsers[i];
+    AdBlockClient &client = clients[i];
     if (i == 0) {
-      parser.parse(rules);
+      client.parse(rules);
       int size;
-      buffer = parsers[0].serialize(&size);
-    } else if (!parser.deserialize(buffer)) {
+      buffer = clients[0].serialize(&size);
+    } else if (!client.deserialize(buffer)) {
       cout << "Deserialization failed" << endl;
       delete[] buffer;
       return false;
@@ -274,8 +274,8 @@ bool checkMatch(const char *rules,
     bool ret = true;
     string lastChecked;
     std::for_each(blocked.begin(), blocked.end(),
-        [&parser, &lastChecked, &ret](string const &s) {
-      ret = ret && parser.matches(s.c_str());
+        [&client, &lastChecked, &ret](string const &s) {
+      ret = ret && client.matches(s.c_str());
       lastChecked = s;
     });
     if (!ret) {
@@ -285,8 +285,8 @@ bool checkMatch(const char *rules,
     }
 
     std::for_each(notBlocked.begin(), notBlocked.end(),
-        [&parser, &ret, &lastChecked](string const &s) {
-      ret = ret && !parser.matches(s.c_str());
+        [&client, &ret, &lastChecked](string const &s) {
+      ret = ret && !client.matches(s.c_str());
       lastChecked = s;
     });
     if (!ret) {
@@ -299,7 +299,7 @@ bool checkMatch(const char *rules,
   return true;
 }
 
-TEST(parser, exceptionRules) {
+TEST(client, exceptionRules) {
   CHECK(checkMatch("adv\n"
                    "@@advice.",
     {
@@ -361,13 +361,13 @@ struct OptionRuleData {
 
 bool checkOptionRule(const char *rules,
     set<OptionRuleData> &&optionTests) { // NOLINT
-  ABPFilterParser parser;
-  parser.parse(rules);
+  AdBlockClient client;
+  client.parse(rules);
 
   bool fail = false;
   std::for_each(optionTests.begin(), optionTests.end(),
-      [&parser, &fail](OptionRuleData const &data) {
-    bool matches = parser.matches(data.testUrl,
+      [&client, &fail](OptionRuleData const &data) {
+    bool matches = client.matches(data.testUrl,
         data.context, data.contextDomain);
     if (matches != data.shouldBlock) {
       cout << "Expected to block: " << data.shouldBlock
@@ -384,7 +384,7 @@ bool checkOptionRule(const char *rules,
 }
 
 // Option rules
-TEST(parser, optionRules) {
+TEST(client, optionRules) {
   CHECK(checkOptionRule("||example.com",
     {
       OptionRuleData("http://example.com",
@@ -576,104 +576,104 @@ ListCounts spam404MainBlacklist = { 5464, 169, 0 };
 
 
 // Should parse EasyList without failing
-TEST(parser, parse_easylist) {
+TEST(client, parse_easylist) {
   string && fileContents = // NOLINT
     getFileContents("./test/data/easylist.txt");
-  ABPFilterParser parser;
-  parser.parse(fileContents.c_str());
+  AdBlockClient client;
+  client.parse(fileContents.c_str());
 
-  CHECK(compareNums(parser.numFilters +
-          parser.numNoFingerprintFilters +
-          parser.hostAnchoredHashSet->size(),
+  CHECK(compareNums(client.numFilters +
+          client.numNoFingerprintFilters +
+          client.hostAnchoredHashSet->size(),
         easyList.filters));
-  CHECK(compareNums(parser.numHtmlRuleFilters, easyList.htmlRules));
-  CHECK(compareNums(parser.numExceptionFilters +
-          parser.numNoFingerprintExceptionFilters +
-          parser.hostAnchoredExceptionHashSet->size(),
+  CHECK(compareNums(client.numHtmlRuleFilters, easyList.htmlRules));
+  CHECK(compareNums(client.numExceptionFilters +
+          client.numNoFingerprintExceptionFilters +
+          client.hostAnchoredExceptionHashSet->size(),
         easyList.exceptions));
 }
 
 // Should parse ublock-unbreak list without failing
-TEST(parser, parse_ublock_unbreak) {
+TEST(client, parse_ublock_unbreak) {
   string && fileContents = // NOLINT
     getFileContents("./test/data/ublock-unbreak.txt");
-  ABPFilterParser parser;
-  parser.parse(fileContents.c_str());
+  AdBlockClient client;
+  client.parse(fileContents.c_str());
 
-  CHECK(compareNums(parser.numFilters +
-         parser.numNoFingerprintFilters +
-          parser.hostAnchoredHashSet->size(),
+  CHECK(compareNums(client.numFilters +
+         client.numNoFingerprintFilters +
+          client.hostAnchoredHashSet->size(),
         ublockUnbreak.filters));
-  CHECK(compareNums(parser.numHtmlRuleFilters, ublockUnbreak.htmlRules));
-  CHECK(compareNums(parser.numExceptionFilters +
-          parser.numNoFingerprintExceptionFilters +
-          parser.hostAnchoredExceptionHashSet->size(),
+  CHECK(compareNums(client.numHtmlRuleFilters, ublockUnbreak.htmlRules));
+  CHECK(compareNums(client.numExceptionFilters +
+          client.numNoFingerprintExceptionFilters +
+          client.hostAnchoredExceptionHashSet->size(),
         ublockUnbreak.exceptions));
 }
 
 // Should parse brave-unbreak list without failing
-TEST(parser, parse_brave_unbreak) {
+TEST(client, parse_brave_unbreak) {
   string && fileContents = // NOLINT
     getFileContents("./test/data/brave-unbreak.txt");
-  ABPFilterParser parser;
-  parser.parse(fileContents.c_str());
+  AdBlockClient client;
+  client.parse(fileContents.c_str());
 
-  CHECK(compareNums(parser.numFilters +
-          parser.numNoFingerprintFilters +
-          parser.hostAnchoredHashSet->size(),
+  CHECK(compareNums(client.numFilters +
+          client.numNoFingerprintFilters +
+          client.hostAnchoredHashSet->size(),
         braveUnbreak.filters));
-  CHECK(compareNums(parser.numHtmlRuleFilters, braveUnbreak.htmlRules));
-  CHECK(compareNums(parser.numExceptionFilters +
-          parser.numNoFingerprintExceptionFilters +
-          parser.hostAnchoredExceptionHashSet->size(),
+  CHECK(compareNums(client.numHtmlRuleFilters, braveUnbreak.htmlRules));
+  CHECK(compareNums(client.numExceptionFilters +
+          client.numNoFingerprintExceptionFilters +
+          client.hostAnchoredExceptionHashSet->size(),
         braveUnbreak.exceptions));
 }
 
 // Should parse disconnect-simple-malware.txt list without failing
-TEST(parser, parse_brave_disconnect_simple_malware) {
+TEST(client, parse_brave_disconnect_simple_malware) {
   string && fileContents = // NOLINT
     getFileContents("./test/data/disconnect-simple-malware.txt");
-  ABPFilterParser parser;
-  parser.parse(fileContents.c_str());
+  AdBlockClient client;
+  client.parse(fileContents.c_str());
 
-  CHECK(compareNums(parser.numFilters +
-          parser.numNoFingerprintFilters +
-          parser.hostAnchoredHashSet->size(),
+  CHECK(compareNums(client.numFilters +
+          client.numNoFingerprintFilters +
+          client.hostAnchoredHashSet->size(),
         disconnectSimpleMalware.filters));
-  CHECK(compareNums(parser.numHtmlRuleFilters,
+  CHECK(compareNums(client.numHtmlRuleFilters,
         disconnectSimpleMalware.htmlRules));
-  CHECK(compareNums(parser.numExceptionFilters +
-          parser.numNoFingerprintExceptionFilters +
-          parser.hostAnchoredExceptionHashSet->size(),
+  CHECK(compareNums(client.numExceptionFilters +
+          client.numNoFingerprintExceptionFilters +
+          client.hostAnchoredExceptionHashSet->size(),
         disconnectSimpleMalware.exceptions));
 }
 
 
 // Should parse spam404-main-blacklist.txt list without failing
-TEST(parser, parse_spam404_main_blacklist) {
+TEST(client, parse_spam404_main_blacklist) {
   string && fileContents = // NOLINT
     getFileContents("./test/data/spam404-main-blacklist.txt");
-  ABPFilterParser parser;
-  parser.parse(fileContents.c_str());
+  AdBlockClient client;
+  client.parse(fileContents.c_str());
 
-  CHECK(compareNums(parser.numFilters +
-          parser.numNoFingerprintFilters +
-          parser.hostAnchoredHashSet->size(),
+  CHECK(compareNums(client.numFilters +
+          client.numNoFingerprintFilters +
+          client.hostAnchoredHashSet->size(),
         spam404MainBlacklist.filters));
-  CHECK(compareNums(parser.numHtmlRuleFilters, spam404MainBlacklist.htmlRules));
-  CHECK(compareNums(parser.numExceptionFilters +
-          parser.numNoFingerprintExceptionFilters +
-          parser.hostAnchoredExceptionHashSet->size(),
+  CHECK(compareNums(client.numHtmlRuleFilters, spam404MainBlacklist.htmlRules));
+  CHECK(compareNums(client.numExceptionFilters +
+          client.numNoFingerprintExceptionFilters +
+          client.hostAnchoredExceptionHashSet->size(),
         spam404MainBlacklist.exceptions));
 
   const char *urlToCheck = "http://excellentmovies.net/";
   const char *currentPageDomain = "excellentmovies.net";
-  CHECK(parser.matches(urlToCheck, FODocument, currentPageDomain));
+  CHECK(client.matches(urlToCheck, FODocument, currentPageDomain));
 }
 
 
 // Should parse lists without failing
-TEST(parser, parse_multiList) {
+TEST(client, parse_multiList) {
   string && fileContentsEasylist = // NOLINT
     getFileContents("./test/data/easylist.txt");
 
@@ -683,29 +683,29 @@ TEST(parser, parse_multiList) {
   string && fileContentsBraveUnbreak = // NOLINT
     getFileContents("./test/data/brave-unbreak.txt");
 
-  ABPFilterParser parser;
-  parser.parse(fileContentsEasylist.c_str());
-  parser.parse(fileContentsUblockUnbreak.c_str());
-  parser.parse(fileContentsBraveUnbreak.c_str());
+  AdBlockClient client;
+  client.parse(fileContentsEasylist.c_str());
+  client.parse(fileContentsUblockUnbreak.c_str());
+  client.parse(fileContentsBraveUnbreak.c_str());
 
   // I think counts are slightly off due to same rule hash set
 
   /*
-  CHECK(compareNums(parser.numFilters +
-          parser.numNoFingerprintFilters +
-          parser.hostAnchoredHashSet->size(),
+  CHECK(compareNums(client.numFilters +
+          client.numNoFingerprintFilters +
+          client.hostAnchoredHashSet->size(),
         easyList.filters +
           ublockUnbreak.filters +
           braveUnbreak.filters));
           */
-  CHECK(compareNums(parser.numHtmlRuleFilters,
+  CHECK(compareNums(client.numHtmlRuleFilters,
         easyList.htmlRules +
           ublockUnbreak.htmlRules +
           braveUnbreak.htmlRules));
   /*
-  CHECK(compareNums(parser.numExceptionFilters +
-          parser.hostAnchoredExceptionHashSet->size() +
-          parser.numNoFingerprintExceptionFilters,
+  CHECK(compareNums(client.numExceptionFilters +
+          client.hostAnchoredExceptionHashSet->size() +
+          client.numNoFingerprintExceptionFilters,
         easyList.exceptions +
           ublockUnbreak.exceptions +
           braveUnbreak.exceptions));
@@ -713,32 +713,32 @@ TEST(parser, parse_multiList) {
 }
 
 // Should parse lists without failing
-TEST(parser, parse_malware_multiList) {
+TEST(client, parse_malware_multiList) {
   string && fileContentsSpam404 = // NOLINT
     getFileContents("./test/data/spam404-main-blacklist.txt");
 
   string && fileContentsDisconnectSimpleMalware = // NOLINT
     getFileContents("./test/data/disconnect-simple-malware.txt");
 
-  ABPFilterParser parser;
-  parser.parse(fileContentsSpam404.c_str());
-  parser.parse(fileContentsDisconnectSimpleMalware.c_str());
+  AdBlockClient client;
+  client.parse(fileContentsSpam404.c_str());
+  client.parse(fileContentsDisconnectSimpleMalware.c_str());
 
   // I think counts are slightly off due to same rule hash set
 
   /*
-  CHECK(compareNums(parser.numFilters +
-          parser.numNoFingerprintFilters +
-          parser.hostAnchoredHashSet->size(),
+  CHECK(compareNums(client.numFilters +
+          client.numNoFingerprintFilters +
+          client.hostAnchoredHashSet->size(),
         disconnectSimpleMalware.filters +
           spam404MainBlacklist.filters));
   */
-  CHECK(compareNums(parser.numHtmlRuleFilters,
+  CHECK(compareNums(client.numHtmlRuleFilters,
         disconnectSimpleMalware.htmlRules +
           spam404MainBlacklist.htmlRules));
-  CHECK(compareNums(parser.numExceptionFilters +
-          parser.hostAnchoredExceptionHashSet->size() +
-          parser.numNoFingerprintExceptionFilters,
+  CHECK(compareNums(client.numExceptionFilters +
+          client.hostAnchoredExceptionHashSet->size() +
+          client.numNoFingerprintExceptionFilters,
         disconnectSimpleMalware.exceptions+
           spam404MainBlacklist.exceptions));
 }
@@ -746,32 +746,32 @@ TEST(parser, parse_malware_multiList) {
 
 // Calling parse amongst 2 different lists should preserve both sets of rules
 TEST(multipleParse, multipleParse2) {
-  ABPFilterParser parser;
-  parser.parse("adv\n"
+  AdBlockClient client;
+  client.parse("adv\n"
                "@@test\n"
                "###test\n");
-  parser.parse("adv2\n"
+  client.parse("adv2\n"
                "@@test2\n"
                "###test2\n"
                "adv3\n"
                "@@test3\n"
                "###test3");
 
-  CHECK(compareNums(parser.numFilters +
-        parser.numNoFingerprintFilters, 3));
-  CHECK(compareNums(parser.numHtmlRuleFilters, 3));
-  CHECK(compareNums(parser.numExceptionFilters +
-        parser.numNoFingerprintExceptionFilters, 3));
+  CHECK(compareNums(client.numFilters +
+        client.numNoFingerprintFilters, 3));
+  CHECK(compareNums(client.numHtmlRuleFilters, 3));
+  CHECK(compareNums(client.numExceptionFilters +
+        client.numNoFingerprintExceptionFilters, 3));
 }
 
 // Demo app test
 TEST(demoApp, demoApp2) {
-  ABPFilterParser parser;
-  parser.parse("||googlesyndication.com/safeframe/$third-party");
+  AdBlockClient client;
+  client.parse("||googlesyndication.com/safeframe/$third-party");
   const char *urlToCheck =
     "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html";
   const char *currentPageDomain = "slashdot.org";
-  CHECK(parser.matches(urlToCheck, FOScript, currentPageDomain));
+  CHECK(client.matches(urlToCheck, FOScript, currentPageDomain));
 }
 
 TEST(hostAnchoredFiltersParseCorrectly, hostAnchoredFiltersParseCorrectly2) {
@@ -808,42 +808,42 @@ TEST(misc, misc2) {
 
 
 TEST(serializationTests, serializationTests2) {
-  ABPFilterParser parser;
-  parser.parse(
+  AdBlockClient client;
+  client.parse(
       "||googlesyndication.com$third-party\n@@||googlesyndication.ca");
   int size;
-  char * buffer = parser.serialize(&size);
+  char * buffer = client.serialize(&size);
 
-  ABPFilterParser parser2;
-  CHECK(parser2.deserialize(buffer));
+  AdBlockClient client2;
+  CHECK(client2.deserialize(buffer));
 
   Filter f(static_cast<FilterType>(FTHostAnchored | FTHostOnly), FOThirdParty,
       FONoFilterOption, "googlesyndication.com", 21, nullptr,
       "googlesyndication.com");
   Filter f2(FTNoFilterType, FOThirdParty, FONoFilterOption,
       "googleayndication.com", 21, nullptr, "googleayndication.com");
-  CHECK(parser.hostAnchoredHashSet->exists(f));
-  CHECK(parser2.hostAnchoredHashSet->exists(f));
-  CHECK(!parser.hostAnchoredHashSet->exists(f2));
-  CHECK(!parser2.hostAnchoredHashSet->exists(f2));
+  CHECK(client.hostAnchoredHashSet->exists(f));
+  CHECK(client2.hostAnchoredHashSet->exists(f));
+  CHECK(!client.hostAnchoredHashSet->exists(f2));
+  CHECK(!client2.hostAnchoredHashSet->exists(f2));
 
   Filter f3(static_cast<FilterType>(FTHostAnchored | FTHostOnly | FTException),
       FONoFilterOption, FONoFilterOption, "googlesyndication.ca",
       20, nullptr, "googlesyndication.ca");
   Filter f4(FTNoFilterType, FONoFilterOption, FONoFilterOption,
       "googleayndication.ca", 20, nullptr, "googleayndication.ca");
-  CHECK(parser.hostAnchoredExceptionHashSet->exists(f3));
-  CHECK(parser2.hostAnchoredExceptionHashSet->exists(f3));
-  CHECK(!parser.hostAnchoredExceptionHashSet->exists(f4));
-  CHECK(!parser2.hostAnchoredExceptionHashSet->exists(f4));
+  CHECK(client.hostAnchoredExceptionHashSet->exists(f3));
+  CHECK(client2.hostAnchoredExceptionHashSet->exists(f3));
+  CHECK(!client.hostAnchoredExceptionHashSet->exists(f4));
+  CHECK(!client2.hostAnchoredExceptionHashSet->exists(f4));
 
   delete[] buffer;
 }
 
 // Testing matchingFilter
 TEST(findMatchingFilters, basic) {
-  ABPFilterParser parser;
-  parser.parse("||googlesyndication.com/safeframe/$third-party\n"
+  AdBlockClient client;
+  client.parse("||googlesyndication.com/safeframe/$third-party\n"
       "||brianbondy.com/ads");
   const char *urlToCheck =
     "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html";
@@ -854,21 +854,21 @@ TEST(findMatchingFilters, basic) {
   Filter *matchingExceptionFilter = &none;
 
   // Test finds a match
-  CHECK(parser.findMatchingFilters(urlToCheck, FOScript, currentPageDomain,
+  CHECK(client.findMatchingFilters(urlToCheck, FOScript, currentPageDomain,
     &matchingFilter, &matchingExceptionFilter));
   CHECK(matchingFilter)
   CHECK(matchingExceptionFilter == nullptr)
   CHECK(!strcmp(matchingFilter->data, "googlesyndication.com/safeframe/"));
 
   // Test when no filter is found, returns false and sets out params to nullptr
-  CHECK(!parser.findMatchingFilters("ssafsdf.com", FOScript, currentPageDomain,
+  CHECK(!client.findMatchingFilters("ssafsdf.com", FOScript, currentPageDomain,
     &matchingFilter, &matchingExceptionFilter));
   CHECK(matchingFilter == nullptr)
   CHECK(matchingExceptionFilter == nullptr)
 
   // Parse that it finds exception filters correctly
-  parser.parse("@@safeframe\n");
-  CHECK(!parser.findMatchingFilters(urlToCheck, FOScript, currentPageDomain,
+  client.parse("@@safeframe\n");
+  CHECK(!client.findMatchingFilters(urlToCheck, FOScript, currentPageDomain,
     &matchingFilter, &matchingExceptionFilter));
   CHECK(matchingFilter)
   CHECK(matchingExceptionFilter)

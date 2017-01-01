@@ -37,8 +37,7 @@ run
 tags
 
 # output from sample which can be used for importing
-ABPFilterParserData.dat
-SafeBrowsingData.dat
+*.dat
 
 # Python compiled files
 *.pyc

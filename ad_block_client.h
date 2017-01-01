@@ -3,19 +3,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ABPFILTERPARSER_H_
-#define ABPFILTERPARSER_H_
+#ifndef AD_BLOCK_CLIENT_H_
+#define AD_BLOCK_CLIENT_H_
 
 #include "./filter.h"
+#include "./bad_fingerprint.h"
+#include "./cosmetic_filter.h"
 #include "BloomFilter.h"
 #include "HashSet.h"
-#include "./badFingerprint.h"
-#include "./cosmeticFilter.h"
 
-class ABPFilterParser {
+class AdBlockClient {
  public:
-  ABPFilterParser();
-  ~ABPFilterParser();
+  AdBlockClient();
+  ~AdBlockClient();
 
   void clear();
   bool parse(const char *input);
@@ -107,4 +107,4 @@ void parseFilter(const char *input, Filter *f,
 bool isSeparatorChar(char c);
 int findFirstSeparatorChar(const char *input, const char *end);
 
-#endif  // ABPFILTERPARSER_H_
+#endif  // AD_BLOCK_CLIENT_H_

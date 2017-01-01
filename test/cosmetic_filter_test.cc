@@ -11,7 +11,7 @@
 #include <set>
 #include "./CppUnitLite/TestHarness.h"
 #include "./CppUnitLite/Test.h"
-#include "./ABPFilterParser.h"
+#include "./ad_block_client.h"
 #include "./util.h"
 
 using std::cout;

@@ -4,17 +4,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <node.h>
-#include "ABPFilterParserWrap.h"
+#include "./ad_block_client_wrap.h"
 
-namespace ABPFilterParserWrap {
+namespace ad_block_client_wrap {
 
 using v8::Local;
 using v8::Object;
 
 void InitAll(Local<Object> exports) {
-  ABPFilterParserWrap::Init(exports);
+  AdBlockClientWrap::Init(exports);
 }
 
 NODE_MODULE(addon, InitAll)
 
-}  // namespace ABPFilterParserWrap
+}  // namespace ad_block_client_wrap

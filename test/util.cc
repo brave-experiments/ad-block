@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 #include "./CppUnitLite/TestHarness.h"
-#include "./util.h"
+#include "./test/util.h"
 
 using std::cout;
 using std::endl;

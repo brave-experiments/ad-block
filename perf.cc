@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 #include <iterator>
-#include "./ABPFilterParser.h"
+#include "./ad_block_client.h"
 
 using std::string;
 using std::cout;
@@ -29,8 +29,8 @@ string getFileContents(const char *filename) {
   throw(errno);
 }
 
-void doSiteList(ABPFilterParser *pParser, bool outputPerf) {
-  ABPFilterParser &parser = *pParser;
+void doSiteList(AdBlockClient *pClient, bool outputPerf) {
+  AdBlockClient &client = *pClient;
   std::string && siteList = getFileContents("./test/data/sitelist.txt");
   std::stringstream ss(siteList);
   std::istream_iterator<std::string> begin(ss);
@@ -44,9 +44,9 @@ void doSiteList(ABPFilterParser *pParser, bool outputPerf) {
   int numBlocks = 0;
   int numSkips = 0;
   const clock_t beginTime = clock();
-  std::for_each(sites.begin(), sites.end(), [&parser, currentPageDomain,
+  std::for_each(sites.begin(), sites.end(), [&client, currentPageDomain,
       &numBlocks, &numSkips](std::string const &urlToCheck) {
-    if (parser.matches(urlToCheck.c_str(), FONoFilterOption,
+    if (client.matches(urlToCheck.c_str(), FONoFilterOption,
           currentPageDomain)) {
       ++numBlocks;
     } else {
@@ -57,12 +57,12 @@ void doSiteList(ABPFilterParser *pParser, bool outputPerf) {
     cout << "Time: " << float(clock() - beginTime)
       / CLOCKS_PER_SEC << "s" << endl;
     cout << "num blocks: " << numBlocks << ", num skips: " << numSkips << endl;
-    cout << "False Positives: " << parser.numFalsePositives
+    cout << "False Positives: " << client.numFalsePositives
       << ", exception false positives: "
-      << parser.numExceptionFalsePositives << endl;
-    cout << "Bloom filter saves: " << parser.numBloomFilterSaves
+      << client.numExceptionFalsePositives << endl;
+    cout << "Bloom filter saves: " << client.numBloomFilterSaves
       << ", exception bloom filter saves: "
-      << parser.numExceptionBloomFilterSaves << endl;
+      << client.numExceptionBloomFilterSaves << endl;
   }
 }
 
@@ -84,11 +84,11 @@ int main(int argc, char**argv) {
     << "-------------\n"
     << endl;
 
-  ABPFilterParser adBlockParser;
-  adBlockParser.parse(easyListTxt.c_str());
-  adBlockParser.parse(ublockUnblockTxt.c_str());
-  adBlockParser.parse(braveUnblockTxt.c_str());
-  doSiteList(&adBlockParser, true);
+  AdBlockClient adBlockClient;
+  adBlockClient.parse(easyListTxt.c_str());
+  adBlockClient.parse(ublockUnblockTxt.c_str());
+  adBlockClient.parse(braveUnblockTxt.c_str());
+  doSiteList(&adBlockClient, true);
 
   cout << endl
     << "-------------\n"
@@ -96,25 +96,25 @@ int main(int argc, char**argv) {
     << "-------------\n"
     << endl;
 
-  ABPFilterParser safeBrowsingParser;
-  safeBrowsingParser.parse(spam404MainBlacklistTxt.c_str());
-  safeBrowsingParser.parse(disconnectSimpleMalwareTxt.c_str());
-  doSiteList(&safeBrowsingParser, true);
+  AdBlockClient safeBrowsingClient;
+  safeBrowsingClient.parse(spam404MainBlacklistTxt.c_str());
+  safeBrowsingClient.parse(disconnectSimpleMalwareTxt.c_str());
+  doSiteList(&safeBrowsingClient, true);
 
   cout << endl
     << "-------------\n"
     << "generating bad fingerprints list"
     << endl;
 
-  ABPFilterParser allParser;
-  allParser.enableBadFingerprintDetection();
-  allParser.parse(easyListTxt.c_str());
-  allParser.parse(ublockUnblockTxt.c_str());
-  allParser.parse(braveUnblockTxt.c_str());
-  allParser.parse(spam404MainBlacklistTxt.c_str());
-  allParser.parse(disconnectSimpleMalwareTxt.c_str());
-  doSiteList(&allParser, false);
-  allParser.badFingerprintsHashSet->generateHeader("badFingerprints.h");
+  AdBlockClient allClient;
+  allClient.enableBadFingerprintDetection();
+  allClient.parse(easyListTxt.c_str());
+  allClient.parse(ublockUnblockTxt.c_str());
+  allClient.parse(braveUnblockTxt.c_str());
+  allClient.parse(spam404MainBlacklistTxt.c_str());
+  allClient.parse(disconnectSimpleMalwareTxt.c_str());
+  doSiteList(&allClient, false);
+  allClient.badFingerprintsHashSet->generateHeader("bad_fingerprints.h");
 
   return 0;
 }

@@ -1,4 +1,4 @@
-const {ABPFilterParser, FilterOptions} = require('..')
+const {AdBlockClient, FilterOptions} = require('..')
 const path = require('path')
 const fs = require('fs')
 const regions = require('../lib/regions')
@@ -13,18 +13,18 @@ let totalNumFalsePositives = 0
 let totalTime = 0
 
 const generateDataFileFromString = (filterRuleData, outputDATFilename) => {
-  const parser = new ABPFilterParser()
+  const client = new AdBlockClient()
   if (filterRuleData.constructor === Array) {
-    filterRuleData.forEach(filterRuleDataItem => parser.parse(filterRuleDataItem))
+    filterRuleData.forEach(filterRuleDataItem => client.parse(filterRuleDataItem))
   } else {
-    parser.parse(filterRuleData)
+    client.parse(filterRuleData)
   }
 
-  console.log('Parsing stats:', parser.getParsingStats())
-  parser.enableBadFingerprintDetection()
-  checkSiteList(parser, top500URLList20k)
-  parser.generateBadFingerprintsHeader('badFingerprints.h')
-  const serializedData = parser.serialize()
+  console.log('Parsing stats:', client.getParsingStats())
+  client.enableBadFingerprintDetection()
+  checkSiteList(client, top500URLList20k)
+  client.generateBadFingerprintsHeader('bad_fingerprints.h')
+  const serializedData = client.serialize()
   if (!fs.existsSync('out')) {
     fs.mkdirSync('./out')
   }
@@ -82,13 +82,13 @@ const generateDataFilesForList = (lists, filename) => {
 const generateDataFilesForMalware = generateDataFilesForList.bind(null, malware, 'SafeBrowsingData.dat')
 const generateDataFilesForDefaultAdblock = generateDataFilesForList.bind(null, defaultAdblockLists, 'ABPFilterParserData.dat')
 
-const checkSiteList = (parser, siteList) => {
+const checkSiteList = (client, siteList) => {
   const start = new Date().getTime()
   siteList.forEach(site => {
-    // console.log('matches: ', parser.matches(site,  FilterOptions.image, 'slashdot.org'))
-    parser.matches(site, FilterOptions.noFilterOption, 'slashdot.org')
+    // console.log('matches: ', client.matches(site,  FilterOptions.image, 'slashdot.org'))
+    client.matches(site, FilterOptions.noFilterOption, 'slashdot.org')
   })
-  const stats = parser.getMatchingStats()
+  const stats = client.getMatchingStats()
   console.log('Matching stats:', stats)
   totalNumFalsePositives += stats.numFalsePositives
   totalExceptionFalsePositives += stats.numExceptionFalsePositives

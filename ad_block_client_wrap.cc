@@ -4,9 +4,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <node_buffer.h>
-#include "ABPFilterParserWrap.h"
+#include "./ad_block_client_wrap.h"
 
-namespace ABPFilterParserWrap {
+namespace ad_block_client_wrap {
 
 using v8::Function;
 using v8::FunctionCallbackInfo;
@@ -22,40 +22,40 @@ using v8::Boolean;
 using v8::Value;
 using v8::Exception;
 
-Persistent<Function> ABPFilterParserWrap::constructor;
+Persistent<Function> AdBlockClientWrap::constructor;
 
-ABPFilterParserWrap::ABPFilterParserWrap() {
+AdBlockClientWrap::AdBlockClientWrap() {
 }
 
-ABPFilterParserWrap::~ABPFilterParserWrap() {
+AdBlockClientWrap::~AdBlockClientWrap() {
 }
 
-void ABPFilterParserWrap::Init(Local<Object> exports) {
+void AdBlockClientWrap::Init(Local<Object> exports) {
   Isolate* isolate = exports->GetIsolate();
 
   // Prepare constructor template
   Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
-  tpl->SetClassName(String::NewFromUtf8(isolate, "ABPFilterParser"));
+  tpl->SetClassName(String::NewFromUtf8(isolate, "AdBlockClient"));
   tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
   // Prototype
-  NODE_SET_PROTOTYPE_METHOD(tpl, "clear", ABPFilterParserWrap::Clear);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parse", ABPFilterParserWrap::Parse);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "matches", ABPFilterParserWrap::Matches);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "clear", AdBlockClientWrap::Clear);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "parse", AdBlockClientWrap::Parse);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "matches", AdBlockClientWrap::Matches);
   NODE_SET_PROTOTYPE_METHOD(tpl, "findMatchingFilters",
-      ABPFilterParserWrap::FindMatchingFilters);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", ABPFilterParserWrap::Serialize);
+      AdBlockClientWrap::FindMatchingFilters);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "serialize", AdBlockClientWrap::Serialize);
   NODE_SET_PROTOTYPE_METHOD(tpl, "deserialize",
-    ABPFilterParserWrap::Deserialize);
+    AdBlockClientWrap::Deserialize);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getParsingStats",
-    ABPFilterParserWrap::GetParsingStats);
+    AdBlockClientWrap::GetParsingStats);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getMatchingStats",
-    ABPFilterParserWrap::GetMatchingStats);
+    AdBlockClientWrap::GetMatchingStats);
   NODE_SET_PROTOTYPE_METHOD(tpl, "enableBadFingerprintDetection",
-    ABPFilterParserWrap::EnableBadFingerprintDetection);
+    AdBlockClientWrap::EnableBadFingerprintDetection);
   NODE_SET_PROTOTYPE_METHOD(tpl, "generateBadFingerprintsHeader",
-    ABPFilterParserWrap::GenerateBadFingerprintsHeader);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "cleanup", ABPFilterParserWrap::Cleanup);
+    AdBlockClientWrap::GenerateBadFingerprintsHeader);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "cleanup", AdBlockClientWrap::Cleanup);
 
   Local<Object> filterOptions = Object::New(isolate);
   filterOptions->Set(String::NewFromUtf8(isolate, "noFilterOption"),
@@ -92,21 +92,21 @@ void ABPFilterParserWrap::Init(Local<Object> exports) {
     Int32::New(isolate, 040000));
 
   constructor.Reset(isolate, tpl->GetFunction());
-  exports->Set(String::NewFromUtf8(isolate, "ABPFilterParser"),
+  exports->Set(String::NewFromUtf8(isolate, "AdBlockClient"),
                tpl->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "FilterOptions"), filterOptions);
 }
 
-void ABPFilterParserWrap::New(const FunctionCallbackInfo<Value>& args) {
+void AdBlockClientWrap::New(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
 
   if (args.IsConstructCall()) {
-    // Invoked as constructor: `new ABPFilterParser(...)`
-    ABPFilterParserWrap* obj = new ABPFilterParserWrap();
+    // Invoked as constructor: `new AdBlockClient(...)`
+    AdBlockClientWrap* obj = new AdBlockClientWrap();
     obj->Wrap(args.This());
     args.GetReturnValue().Set(args.This());
   } else {
-    // Invoked as plain function `ABPFilterParser(...)`,
+    // Invoked as plain function `AdBlockClient(...)`,
     // turn into construct call.
     const int argc = 1;
     Local<Value> argv[argc] = { args[0] };
@@ -115,22 +115,22 @@ void ABPFilterParserWrap::New(const FunctionCallbackInfo<Value>& args) {
   }
 }
 
-void ABPFilterParserWrap::Clear(const FunctionCallbackInfo<Value>& args) {
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+void AdBlockClientWrap::Clear(const FunctionCallbackInfo<Value>& args) {
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   obj->clear();
 }
 
-void ABPFilterParserWrap::Parse(const FunctionCallbackInfo<Value>& args) {
+void AdBlockClientWrap::Parse(const FunctionCallbackInfo<Value>& args) {
   String::Utf8Value str(args[0]->ToString());
   const char * buffer = *str;
 
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   obj->parse(buffer);
 }
 
-void ABPFilterParserWrap::Matches(const FunctionCallbackInfo<Value>& args) {
+void AdBlockClientWrap::Matches(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   String::Utf8Value str(args[0]->ToString());
   const char * buffer = *str;
@@ -138,8 +138,8 @@ void ABPFilterParserWrap::Matches(const FunctionCallbackInfo<Value>& args) {
   String::Utf8Value currentPageDomain(args[2]->ToString());
   const char * currentPageDomainBuffer = *currentPageDomain;
 
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   bool matches = obj->matches(buffer,
     static_cast<FilterOption>(filterOption),
     currentPageDomainBuffer);
@@ -147,7 +147,7 @@ void ABPFilterParserWrap::Matches(const FunctionCallbackInfo<Value>& args) {
   args.GetReturnValue().Set(Boolean::New(isolate, matches));
 }
 
-void ABPFilterParserWrap::FindMatchingFilters(
+void AdBlockClientWrap::FindMatchingFilters(
     const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   String::Utf8Value str(args[0]->ToString());
@@ -158,8 +158,8 @@ void ABPFilterParserWrap::FindMatchingFilters(
 
   Filter *matchingFilter;
   Filter *matchingExceptionFilter;
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   bool matches = obj->findMatchingFilters(buffer,
     static_cast<FilterOption>(filterOption),
     currentPageDomainBuffer, &matchingFilter, &matchingExceptionFilter);
@@ -178,10 +178,10 @@ void ABPFilterParserWrap::FindMatchingFilters(
   args.GetReturnValue().Set(foundData);
 }
 
-void ABPFilterParserWrap::Serialize(const FunctionCallbackInfo<Value>& args) {
+void AdBlockClientWrap::Serialize(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
 
   int totalSize = 0;
   // Serialize data
@@ -203,10 +203,10 @@ void ABPFilterParserWrap::Serialize(const FunctionCallbackInfo<Value>& args) {
   delete[] data;
   args.GetReturnValue().Set(localBuffer);
 }
-void ABPFilterParserWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
+void AdBlockClientWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
 
   if (args.Length() < 1) {
     isolate->ThrowException(Exception::TypeError(
@@ -225,11 +225,11 @@ void ABPFilterParserWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
     obj->deserialize(deserializedData)));
 }
 
-void ABPFilterParserWrap::GetParsingStats(
+void AdBlockClientWrap::GetParsingStats(
     const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   Local<Object> stats = Object::New(isolate);
   stats->Set(String::NewFromUtf8(isolate, "numFilters"),
     Int32::New(isolate, obj->numFilters));
@@ -248,11 +248,11 @@ void ABPFilterParserWrap::GetParsingStats(
   args.GetReturnValue().Set(stats);
 }
 
-void ABPFilterParserWrap::GetMatchingStats(
+void AdBlockClientWrap::GetMatchingStats(
     const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   Local<Object> stats = Object::New(isolate);
   stats->Set(String::NewFromUtf8(isolate, "numFalsePositives"),
     Int32::New(isolate, obj->numFalsePositives));
@@ -265,25 +265,25 @@ void ABPFilterParserWrap::GetMatchingStats(
   args.GetReturnValue().Set(stats);
 }
 
-void ABPFilterParserWrap::EnableBadFingerprintDetection(
+void AdBlockClientWrap::EnableBadFingerprintDetection(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   obj->enableBadFingerprintDetection();
 }
 
-void ABPFilterParserWrap::GenerateBadFingerprintsHeader(
+void AdBlockClientWrap::GenerateBadFingerprintsHeader(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   String::Utf8Value str(args[0]->ToString());
   const char * filename = *str;
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   obj->badFingerprintsHashSet->generateHeader(filename);
 }
 
-void ABPFilterParserWrap::Cleanup(const FunctionCallbackInfo<Value>& args) {
-  ABPFilterParserWrap* obj =
-    ObjectWrap::Unwrap<ABPFilterParserWrap>(args.Holder());
+void AdBlockClientWrap::Cleanup(const FunctionCallbackInfo<Value>& args) {
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   const char *deserializedData = obj->getDeserializedBuffer();
   if (nullptr != deserializedData) {
     delete []deserializedData;
@@ -292,4 +292,4 @@ void ABPFilterParserWrap::Cleanup(const FunctionCallbackInfo<Value>& args) {
   delete obj;
 }
 
-}  // namespace ABPFilterParserWrap
+}  // namespace ad_block_client_wrap

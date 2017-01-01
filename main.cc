@@ -10,7 +10,7 @@
 #include <vector>
 #include <sstream>
 #include <string>
-#include "./ABPFilterParser.h"
+#include "./ad_block_client.h"
 
 using std::cout;
 using std::endl;
@@ -37,9 +37,9 @@ void writeFile(const char *filename, const char *buffer, int length) {
   throw(errno);
 }
 
-int checkForParser(ABPFilterParser *pParser, const char *outputPath,
+int checkForClient(AdBlockClient *pClient, const char *outputPath,
     const std::vector<std::string> &urlsToCheck) {
-  ABPFilterParser &parser = *pParser;
+  AdBlockClient &client = *pClient;
 
   // This is the site who's URLs are being checked, not the domain of the
   // URL being checked.
@@ -48,8 +48,8 @@ int checkForParser(ABPFilterParser *pParser, const char *outputPath,
 
   // Do the checks
   std::for_each(urlsToCheck.begin(), urlsToCheck.end(),
-      [&parser, currentPageDomain](std::string const &urlToCheck) {
-    if (parser.matches(urlToCheck.c_str(),
+      [&client, currentPageDomain](std::string const &urlToCheck) {
+    if (client.matches(urlToCheck.c_str(),
           FONoFilterOption, currentPageDomain)) {
       cout << urlToCheck << ": You should block this URL!" << endl;
     } else {
@@ -60,21 +60,21 @@ int checkForParser(ABPFilterParser *pParser, const char *outputPath,
   int size;
   // This buffer is allocate on the heap, you must call delete[] when
   // you're done using it.
-  char *buffer = parser.serialize(&size);
+  char *buffer = client.serialize(&size);
   writeFile(outputPath, buffer, size);
 
-  ABPFilterParser parser2;
+  AdBlockClient client2;
   // Deserialize uses the buffer directly for subsequent matches, do not free
   // until all matches are done.
-  if (!parser2.deserialize(buffer)) {
+  if (!client2.deserialize(buffer)) {
     cout << "Could not deserialize";
     delete[] buffer;
     return 0;
   }
-  // Prints the same as parser.matches would
+  // Prints the same as client.matches would
   std::for_each(urlsToCheck.begin(), urlsToCheck.end(),
-      [&parser2, currentPageDomain](std::string const &urlToCheck) {
-    if (parser2.matches(urlToCheck.c_str(),
+      [&client2, currentPageDomain](std::string const &urlToCheck) {
+    if (client2.matches(urlToCheck.c_str(),
           FONoFilterOption, currentPageDomain)) {
       cout << urlToCheck << ": You should block this URL!" << endl;
     } else {
@@ -98,10 +98,10 @@ int main(int argc, char**argv) {
     getFileContents("./test/data/disconnect-simple-malware.txt");
 
   // Parse filter lists for adblock
-  ABPFilterParser adBlockParser;
-  adBlockParser.parse(easyListTxt.c_str());
-  adBlockParser.parse(ublockUnblockTxt.c_str());
-  adBlockParser.parse(braveUnblockTxt.c_str());
+  AdBlockClient adBlockClient;
+  adBlockClient.parse(easyListTxt.c_str());
+  adBlockClient.parse(ublockUnblockTxt.c_str());
+  adBlockClient.parse(braveUnblockTxt.c_str());
   std::vector<std::string> checkVector;
   checkVector.push_back(
       "http://pagead2.googlesyndication.com/pagead/show_ads.js");
@@ -110,17 +110,17 @@ int main(int argc, char**argv) {
   checkVector.push_back(
       "http://www.googletagservices.com/tag/js/gpt_mobile.js");
   checkVector.push_back("http://www.brianbondy.com");
-  checkForParser(&adBlockParser, "./ABPFilterParserData.dat", checkVector);
+  checkForClient(&adBlockClient, "./ABPFilterClientData.dat", checkVector);
 
   // Parse filter lists for malware
-  ABPFilterParser malwareParser;
-  malwareParser.parse(spam404MainBlacklistTxt.c_str());
-  malwareParser.parse(disconnectSimpleMalwareTxt.c_str());
+  AdBlockClient malwareClient;
+  malwareClient.parse(spam404MainBlacklistTxt.c_str());
+  malwareClient.parse(disconnectSimpleMalwareTxt.c_str());
   std::vector<std::string> checkVector2;
   checkVector2.push_back("http://freexblcode.com/test");
   checkVector2.push_back("https://malware-check.disconnect.me");
   checkVector2.push_back("http://www.brianbondy.com");
-  checkForParser(&malwareParser, "./SafeBrowsingData.dat", checkVector2);
+  checkForClient(&malwareClient, "./SafeBrowsingData.dat", checkVector2);
 
   return 0;
 }

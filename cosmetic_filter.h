@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef COSMETICFILTER_H_
-#define COSMETICFILTER_H_
+#ifndef COSMETIC_FILTER_H_
+#define COSMETIC_FILTER_H_
 
 #include <math.h>
 #include <string.h>
@@ -101,4 +101,4 @@ class CosmeticFilterHashSet : public HashSet<CosmeticFilter> {
   }
 };
 
-#endif  // COSMETICFILTER_H_
+#endif  // COSMETIC_FILTER_H_

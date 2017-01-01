@@ -7,7 +7,7 @@
 #include <math.h>
 #include "./filter.h"
 #include "hashFn.h"
-#include "./ABPFilterParser.h"
+#include "./ad_block_client.h"
 
 #ifdef ENABLE_REGEX
 #include <string>

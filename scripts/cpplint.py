@@ -7,12 +7,12 @@ import sys
 from lib.util import execute
 
 IGNORE_FILES = [
-  os.path.join('./badFingerprints.h'),
-  os.path.join('./badFingerprints4.h'),
-  os.path.join('./badFingerprints5.h'),
-  os.path.join('./badFingerprints6.h'),
-  os.path.join('./badFingerprints7.h'),
-  os.path.join('./badFingerprints8.h')
+  os.path.join('./bad_fingerprints.h'),
+  os.path.join('./bad_fingerprints4.h'),
+  os.path.join('./bad_fingerprints5.h'),
+  os.path.join('./bad_fingerprints6.h'),
+  os.path.join('./bad_fingerprints7.h'),
+  os.path.join('./bad_fingerprints8.h')
 ]
 
 SOURCE_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
