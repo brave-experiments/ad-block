@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/bbondy/abp-filter-parser-cpp.svg?branch=master)](https://travis-ci.org/bbondy/abp-filter-parser-cpp)
+[![Build Status](https://travis-ci.org/brave/ad-block.svg?branch=master)](https://travis-ci.org/brave/ad-block)
 
-# abp-filter-parser-cpp
+# Brave Ad Block
 
 Native node module, and C++ library for Adblock Plus filter parsing for lists like EasyList.
 
@@ -9,10 +9,10 @@ https://github.com/bbondy/abp-filter-parser
 
 It uses a bloom filter and Rabin-Karp algorithm to be super fast.
 
-## To include abp-filter-parser-cpp in your project:
+## To include brave/ad-block in your project:
 
 ```
-npm install --save abp-filter-parser-cpp
+npm install --save ad-block
 ```
 
 ## JS Sample
@@ -117,15 +117,15 @@ int main(int argc, char**argv) {
 }
 ```
 
-## Developing abp-filter-parser-cpp
+## Developing brave/ad-block
 
 1. Clone the git repository from GitHub:
 
-    git clone --recursive abp-filter-parser-cpp
+    git clone --recursive https://github.com/brave/ad-block
 
 2. Open the working directory:
 
-    cd abp-filter-parser-cpp
+    cd ad-block
 
 3. Install the Node (v5+) dependencies:
 

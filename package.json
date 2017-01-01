@@ -1,7 +1,7 @@
 {
-  "name": "abp-filter-parser-cpp",
-  "main": "./build/Release/abp-filter-parser-cpp",
-  "version": "1.2.13",
+  "name": "ad-block",
+  "main": "./build/Release/ad-block",
+  "version": "1.2.14",
   "description": "Ad block engine used in the Brave browser for ABP filter syntax based lists like EasyList.",
   "directories": {
     "test": "test"
@@ -37,15 +37,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bbondy/abp-filter-parser-cpp.git"
+    "url": "git+https://github.com/brave/ad-block.git"
   },
   "author": "Brian R. Bondy <netzen@gmail.com> (http://www.brianbondy.com)",
   "license": "MPL-2.0",
   "gypfile": true,
   "bugs": {
-    "url": "https://github.com/bbondy/abp-filter-parser-cpp/issues"
+    "url": "https://github.com/brave/ad-block/issues"
   },
-  "homepage": "https://github.com/bbondy/abp-filter-parser-cpp#readme",
+  "homepage": "https://github.com/brave/ad-block#readme",
   "pre-commit": [
     "lint-cpp",
     "lint-js"

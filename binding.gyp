@@ -1,6 +1,6 @@
 {
   "targets": [{
-    "target_name": "abp-filter-parser-cpp",
+    "target_name": "ad-block",
     "sources": [
       "addon.cpp",
       "ABPFilterParserWrap.cpp",
