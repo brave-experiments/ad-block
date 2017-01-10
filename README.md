@@ -134,15 +134,15 @@ int main(int argc, char**argv) {
 
 1. Clone the git repository from GitHub:
 
-    git clone --recursive https://github.com/brave/ad-block
+    `git clone --recursive https://github.com/brave/ad-block`
 
 2. Open the working directory:
 
-    cd ad-block
+    `cd ad-block`
 
 3. Install the Node (v5+) dependencies:
 
-    npm install
+    `npm install`
 
 
 ## Make the node module
