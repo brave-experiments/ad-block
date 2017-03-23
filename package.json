@@ -1,7 +1,7 @@
 {
   "name": "ad-block",
   "main": "./build/Release/ad-block",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "Ad block engine used in the Brave browser for ABP filter syntax based lists like EasyList.",
   "directories": {
     "test": "test"
@@ -21,7 +21,9 @@
     "standard": "^8.4.0"
   },
   "scripts": {
-    "test": "make test",
+    "test": "npm run test-cpp && npm run test-js",
+    "test-cpp": "make test",
+    "test-js": "mocha test/js",
     "build": "make",
     "sample": "make sample",
     "perf": "make perf",
