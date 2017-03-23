@@ -5,15 +5,10 @@
 
 const assert = require('assert')
 const {filterPredicate, sanitizeABPInput} = require('../../lib/filtering')
+const filteredOutRule = '*/test'
 
 describe('filtering', function () {
   describe('filterPredicate', function () {
-    it('filters https:// rules', function () {
-      assert(!filterPredicate('|https://$script'))
-    })
-    it('does not filter prefixed https:// rules', function () {
-      assert(filterPredicate('|https://test$script'))
-    })
     it('Filters out rules that start with a *, for now', function () {
       assert(!filterPredicate('*test/ad'))
     })
@@ -28,19 +23,19 @@ describe('filtering', function () {
     })
     it('Rebuilds lists which have filtered out rules at the start', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput('|https://$image\n' + rules) === rules)
+      assert(sanitizeABPInput(`${filteredOutRule}\n${rules}`) === rules)
     })
     it('Rebuilds lists which have filtered out rules at the end', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(rules + '\n|https://$image') === rules)
+      assert(sanitizeABPInput(`${rules}\n${filteredOutRule}`) === rules)
     })
     it('Rebuilds lists which have filtered out rules in the middle', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput('&ad_channel=\n|https://$script\n&ad_classid=\n&ad_height=\n&ad_keyword=') === rules)
+      assert(sanitizeABPInput(`&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`) === rules)
     })
     it('Rebuilds lists which have multiple filtered out rules', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput('|https://$document\n&ad_channel=\n|https://$script\n&ad_classid=\n&ad_height=\n&ad_keyword=') === rules)
+      assert(sanitizeABPInput(`${filteredOutRule}\n&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`) === rules)
     })
   })
 })
