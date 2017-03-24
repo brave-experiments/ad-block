@@ -10,17 +10,17 @@
       "../cosmetic_filter.h",
       "../filter.cc",
       "../filter.h",
-      "../node_modules/bloom-filter-cpp/BloomFilter.cpp",
-      "../node_modules/bloom-filter-cpp/BloomFilter.h",
-      "../node_modules/bloom-filter-cpp/hashFn.cpp",
-      "../node_modules/bloom-filter-cpp/hashFn.h",
-      "../node_modules/hashset-cpp/HashSet.cpp",
-      "../node_modules/hashset-cpp/HashSet.h"
+      "../cpp_modules/bloom-filter-cpp/BloomFilter.cpp",
+      "../cpp_modules/bloom-filter-cpp/BloomFilter.h",
+      "../cpp_modules/bloom-filter-cpp/hashFn.cpp",
+      "../cpp_modules/bloom-filter-cpp/hashFn.h",
+      "../cpp_modules/hashset-cpp/HashSet.cpp",
+      "../cpp_modules/hashset-cpp/HashSet.h"
     ],
     "include_dirs": [
       "..",
-      '../node_modules/bloom-filter-cpp',
-      '../node_modules/hashset-cpp'
+      '../cpp_modules/bloom-filter-cpp',
+      '../cpp_modules/hashset-cpp'
     ],
     "defines": ["PERF_STATS"],
     "conditions": [
