@@ -1,15 +1,13 @@
 {
   "name": "ad-block",
-  "main": "./build/Release/ad-block",
+  "main": "./build/Release/ad-block.node",
   "version": "2.0.4",
   "description": "Ad block engine used in the Brave browser for ABP filter syntax based lists like EasyList.",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "bloom-filter-cpp": "1.1.x",
     "cppunitlite": "^1.0.0",
-    "hashset-cpp": "1.0.x",
     "nan": "^2.2.1"
   },
   "devDependencies": {
@@ -27,7 +25,7 @@
     "build": "make",
     "sample": "make sample",
     "perf": "make perf",
-    "preinstall": "npm install bloom-filter-cpp && npm install hashset-cpp",
+    "preinstall": "node scripts/clean.js && git clone --depth=1 https://github.com/bbondy/hashset-cpp cpp_modules/hashset-cpp && git clone --depth=1 https://github.com/bbondy/bloom-filter-cpp cpp_modules/bloom-filter-cpp",
     "install": "node-gyp rebuild",
     "lint": "npm run lint-cpp && npm run lint-js",
     "lint-cpp": "./scripts/cpplint.py",
