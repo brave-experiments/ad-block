@@ -25,7 +25,7 @@
     "build": "make",
     "sample": "make sample",
     "perf": "make perf",
-    "preinstall": "git clone --depth=1 https://github.com/bbondy/hashset-cpp cpp_modules/hashset-cpp && git clone --depth=1 https://github.com/bbondy/bloom-filter-cpp cpp_modules/bloom-filter-cpp",
+    "preinstall": "node scripts/clean.js && git clone --depth=1 https://github.com/bbondy/hashset-cpp cpp_modules/hashset-cpp && git clone --depth=1 https://github.com/bbondy/bloom-filter-cpp cpp_modules/bloom-filter-cpp",
     "install": "node-gyp rebuild",
     "lint": "npm run lint-cpp && npm run lint-js",
     "lint-cpp": "./scripts/cpplint.py",
