@@ -12,19 +12,22 @@
  *   node scripts/check.js  --uuid 03F91310-9244-40FA-BCF6-DA31B832F34D --host slashdot.org --location https://s.yimg.jp/images/ds/ult/toppage/rapidjp-1.0.0.js
  * Checking a URL from a loaded DAT file:
  *   node scripts/check.js --dat ./out/SafeBrowsingData.dat --host excellentmovies.net --location https://excellentmovies.net
+ * Checking a URL from a list URL:
+ *   node scripts/check.js --http https://easylist-downloads.adblockplus.org/easylist.txt --host excellentmovies.net --location http://simple-adblock.com/adblocktest/files/adbanner.gif
  * Checking a list of URLs:
  *   node scripts/check.js  --host www.cnet.com --list ./test/data/sitelist.txt
  * Checking a list of URLS with discovery:
  *  node scripts/check.js  --host www.cnet.com --list ./test/data/sitelist.txt --discover
 */
 const commander = require('commander')
-const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromFilePath, makeAdBlockClientFromString, readSiteList} = require('../lib/util')
+const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromFilePath, makeAdBlockClientFromListURL, makeAdBlockClientFromString, readSiteList} = require('../lib/util')
 const {FilterOptions} = require('..')
 
 commander
   .option('-u, --uuid [uuid]', 'UUID of the list to use')
   .option('-d, --dat [dat]', 'file path of the adblock .dat file')
   .option('-f, --filter [filter]', 'Brave filter rules')
+  .option('-w, --http [http]', 'Web filter to use')
   .option('-h, --host [host]', 'host of the page that is being loaded')
   .option('-l, --location [location]', 'URL to use for the check')
   .option('-o, --output [output]', 'Optionally saves a DAT file')
@@ -41,6 +44,8 @@ if (commander.host && (commander.location || commander.list)) {
     p = makeAdBlockClientFromListUUID(commander.uuid)
   } else if (commander.dat) {
     p = makeAdBlockClientFromDATFile(commander.dat)
+  } else if (commander.http) {
+    p = makeAdBlockClientFromListURL(commander.http)
   } else if (commander.filter) {
     p = makeAdBlockClientFromString(commander.filter)
   } else {

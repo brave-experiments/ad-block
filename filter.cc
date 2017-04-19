@@ -275,7 +275,7 @@ void Filter::parseOptions(const char *input) {
   int startOffset = 0;
   int len = 0;
   const char *p = input;
-  while (*p != '\0' && *p != '\n') {
+  while (*p != '\0' && !isEndOfLine(*p)) {
     if (*p == ',') {
       parseOption(input + startOffset, len);
       startOffset += len + 1;

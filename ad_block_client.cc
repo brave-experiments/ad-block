@@ -221,8 +221,8 @@ void parseFilter(const char *input, const char *end, Filter *f,
             memcpy(f->host, p, len);
 
             if ((*(p + len) == '^' && (*(p + len + 1) == '\0'
-                    || *(p + len + 1) == '$' || *(p + len + 1) == '\n')) ||
-                *(p + len) == '\0' || *(p + len) == '$' || *(p + len) == '\n') {
+                    || *(p + len + 1) == '$' || isEndOfLine(*(p + len + 1)))) ||
+                *(p + len) == '\0' || *(p + len) == '$' || isEndOfLine(*(p + len))) {
               f->filterType =
                 static_cast<FilterType>(f->filterType | FTHostOnly);
             }
@@ -749,7 +749,7 @@ bool AdBlockClient::parse(const char *input) {
   // so sometimes we won't even have STL So we can't use something like a vector
   // here.
   while (true) {
-    if (*p == '\n' || *p == '\0') {
+    if (isEndOfLine(*p) || *p == '\0') {
       Filter f;
       parseFilter(lineStart, p, &f);
       if (!f.hasUnsupportedOptions()) {
@@ -896,7 +896,7 @@ bool AdBlockClient::parse(const char *input) {
   lineStart = p;
 
   while (true) {
-    if (*p == '\n' || *p == '\0') {
+    if (isEndOfLine(*p) || *p == '\0') {
       Filter f;
       parseFilter(lineStart, p, &f, bloomFilter, exceptionBloomFilter,
           hostAnchoredHashSet,
