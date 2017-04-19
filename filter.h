@@ -164,4 +164,8 @@ bool isThirdPartyHost(const char *baseContextHost,
     const char *testHost,
     int testHostLen);
 
+static inline bool isEndOfLine(char c) {
+  return c == '\r' || c == '\n';
+}
+
 #endif  // FILTER_H_
