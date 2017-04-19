@@ -7140,6 +7140,7 @@ const char *badFingerprints[] = {
 "sp.com",
 "com/w/",
 "om/w/1",
+"m/w/1.",
 };
 
 const char *badSubstrings[] = {"http", "www" };

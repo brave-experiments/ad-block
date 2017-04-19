@@ -564,15 +564,16 @@ TEST(client, optionRules) {
 
 struct ListCounts {
   size_t filters;
-  size_t htmlRules;
+  size_t cosmeticFilters;
+  size_t htmlFilters;
   size_t exceptions;
 };
 
-ListCounts easyList = { 21437, 30166, 4602 };
-ListCounts ublockUnbreak = { 5, 8, 95 };
-ListCounts braveUnbreak = { 3, 0, 3 };
-ListCounts disconnectSimpleMalware = { 2911, 0, 0 };
-ListCounts spam404MainBlacklist = { 5464, 169, 0 };
+ListCounts easyList = { 21437, 30166, 0, 4602 };
+ListCounts ublockUnbreak = { 5, 8, 0, 95 };
+ListCounts braveUnbreak = { 3, 0, 0, 3 };
+ListCounts disconnectSimpleMalware = { 2911, 0, 0, 0 };
+ListCounts spam404MainBlacklist = { 5464, 169, 0, 0 };
 
 // Should parse EasyList without failing
 TEST(client, parse_easylist) {
@@ -585,7 +586,8 @@ TEST(client, parse_easylist) {
           client.numNoFingerprintFilters +
           client.hostAnchoredHashSet->size(),
         easyList.filters));
-  CHECK(compareNums(client.numHtmlRuleFilters, easyList.htmlRules));
+  CHECK(compareNums(client.numCosmeticFilters, easyList.cosmeticFilters));
+  CHECK(compareNums(client.numHtmlFilters, easyList.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
           client.hostAnchoredExceptionHashSet->size(),
@@ -603,7 +605,8 @@ TEST(client, parse_ublock_unbreak) {
          client.numNoFingerprintFilters +
           client.hostAnchoredHashSet->size(),
         ublockUnbreak.filters));
-  CHECK(compareNums(client.numHtmlRuleFilters, ublockUnbreak.htmlRules));
+  CHECK(compareNums(client.numCosmeticFilters, ublockUnbreak.cosmeticFilters));
+  CHECK(compareNums(client.numHtmlFilters, ublockUnbreak.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
           client.hostAnchoredExceptionHashSet->size(),
@@ -621,7 +624,8 @@ TEST(client, parse_brave_unbreak) {
           client.numNoFingerprintFilters +
           client.hostAnchoredHashSet->size(),
         braveUnbreak.filters));
-  CHECK(compareNums(client.numHtmlRuleFilters, braveUnbreak.htmlRules));
+  CHECK(compareNums(client.numCosmeticFilters, braveUnbreak.cosmeticFilters));
+  CHECK(compareNums(client.numHtmlFilters, braveUnbreak.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
           client.hostAnchoredExceptionHashSet->size(),
@@ -639,8 +643,10 @@ TEST(client, parse_brave_disconnect_simple_malware) {
           client.numNoFingerprintFilters +
           client.hostAnchoredHashSet->size(),
         disconnectSimpleMalware.filters));
-  CHECK(compareNums(client.numHtmlRuleFilters,
-        disconnectSimpleMalware.htmlRules));
+  CHECK(compareNums(client.numCosmeticFilters,
+        disconnectSimpleMalware.cosmeticFilters));
+  CHECK(compareNums(client.numHtmlFilters,
+        disconnectSimpleMalware.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
           client.hostAnchoredExceptionHashSet->size(),
@@ -659,7 +665,9 @@ TEST(client, parse_spam404_main_blacklist) {
           client.numNoFingerprintFilters +
           client.hostAnchoredHashSet->size(),
         spam404MainBlacklist.filters));
-  CHECK(compareNums(client.numHtmlRuleFilters, spam404MainBlacklist.htmlRules));
+  CHECK(compareNums(client.numCosmeticFilters,
+        spam404MainBlacklist.cosmeticFilters));
+  CHECK(compareNums(client.numHtmlFilters, spam404MainBlacklist.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
           client.hostAnchoredExceptionHashSet->size(),
@@ -697,10 +705,15 @@ TEST(client, parse_multiList) {
           ublockUnbreak.filters +
           braveUnbreak.filters));
           */
-  CHECK(compareNums(client.numHtmlRuleFilters,
-        easyList.htmlRules +
-          ublockUnbreak.htmlRules +
-          braveUnbreak.htmlRules));
+  CHECK(compareNums(client.numCosmeticFilters,
+        easyList.cosmeticFilters +
+          ublockUnbreak.cosmeticFilters +
+          braveUnbreak.cosmeticFilters));
+
+  CHECK(compareNums(client.numHtmlFilters,
+        easyList.htmlFilters+
+          ublockUnbreak.htmlFilters +
+          braveUnbreak.htmlFilters));
   /*
   CHECK(compareNums(client.numExceptionFilters +
           client.hostAnchoredExceptionHashSet->size() +
@@ -732,9 +745,14 @@ TEST(client, parse_malware_multiList) {
         disconnectSimpleMalware.filters +
           spam404MainBlacklist.filters));
   */
-  CHECK(compareNums(client.numHtmlRuleFilters,
-        disconnectSimpleMalware.htmlRules +
-          spam404MainBlacklist.htmlRules));
+  CHECK(compareNums(client.numCosmeticFilters,
+        disconnectSimpleMalware.cosmeticFilters +
+          spam404MainBlacklist.cosmeticFilters));
+
+  CHECK(compareNums(client.numHtmlFilters,
+        disconnectSimpleMalware.htmlFilters +
+          spam404MainBlacklist.htmlFilters));
+
   CHECK(compareNums(client.numExceptionFilters +
           client.hostAnchoredExceptionHashSet->size() +
           client.numNoFingerprintExceptionFilters,
@@ -748,17 +766,20 @@ TEST(multipleParse, multipleParse2) {
   AdBlockClient client;
   client.parse("adv\n"
                "@@test\n"
-               "###test\n");
+               "###test\n"
+               "a.com$$script[src]\n");
   client.parse("adv2\n"
                "@@test2\n"
                "###test2\n"
                "adv3\n"
                "@@test3\n"
-               "###test3");
+               "###test3\n"
+               "b.com$$script[src]\n");
 
   CHECK(compareNums(client.numFilters +
         client.numNoFingerprintFilters, 3));
-  CHECK(compareNums(client.numHtmlRuleFilters, 3));
+  CHECK(compareNums(client.numCosmeticFilters, 3));
+  CHECK(compareNums(client.numHtmlFilters, 2));
   CHECK(compareNums(client.numExceptionFilters +
         client.numNoFingerprintExceptionFilters, 3));
 }

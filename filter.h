@@ -23,8 +23,10 @@ enum FilterType {
   FTException = 0200,
   FTEmpty = 0400,
   FTHostOnly = 01000,
+  FTHTMLFiltering = 02000,
   FTListTypesMask = FTException|FTElementHiding|
-    FTElementHidingException|FTEmpty|FTComment,
+    FTElementHidingException|FTEmpty|FTComment|
+    FTHTMLFiltering,
 };
 
 enum FilterOption {

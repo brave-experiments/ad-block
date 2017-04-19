@@ -233,8 +233,8 @@ void AdBlockClientWrap::GetParsingStats(
   Local<Object> stats = Object::New(isolate);
   stats->Set(String::NewFromUtf8(isolate, "numFilters"),
     Int32::New(isolate, obj->numFilters));
-  stats->Set(String::NewFromUtf8(isolate, "numHtmlRuleFilters"),
-    Int32::New(isolate, obj->numHtmlRuleFilters));
+  stats->Set(String::NewFromUtf8(isolate, "numCosmeticFilters"),
+    Int32::New(isolate, obj->numCosmeticFilters));
   stats->Set(String::NewFromUtf8(isolate, "numExceptionFilters"),
     Int32::New(isolate, obj->numExceptionFilters));
   stats->Set(String::NewFromUtf8(isolate, "numNoFingerprintFilters"),
