@@ -222,7 +222,8 @@ void parseFilter(const char *input, const char *end, Filter *f,
 
             if ((*(p + len) == '^' && (*(p + len + 1) == '\0'
                     || *(p + len + 1) == '$' || isEndOfLine(*(p + len + 1)))) ||
-                *(p + len) == '\0' || *(p + len) == '$' || isEndOfLine(*(p + len))) {
+                *(p + len) == '\0' || *(p + len) == '$' ||
+                isEndOfLine(*(p + len))) {
               f->filterType =
                 static_cast<FilterType>(f->filterType | FTHostOnly);
             }

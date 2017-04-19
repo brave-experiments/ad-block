@@ -589,7 +589,7 @@ bool Filter::matches(const char *input, int inputLen,
   const char *filterPartStart = data;
   const char *filterPartEnd = getNextPos(data, '*', data + dataLen);
   int index = 0;
-  while (filterPartStart != filterPartEnd) {
+  while (filterPartStart != filterPartEnd || *filterPartStart == '*') {
     int filterPartLen = static_cast<int>(filterPartEnd - filterPartStart);
 
     if (inputBloomFilter) {

@@ -5,13 +5,12 @@
 
 const assert = require('assert')
 const fs = require('fs')
-const {AdBlockClient} = require('../..')
 const {makeAdBlockClientFromString} = require('../../lib/util')
 const {FilterOptions} = require('../..')
 
 describe('parsing', function () {
   describe('newlines', function () {
-    before (function() {
+    before(function () {
       const data = fs.readFileSync('./test/data/easylist.txt', 'utf8')
       this.rawData = data.replace(/\r/g, '').split('\n').slice(0, 100).join('\n')
       this.matchArgs = ['http://www.brianbondy.com/public/ad/adbanner.gif&ad_box_=1&ad_type=3', FilterOptions.image, 'slashdot.org']
@@ -25,7 +24,7 @@ describe('parsing', function () {
         const buffer1 = client1.serialize()
         const buffer2 = client2.serialize()
         assert.equal(buffer1.length, buffer2.length)
-        assert(buffer2.toString() == buffer1.toString().replace(/\n/g, '\r'))
+        assert(buffer2.toString() === buffer1.toString().replace(/\n/g, '\r'))
         assert(client1.matches(...this.matchArgs))
         assert(client2.matches(...this.matchArgs))
         cb()
@@ -43,7 +42,7 @@ describe('parsing', function () {
         const buffer1 = client1.serialize()
         const buffer2 = client2.serialize()
         assert.equal(buffer1.length, buffer2.length)
-        assert(buffer2.toString() == buffer1.toString().replace(/\n/g, '\r'))
+        assert(buffer2.toString() === buffer1.toString().replace(/\n/g, '\r'))
         assert(client1.matches(...this.matchArgs))
         assert(client2.matches(...this.matchArgs))
         cb()
