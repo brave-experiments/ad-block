@@ -569,11 +569,10 @@ struct ListCounts {
 };
 
 ListCounts easyList = { 21437, 30166, 4602 };
-ListCounts ublockUnbreak = { 4, 8, 95 };
+ListCounts ublockUnbreak = { 5, 8, 95 };
 ListCounts braveUnbreak = { 3, 0, 3 };
 ListCounts disconnectSimpleMalware = { 2911, 0, 0 };
 ListCounts spam404MainBlacklist = { 5464, 169, 0 };
-
 
 // Should parse EasyList without failing
 TEST(client, parse_easylist) {
