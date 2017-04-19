@@ -61,7 +61,7 @@ if (commander.dat) {
       p = p.then(uploadFile.bind(null, dataFileVersion, `out/${filename}`, filename))
       p = p.then(uploadFile.bind(null, `backups/${date}`, `out/${filename}`, filename))
     } else {
-      p = p.then(uploadFile.bind(null, 'test', `out/${filename}`, filename))
+      p = p.then(uploadFile.bind(null, `test/${dataFileVersion}`, `out/${filename}`, filename))
     }
   })
 }
