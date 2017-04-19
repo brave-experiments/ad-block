@@ -4,38 +4,39 @@
 /* global describe, it */
 
 const assert = require('assert')
-const {filterPredicate, sanitizeABPInput} = require('../../lib/filtering')
+const {sanitizeABPInput} = require('../../lib/filtering')
 const filteredOutRule = '*/test'
+const predicate = (rule) => !rule.startsWith('*')
 
 describe('filtering', function () {
   describe('filterPredicate', function () {
     it('Filters out rules that start with a *, for now', function () {
-      assert(!filterPredicate('*test/ad'))
+      assert(!predicate('*test/ad'))
     })
     it('Does not filter out rules with a *', function () {
-      assert(filterPredicate('test/*/ad'))
+      assert(predicate('test/*/ad'))
     })
   })
   describe('sanitizeABPInput', function () {
     it('Rebuilds lists which do not have filtered out rules', function () {
       const I = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(I) === I)
+      assert(sanitizeABPInput(I, predicate) === I)
     })
     it('Rebuilds lists which have filtered out rules at the start', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(`${filteredOutRule}\n${rules}`) === rules)
+      assert(sanitizeABPInput(`${filteredOutRule}\n${rules}`, predicate) === rules)
     })
     it('Rebuilds lists which have filtered out rules at the end', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(`${rules}\n${filteredOutRule}`) === rules)
+      assert(sanitizeABPInput(`${rules}\n${filteredOutRule}`, predicate) === rules)
     })
     it('Rebuilds lists which have filtered out rules in the middle', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(`&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`) === rules)
+      assert(sanitizeABPInput(`&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`, predicate) === rules)
     })
     it('Rebuilds lists which have multiple filtered out rules', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(`${filteredOutRule}\n&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`) === rules)
+      assert(sanitizeABPInput(`${filteredOutRule}\n&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`, predicate) === rules)
     })
   })
 })
