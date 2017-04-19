@@ -14,6 +14,7 @@
   },
   "devDependencies": {
     "commander": "^2.9.0",
+    "mocha": "^3.2.0",
     "node-gyp": "^3.4.0",
     "nsp": "^2.3.0",
     "pre-commit": "^1.1.2",
