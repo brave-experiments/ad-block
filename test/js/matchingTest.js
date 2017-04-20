@@ -13,6 +13,8 @@ describe('matching', function () {
       const client = new AdBlockClient()
       client.parse('/banner1.gif\n')
       assert(client.matches('http://www.brianbondy.com/public/banner1.gif', FilterOptions.image, 'slashdot.org'))
+      assert(client.matches('http://www.brianbondy.com/public//banner1.gif', FilterOptions.image, 'slashdot.org'))
+      assert(!client.matches('http://www.brianbondy.com/public/abanner1.gif', FilterOptions.image, 'slashdot.org'))
     })
 
     it('can start with a star', function () {

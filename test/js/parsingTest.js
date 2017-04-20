@@ -52,4 +52,41 @@ describe('parsing', function () {
       })
     })
   })
+  describe('single chararacters', function () {
+    it('with \'/\'', function (cb) {
+      makeAdBlockClientFromString('/').then((client) => {
+        assert(client.matches('http://www.brianbondy.com/a', FilterOptions.image, 'slashdot.org'))
+        cb()
+      })
+    })
+
+    it('with normal char \'a\'', function (cb) {
+      makeAdBlockClientFromString('a').then((client) => {
+        assert(client.matches('http://www.brianbondy.com/', FilterOptions.image, 'slashdot.org'))
+        assert(!client.matches('http://www.zzz.com/', FilterOptions.image, 'slashdot.org'))
+        cb()
+      })
+    })
+
+    it('does not crash with unfinshed rules', function (cb) {
+      Promise.all([
+        makeAdBlockClientFromString('a'),
+        makeAdBlockClientFromString('\r'),
+        makeAdBlockClientFromString('\n'),
+        makeAdBlockClientFromString('\t'),
+        makeAdBlockClientFromString(' '),
+        makeAdBlockClientFromString('|'),
+        makeAdBlockClientFromString('@'),
+        makeAdBlockClientFromString('!'),
+        makeAdBlockClientFromString('['),
+        makeAdBlockClientFromString('$'),
+        makeAdBlockClientFromString('#'),
+        makeAdBlockClientFromString('/'),
+        makeAdBlockClientFromString('.'),
+        makeAdBlockClientFromString('^')
+      ]).then(() => {
+        cb()
+      })
+    })
+  })
 })

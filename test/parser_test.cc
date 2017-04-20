@@ -569,7 +569,7 @@ struct ListCounts {
   size_t exceptions;
 };
 
-ListCounts easyList = { 21437, 30166, 0, 4602 };
+ListCounts easyList = { 21438, 30166, 0, 4602 };
 ListCounts ublockUnbreak = { 5, 8, 0, 95 };
 ListCounts braveUnbreak = { 3, 0, 0, 3 };
 ListCounts disconnectSimpleMalware = { 2911, 0, 0, 0 };

@@ -268,19 +268,23 @@ void parseFilter(const char *input, const char *end, Filter *f,
             continue;
           }
           break;
-        case '/':
-          if ((parseState == FPStart || parseState == FPPastWhitespace)
-              && input[strlen(input) -1] == '/') {
-            // Just copy out the whole regex and return early
-            int len = static_cast<int>(strlen(input)) - i - 1;
-            f->data = new char[len];
-            f->data[len - 1] = '\0';
-            memcpy(f->data, input + i + 1, len - 1);
-            f->filterType = FTRegex;
-            return;
+        case '/': {
+          const size_t inputLen = strlen(input);
+          if (parseState == FPStart || parseState == FPPastWhitespace) {
+            if (input[inputLen - 1] == '/' && inputLen > 1) {
+              // Just copy out the whole regex and return early
+              int len = static_cast<int>(inputLen) - i - 1;
+              f->data = new char[len];
+              f->data[len - 1] = '\0';
+              memcpy(f->data, input + i + 1, len - 1);
+              f->filterType = FTRegex;
+              return;
+            } else {
+              parseState = FPData;
+            }
           }
           break;
-
+        }
         case '$':
           if (*(p+1) == '$') {
               if (i != 0) {
