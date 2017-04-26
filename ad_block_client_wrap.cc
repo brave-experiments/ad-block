@@ -5,6 +5,7 @@
 
 #include <node_buffer.h>
 #include "./ad_block_client_wrap.h"
+#include "./data_file_version.h"
 
 namespace ad_block_client_wrap {
 
@@ -95,6 +96,8 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
   exports->Set(String::NewFromUtf8(isolate, "AdBlockClient"),
                tpl->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "FilterOptions"), filterOptions);
+  exports->Set(String::NewFromUtf8(isolate, "adBlockDataFileVersion"),
+               Int32::New(isolate, DATA_FILE_VERSION));
 }
 
 void AdBlockClientWrap::New(const FunctionCallbackInfo<Value>& args) {
