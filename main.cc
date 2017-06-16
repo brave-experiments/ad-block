@@ -88,6 +88,8 @@ int checkForClient(AdBlockClient *pClient, const char *outputPath,
 
 int main(int argc, char**argv) {
   std::string && easyListTxt = getFileContents("./test/data/easylist.txt");
+  std::string && easyPrivacyTxt =
+    getFileContents("./test/data/easyprivacy.txt");
   std::string && ublockUnblockTxt =
     getFileContents("./test/data/ublock-unbreak.txt");
   std::string && braveUnblockTxt =
@@ -100,6 +102,7 @@ int main(int argc, char**argv) {
   // Parse filter lists for adblock
   AdBlockClient adBlockClient;
   adBlockClient.parse(easyListTxt.c_str());
+  adBlockClient.parse(easyPrivacyTxt.c_str());
   adBlockClient.parse(ublockUnblockTxt.c_str());
   adBlockClient.parse(braveUnblockTxt.c_str());
   std::vector<std::string> checkVector;

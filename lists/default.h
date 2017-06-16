@@ -16,6 +16,12 @@ const std::vector<FilterList> default_lists = {
     "EasyList",
     {},
     "https://easylist.to/"
+  }, { 
+    "48010209-AD34-4DF5-A80C-3D2A7C3920C0",
+    "https://easylist.to/easylist/easyprivacy.txt",
+    "EasyPrivacy",
+    {},
+    "https://easylist.to/"
   }, {
     "200392E7-9A0F-40DF-86EB-6AF7E4071322",
     "https://raw.githubusercontent.com/brave/adblock-lists/master/ublock-unbreak.txt", // NOLINT

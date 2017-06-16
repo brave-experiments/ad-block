@@ -20,6 +20,8 @@
  *   node scripts/check.js  --host www.cnet.com --list ./test/data/sitelist.txt
  * Checking a list of URLS with discovery:
  *  node scripts/check.js  --host www.cnet.com --list ./test/data/sitelist.txt --discover
+ * Get stats for a particular adblock list:
+ *   node scripts/check.js  --uuid 67F880F5-7602-4042-8A3D-01481FD7437A --stats
 */
 const commander = require('commander')
 const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromListURL, makeAdBlockClientFromString, makeAdBlockClientFromFilePath, readSiteList} = require('../lib/util')
@@ -38,13 +40,14 @@ commander
   .option('-o, --output [output]', 'Optionally saves a DAT file')
   .option('-L --list [list]', 'Filename for list of sites to check')
   .option('-D --discover', 'If speciied does filter discovery for matched filter')
+  .option('-s --stats', 'If speciied outputs parsing stats')
   .option('-C, --cache', 'Optionally cache results and use cached results')
   .option('-O, --filter-option [filterOption]', 'Filter option to use', filterStringToFilterOption, FilterOptions.noFilterOption)
   .parse(process.argv)
 
 let p = Promise.reject('Usage: node check.js --location <location> --host <host> [--uuid <uuid>]')
 
-if (commander.host && (commander.location || commander.list)) {
+if (commander.host && (commander.location || commander.list) || commander.stats) {
   p.catch(() => {})
   if (commander.uuid) {
     p = makeAdBlockClientFromListUUID(commander.uuid)
@@ -64,7 +67,10 @@ if (commander.host && (commander.location || commander.list)) {
 }
 
 p.then((adBlockClient) => {
-  console.log('Parsing stats:', adBlockClient.getParsingStats())
+  if (commander.stats) {
+    console.log('Parsing stats:', adBlockClient.getParsingStats())
+    return
+  }
   if (commander.location) {
     console.log('params:', commander.location, commander.filterOption, commander.host)
     if (commander.discover) {

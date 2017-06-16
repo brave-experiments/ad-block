@@ -70,6 +70,8 @@ void doSiteList(AdBlockClient *pClient, bool outputPerf) {
 int main(int argc, char**argv) {
   std::string && easyListTxt =
     getFileContents("./test/data/easylist.txt");
+  std::string && easyPrivacyTxt =
+    getFileContents("./test/data/easyprivacy.txt");
   std::string && braveUnblockTxt =
     getFileContents("./test/data/brave-unbreak.txt");
   std::string && ublockUnblockTxt =
@@ -87,6 +89,7 @@ int main(int argc, char**argv) {
 
   AdBlockClient adBlockClient;
   adBlockClient.parse(easyListTxt.c_str());
+  adBlockClient.parse(easyPrivacyTxt.c_str());
   adBlockClient.parse(ublockUnblockTxt.c_str());
   adBlockClient.parse(braveUnblockTxt.c_str());
   doSiteList(&adBlockClient, true);
@@ -110,6 +113,7 @@ int main(int argc, char**argv) {
   AdBlockClient allClient;
   allClient.enableBadFingerprintDetection();
   allClient.parse(easyListTxt.c_str());
+  allClient.parse(easyPrivacyTxt.c_str());
   allClient.parse(ublockUnblockTxt.c_str());
   allClient.parse(braveUnblockTxt.c_str());
   allClient.parse(spam404MainBlacklistTxt.c_str());

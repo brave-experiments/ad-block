@@ -799,19 +799,20 @@ bool AdBlockClient::parse(const char *input) {
   // Otherwise it needs to be done manually via initBloomFilter and
   // initExceptionBloomFilter
   if (!bloomFilter) {
-    bloomFilter = new BloomFilter(15, 40000);
+    bloomFilter = new BloomFilter(15, 80000);
   }
   if (!exceptionBloomFilter) {
-    exceptionBloomFilter = new BloomFilter(10, 10000);
+    exceptionBloomFilter = new BloomFilter(10, 20000);
   }
   if (!hostAnchoredHashSet) {
-    // Optimized to be 1:1 with the easylist number of host anchored hosts
-    hostAnchoredHashSet = new HashSet<Filter>(5395);
+    // Optimized to be 1:1 with the easylist / easyprivacy
+    // number of host anchored hosts.
+    hostAnchoredHashSet = new HashSet<Filter>(18000);
   }
   if (!hostAnchoredExceptionHashSet) {
-    // Optimized to be 1:1 with the easylist number of host anchored
-    // exception hosts
-    hostAnchoredExceptionHashSet = new HashSet<Filter>(428);
+    // Optimized to be 1:1 with the easylist / easyprivacy
+    // number of host anchored exception hosts.
+    hostAnchoredExceptionHashSet = new HashSet<Filter>(2000);
   }
 
   const char *p = input;
