@@ -274,7 +274,7 @@ phoronix.com#@#div[style^="text-align: center;"]
 # - http://www.surfline.com/video/ (links not working)
 # - https://github.com/gorhill/uBlock/issues/529
 # - http://www.scotrail.co.uk/check-your-journey (via https://twitter.com/andy_pee_tho/status/710508529405263872)
-*/b/ss/*&aqe=$image,redirect=1x1-transparent.gif
+# */b/ss/*&aqe=$image,redirect=1x1-transparent.gif
 
 # This unbreak video player:
 # - http://www.cnet.com/videos/big-mac-survives-molten-copper-and-heats-up-internet-ep-233/

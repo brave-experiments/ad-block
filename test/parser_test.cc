@@ -571,11 +571,12 @@ struct ListCounts {
   size_t exceptions;
 };
 
-ListCounts easyList = { 21438, 30166, 0, 4602 };
-ListCounts ublockUnbreak = { 5, 8, 0, 95 };
-ListCounts braveUnbreak = { 3, 0, 0, 3 };
-ListCounts disconnectSimpleMalware = { 2911, 0, 0, 0 };
-ListCounts spam404MainBlacklist = { 5464, 169, 0, 0 };
+ListCounts easyList = { 24813, 31144, 0, 5674 };
+ListCounts easyPrivacy = { 11816, 0, 0, 1018 };
+ListCounts ublockUnbreak = { 4, 8, 0, 95 };
+ListCounts braveUnbreak = { 31, 0, 0, 4 };
+ListCounts disconnectSimpleMalware = { 2450, 0, 0, 0 };
+ListCounts spam404MainBlacklist = { 5629, 166, 0, 0 };
 
 // Should parse EasyList without failing
 TEST(client, parse_easylist) {
@@ -594,6 +595,25 @@ TEST(client, parse_easylist) {
           client.numNoFingerprintExceptionFilters +
           client.hostAnchoredExceptionHashSet->size(),
         easyList.exceptions));
+}
+
+// Should parse EasyPrivacy without failing
+TEST(client, parse_easyprivacy) {
+  string && fileContents = // NOLINT
+    getFileContents("./test/data/easyprivacy.txt");
+  AdBlockClient client;
+  client.parse(fileContents.c_str());
+
+  CHECK(compareNums(client.numFilters +
+          client.numNoFingerprintFilters +
+          client.hostAnchoredHashSet->size(),
+        easyPrivacy.filters));
+  CHECK(compareNums(client.numCosmeticFilters, easyPrivacy.cosmeticFilters));
+  CHECK(compareNums(client.numHtmlFilters, easyPrivacy.htmlFilters));
+  CHECK(compareNums(client.numExceptionFilters +
+          client.numNoFingerprintExceptionFilters +
+          client.hostAnchoredExceptionHashSet->size(),
+        easyPrivacy.exceptions));
 }
 
 // Should parse ublock-unbreak list without failing
@@ -686,6 +706,9 @@ TEST(client, parse_multiList) {
   string && fileContentsEasylist = // NOLINT
     getFileContents("./test/data/easylist.txt");
 
+  string && fileContentsEasyPrivacy = // NOLINT
+    getFileContents("./test/data/easyprivacy.txt");
+
   string && fileContentsUblockUnbreak = // NOLINT
     getFileContents("./test/data/ublock-unbreak.txt");
 
@@ -694,6 +717,7 @@ TEST(client, parse_multiList) {
 
   AdBlockClient client;
   client.parse(fileContentsEasylist.c_str());
+  client.parse(fileContentsEasyPrivacy.c_str());
   client.parse(fileContentsUblockUnbreak.c_str());
   client.parse(fileContentsBraveUnbreak.c_str());
 
@@ -704,16 +728,19 @@ TEST(client, parse_multiList) {
           client.numNoFingerprintFilters +
           client.hostAnchoredHashSet->size(),
         easyList.filters +
+          easyPrivacy.filters +
           ublockUnbreak.filters +
           braveUnbreak.filters));
           */
   CHECK(compareNums(client.numCosmeticFilters,
         easyList.cosmeticFilters +
+          easyPrivacy.cosmeticFilters +
           ublockUnbreak.cosmeticFilters +
           braveUnbreak.cosmeticFilters));
 
   CHECK(compareNums(client.numHtmlFilters,
         easyList.htmlFilters+
+          easyPrivacy.htmlFilters+
           ublockUnbreak.htmlFilters +
           braveUnbreak.htmlFilters));
   /*
@@ -721,6 +748,7 @@ TEST(client, parse_multiList) {
           client.hostAnchoredExceptionHashSet->size() +
           client.numNoFingerprintExceptionFilters,
         easyList.exceptions +
+          easyPrivacy.exceptions +
           ublockUnbreak.exceptions +
           braveUnbreak.exceptions));
   */
