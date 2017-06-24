@@ -2,7 +2,7 @@ const fs = require('fs')
 const s3 = require('s3')
 const commander = require('commander')
 const path = require('path')
-const dataFileVersion = 3
+const dataFileVersion = 4
 
 const client = s3.createClient({
   maxAsyncS3: 20,
