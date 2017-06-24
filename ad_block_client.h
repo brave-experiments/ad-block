@@ -44,6 +44,9 @@ class AdBlockClient {
     return deserializedBuffer;
   }
 
+  static bool getFingerprint(char *buffer, const char *input);
+  static bool getFingerprint(char *buffer, const Filter &f);
+
   Filter *filters;
   Filter *cosmeticFilters;
   Filter *htmlFilters;
@@ -75,6 +78,8 @@ class AdBlockClient {
   unsigned int numExceptionBloomFilterSaves;
   unsigned int numHashSetSaves;
   unsigned int numExceptionHashSetSaves;
+
+  static const int kFingerprintSize;
 
  protected:
   // Determines if a passed in array of filter pointers matches for any of

@@ -92,6 +92,8 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
     AdBlockClientWrap::Deserialize);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getParsingStats",
     AdBlockClientWrap::GetParsingStats);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "getFingerprint",
+    AdBlockClientWrap::GetFingerprint);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getMatchingStats",
     AdBlockClientWrap::GetMatchingStats);
   NODE_SET_PROTOTYPE_METHOD(tpl, "enableBadFingerprintDetection",
@@ -302,6 +304,21 @@ void AdBlockClientWrap::GetParsingStats(
   stats->Set(String::NewFromUtf8(isolate, "numHostAnchoredExceptionFilters"),
     Int32::New(isolate, obj->numHostAnchoredExceptionFilters));
   args.GetReturnValue().Set(stats);
+}
+
+void AdBlockClientWrap::GetFingerprint(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
+  String::Utf8Value str(args[0]->ToString());
+  const char * inputBuffer = *str;
+
+  char * fingerprintBuffer = new char[AdBlockClient::kFingerprintSize + 1];
+  if (obj->getFingerprint(fingerprintBuffer, inputBuffer)) {
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, fingerprintBuffer));
+    delete[] fingerprintBuffer;
+  }
 }
 
 void AdBlockClientWrap::GetMatchingStats(

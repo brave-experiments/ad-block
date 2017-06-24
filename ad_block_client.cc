@@ -44,7 +44,7 @@ enum FilterParseState {
   FPDataOnly
 };
 
-static const int kFingerprintSize = 6;
+const int AdBlockClient::kFingerprintSize = 6;
 
 static HashFn2Byte hashFn2Byte;
 
@@ -101,7 +101,7 @@ bool hasBadSubstring(const char *fingerprint, const char * fingerprintEnd) {
 /**
  * Obtains a fingerprint for the specified filter
  */
-bool getFingerprint(char *buffer, const char *input) {
+bool AdBlockClient::getFingerprint(char *buffer, const char *input) {
   if (!input) {
     return false;
   }
@@ -146,19 +146,19 @@ bool getFingerprint(char *buffer, const char *input) {
   return false;
 }
 
-bool getFingerprint(char *buffer, const Filter &f) {
+bool AdBlockClient::getFingerprint(char *buffer, const Filter &f) {
   if (f.filterType & FTRegex) {
     // cout << "Get fingerprint for regex returning false; " << endl;
     return false;
   }
 
   if (f.filterType & FTHostAnchored) {
-    if (getFingerprint(buffer, f.data + strlen(f.host))) {
+    if (AdBlockClient::getFingerprint(buffer, f.data + strlen(f.host))) {
       return true;
     }
   }
 
-  bool b = getFingerprint(buffer, f.data);
+  bool b = AdBlockClient::getFingerprint(buffer, f.data);
   // if (!b && f.data) {
   //   cout << "No fingerprint for: " << f.data << endl;
   // }
@@ -361,8 +361,8 @@ void parseFilter(const char *input, const char *end, Filter *f,
   f->data = new char[i + 1];
   memcpy(f->data, data, i + 1);
 
-  char fingerprintBuffer[kFingerprintSize + 1];
-  fingerprintBuffer[kFingerprintSize] = '\0';
+  char fingerprintBuffer[AdBlockClient::kFingerprintSize + 1];
+  fingerprintBuffer[AdBlockClient::kFingerprintSize] = '\0';
 
   if (f->filterType == FTElementHiding) {
     if (simpleCosmeticFilters && !f->domainList) {
@@ -379,7 +379,7 @@ void parseFilter(const char *input, const char *end, Filter *f,
   } else if (hostAnchoredHashSet && (f->filterType & FTHostOnly)) {
     // cout << "add host anchored bloom filter: " << f->host << endl;
     hostAnchoredHashSet->add(*f);
-  } else if (getFingerprint(fingerprintBuffer, *f)) {
+  } else if (AdBlockClient::getFingerprint(fingerprintBuffer, *f)) {
     if (exceptionBloomFilter && f->filterType & FTException) {
       exceptionBloomFilter->add(fingerprintBuffer);
     } else if (bloomFilter) {
@@ -514,7 +514,7 @@ bool AdBlockClient::hasMatchingFilters(Filter *filter, int numFilters,
 void discoverMatchingPrefix(BadFingerprintsHashSet *badFingerprintsHashSet,
     const char *str,
     BloomFilter *bloomFilter,
-    int prefixLen = kFingerprintSize) {
+    int prefixLen = AdBlockClient::kFingerprintSize) {
   char sz[32];
   memset(sz, 0, sizeof(sz));
   int strLen = static_cast<int>(strlen(str));
@@ -621,7 +621,7 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   bool hostAnchoredHashSetMiss = false;
   if (!hasMatch) {
     bloomFilterMiss = bloomFilter
-      && !bloomFilter->substringExists(input, kFingerprintSize);
+      && !bloomFilter->substringExists(input, AdBlockClient::kFingerprintSize);
     hostAnchoredHashSetMiss = isHostAnchoredHashSetMiss(input, inputLen,
         hostAnchoredHashSet, inputHost, inputHostLen,
         contextOption, contextDomain);
@@ -667,7 +667,7 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   }
 
   bool bloomExceptionFilterMiss = exceptionBloomFilter
-    && !exceptionBloomFilter->substringExists(input, kFingerprintSize);
+    && !exceptionBloomFilter->substringExists(input, AdBlockClient::kFingerprintSize);
   bool hostAnchoredExceptionHashSetMiss =
     isHostAnchoredHashSetMiss(input, inputLen, hostAnchoredExceptionHashSet,
         inputHost, inputHostLen, contextOption, contextDomain);
@@ -843,7 +843,7 @@ bool AdBlockClient::parse(const char *input) {
           case FTException:
             if (f.filterType & FTHostOnly) {
               newNumHostAnchoredExceptionFilters++;
-            } else if (getFingerprint(nullptr, f)) {
+            } else if (AdBlockClient::getFingerprint(nullptr, f)) {
               newNumExceptionFilters++;
             } else {
               newNumNoFingerprintExceptionFilters++;
@@ -865,7 +865,7 @@ bool AdBlockClient::parse(const char *input) {
           default:
             if (f.filterType & FTHostOnly) {
               newNumHostAnchoredFilters++;
-            } else if (getFingerprint(nullptr, f)) {
+            } else if (AdBlockClient::getFingerprint(nullptr, f)) {
               newNumFilters++;
             } else {
               newNumNoFingerprintFilters++;
@@ -884,7 +884,7 @@ bool AdBlockClient::parse(const char *input) {
   }
 
 #ifdef PERF_STATS
-  cout << "Fingerprint size: " << kFingerprintSize << endl;
+  cout << "Fingerprint size: " << AdBlockClient::kFingerprintSize << endl;
   cout << "Num new filters: " << newNumFilters << endl;
   cout << "Num new cosmetic filters: " << newNumCosmeticFilters << endl;
   cout << "Num new HTML filters: " << newNumHtmlFilters << endl;
@@ -1009,7 +1009,7 @@ bool AdBlockClient::parse(const char *input) {
           case FTException:
             if (f.filterType & FTHostOnly) {
               // do nothing, handled by hash set.
-            } else if (getFingerprint(nullptr, f)) {
+            } else if (AdBlockClient::getFingerprint(nullptr, f)) {
               (*curExceptionFilters).swapData(&f);
               curExceptionFilters++;
             } else {
@@ -1033,7 +1033,7 @@ bool AdBlockClient::parse(const char *input) {
           default:
             if (f.filterType & FTHostOnly) {
               // Do nothing
-            } else if (getFingerprint(nullptr, f)) {
+            } else if (AdBlockClient::getFingerprint(nullptr, f)) {
               (*curFilters).swapData(&f);
               curFilters++;
             } else {
