@@ -525,10 +525,15 @@ void discoverMatchingPrefix(BadFingerprintsHashSet *badFingerprintsHashSet,
       if (badFingerprintsHashSet) {
         badFingerprintsHashSet->add(BadFingerprint(sz));
       }
-    } else {
-      // memcpy(sz, str + i, prefixLen);
-      // cout <<  "Good fingerprint: " << sz;
+      // We only want the first bad fingerprint since that's the one
+      // that led us here.
+      // If you do all bad fingerprint detection here it will lead to too many
+      // bad fingerprints, which then leads to too many no fingerprint rules.
+      // And too many no fingerprint rules causes perf problems.
+      return;
     }
+    // memcpy(sz, str + i, prefixLen);
+    // cout <<  "Good fingerprint: " << sz;
   }
 }
 
