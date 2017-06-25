@@ -24,6 +24,8 @@ enum FilterType {
   FTException = 0200,
   FTEmpty = 0400,
   FTHostOnly = 01000,
+  // E.g. example.org$$script[data-src="banner"] to delete
+  // script element with matching attr
   FTHTMLFiltering = 02000,
   FTListTypesMask = FTException|FTElementHiding|
     FTElementHidingException|FTEmpty|FTComment|

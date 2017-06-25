@@ -667,7 +667,8 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   }
 
   bool bloomExceptionFilterMiss = exceptionBloomFilter
-    && !exceptionBloomFilter->substringExists(input, AdBlockClient::kFingerprintSize);
+    && !exceptionBloomFilter->substringExists(input,
+        AdBlockClient::kFingerprintSize);
   bool hostAnchoredExceptionHashSetMiss =
     isHostAnchoredHashSetMiss(input, inputLen, hostAnchoredExceptionHashSet,
         inputHost, inputHostLen, contextOption, contextDomain);

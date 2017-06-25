@@ -34,6 +34,7 @@ class AdBlockClientWrap : public AdBlockClient, public node::ObjectWrap {
   static void Cleanup(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void GetParsingStats(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void GetMatchingStats(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GetFilters(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void GetFingerprint(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void EnableBadFingerprintDetection(
       const v8::FunctionCallbackInfo<v8::Value>& args);

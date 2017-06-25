@@ -92,6 +92,8 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
     AdBlockClientWrap::Deserialize);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getParsingStats",
     AdBlockClientWrap::GetParsingStats);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "getFilters",
+    AdBlockClientWrap::GetFilters);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getFingerprint",
     AdBlockClientWrap::GetFingerprint);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getMatchingStats",
@@ -305,6 +307,74 @@ void AdBlockClientWrap::GetParsingStats(
     Int32::New(isolate, obj->numHostAnchoredExceptionFilters));
   args.GetReturnValue().Set(stats);
 }
+
+void AdBlockClientWrap::GetFilters(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
+
+  String::Utf8Value str(args[0]->ToString());
+  const char * filterType = *str;
+
+  Local<v8::Array> result_list = v8::Array::New(isolate);
+  Filter *filter;
+  int numFilters = 0;
+
+  if (!strcmp(filterType, "filters")) {
+    filter = obj->filters;
+    numFilters = obj->numFilters;
+  } else if (!strcmp(filterType, "cosmeticFilters")) {
+    filter = obj->cosmeticFilters;
+    numFilters = obj->numCosmeticFilters;
+  } else if (!strcmp(filterType, "htmlFilters")) {
+    filter = obj->htmlFilters;
+    numFilters = obj->numHtmlFilters;
+  } else if (!strcmp(filterType, "exceptionFilters")) {
+    filter = obj->exceptionFilters;
+    numFilters = obj->numExceptionFilters;
+  } else if (!strcmp(filterType, "noFingerprint")) {
+    filter = obj->noFingerprintFilters;
+    numFilters = obj->numNoFingerprintFilters;
+  } else if (!strcmp(filterType, "noFingerprintExceptionFilters")) {
+    filter = obj->noFingerprintExceptionFilters;
+    numFilters = obj->numNoFingerprintExceptionFilters;
+  }
+
+  for (int i = 0; i < numFilters; i++) {
+    Local<Object> result = Object::New(isolate);
+    if (filter->data && filter->dataLen) {
+      if (filter->dataLen == -1) {
+        filter->dataLen = static_cast<int>(strlen(filter->data));
+      }
+      char * data = new char[filter->dataLen + 1];
+      data[filter->dataLen] = '\0';
+      memcpy(data, filter->data, filter->dataLen);
+      result->Set(String::NewFromUtf8(isolate, "data"),
+        String::NewFromUtf8(isolate, data));
+      delete[] data;
+    }
+    if (filter->host && filter->hostLen) {
+      if (filter->hostLen == -1) {
+        filter->hostLen = static_cast<int>(strlen(filter->host));
+      }
+      char * host = new char[filter->hostLen + 1];
+      host[filter->hostLen] = '\0';
+      memcpy(host, filter->host, filter->hostLen);
+      result->Set(String::NewFromUtf8(isolate, "host"),
+        String::NewFromUtf8(isolate, host));
+      delete[] host;
+    }
+    if (filter->domainList) {
+      result->Set(String::NewFromUtf8(isolate, "domainList"),
+        String::NewFromUtf8(isolate, filter->domainList));
+    }
+    result_list->Set(i, result);
+    filter++;
+  }
+  args.GetReturnValue().Set(result_list);
+}
+
 
 void AdBlockClientWrap::GetFingerprint(
     const FunctionCallbackInfo<Value>& args) {
