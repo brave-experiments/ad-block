@@ -31,7 +31,7 @@ describe('getFilters', function () {
       assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 0)
-      assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 0)
+      assert.equal(this.adBlockClient.getFilters('noFingerprintFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
     })
     it('for cosmetic filters', function () {
@@ -40,7 +40,7 @@ describe('getFilters', function () {
       assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 1)
       assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 0)
-      assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 0)
+      assert.equal(this.adBlockClient.getFilters('noFingerprintFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
     })
     it('for html filters', function () {
@@ -49,7 +49,7 @@ describe('getFilters', function () {
       assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 1)
       assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 0)
-      assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 0)
+      assert.equal(this.adBlockClient.getFilters('noFingerprintFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
     })
     it('for exception filters', function () {
@@ -58,7 +58,7 @@ describe('getFilters', function () {
       assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 1)
-      assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 0)
+      assert.equal(this.adBlockClient.getFilters('noFingerprintFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
     })
     it('for noFingerprint', function () {
@@ -67,7 +67,7 @@ describe('getFilters', function () {
       assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 0)
-      assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 1)
+      assert.equal(this.adBlockClient.getFilters('noFingerprintFilters').length, 1)
       assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
     })
     it('simple host anchored filters', function () {
@@ -76,7 +76,7 @@ describe('getFilters', function () {
       assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 0)
-      assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 0)
+      assert.equal(this.adBlockClient.getFilters('noFingerprintFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
     })
     it('host anchored filters with paths', function () {
@@ -85,7 +85,7 @@ describe('getFilters', function () {
       assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 0)
-      assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 0)
+      assert.equal(this.adBlockClient.getFilters('noFingerprintFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
     })
   })

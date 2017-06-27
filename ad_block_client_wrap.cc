@@ -333,7 +333,7 @@ void AdBlockClientWrap::GetFilters(
   } else if (!strcmp(filterType, "exceptionFilters")) {
     filter = obj->exceptionFilters;
     numFilters = obj->numExceptionFilters;
-  } else if (!strcmp(filterType, "noFingerprint")) {
+  } else if (!strcmp(filterType, "noFingerprintFilters")) {
     filter = obj->noFingerprintFilters;
     numFilters = obj->numNoFingerprintFilters;
   } else if (!strcmp(filterType, "noFingerprintExceptionFilters")) {
