@@ -365,16 +365,55 @@ void AdBlockClientWrap::GetFilters(
         String::NewFromUtf8(isolate, host));
       delete[] host;
     }
+
+    Local<v8::Array> domain_list = v8::Array::New(isolate);
+    Local<v8::Array> anti_domain_list = v8::Array::New(isolate);
     if (filter->domainList) {
-      result->Set(String::NewFromUtf8(isolate, "domainList"),
-        String::NewFromUtf8(isolate, filter->domainList));
+      char * filter_domain_list = filter->domainList;
+      size_t domain_list_len = strlen(filter_domain_list);
+      // Setup a buffer the max size of a domain, we'll use it for each domain
+      // which is less or the same length.
+      char * dest_buffer = new char[domain_list_len + 1];
+      memset(dest_buffer, 0, domain_list_len + 1);
+      int start_offset = 0;
+      int len = 0;
+      int domain_list_count = 0;
+      int anti_domain_list_count = 0;
+      const char *p = filter_domain_list;
+      while (true) {
+        if (*p == '|' || *p == '\0') {
+          const char *domain = filter_domain_list + start_offset;
+          if (len > 0 && *domain != '~') {
+            memcpy(dest_buffer, domain, len);
+            domain_list->Set(domain_list_count++,
+              String::NewFromUtf8(isolate, dest_buffer));
+          } else if (len > 0 && *domain == '~') {
+            memcpy(dest_buffer, domain + 1, len - 1);
+            anti_domain_list->Set(anti_domain_list_count++,
+              String::NewFromUtf8(isolate, dest_buffer));
+          }
+
+          start_offset += len + 1;
+          len = -1;
+          memset(dest_buffer, 0, domain_list_len + 1);
+        }
+        if (*p == '\0') {
+          break;
+        }
+        p++;
+        len++;
+      }
+      delete[] dest_buffer;
     }
+    result->Set(String::NewFromUtf8(isolate, "domainList"), domain_list);
+    result->Set(String::NewFromUtf8(isolate,
+          "antiDomainList"), anti_domain_list);
+
     result_list->Set(i, result);
     filter++;
   }
   args.GetReturnValue().Set(result_list);
 }
-
 
 void AdBlockClientWrap::GetFingerprint(
     const FunctionCallbackInfo<Value>& args) {

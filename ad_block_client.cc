@@ -936,8 +936,7 @@ bool AdBlockClient::parse(const char *input) {
 
   // If we've had a parse before copy the old data into the new data structure
   if (filters || cosmeticFilters || htmlFilters || exceptionFilters ||
-      noFingerprintFilters || noFingerprintExceptionFilters
-      /*|| hostAnchoredFilters || hostAnchoredExceptionFilters */) {
+      noFingerprintFilters || noFingerprintExceptionFilters) {
     // Copy the old data in
     memcpy(newFilters, filters, sizeof(Filter) * numFilters);
     memcpy(newCosmeticFilters, cosmeticFilters,

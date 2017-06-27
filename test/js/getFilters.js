@@ -70,9 +70,18 @@ describe('getFilters', function () {
       assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 1)
       assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
     })
-    it('host anchored filters', function () {
+    it('simple host anchored filters', function () {
       this.adBlockClient.parse('||test.com')
       assert.equal(this.adBlockClient.getFilters('filters').length, 0)
+      assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 0)
+      assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 0)
+      assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 0)
+      assert.equal(this.adBlockClient.getFilters('noFingerprint').length, 0)
+      assert.equal(this.adBlockClient.getFilters('noFingerprintExceptionFilters').length, 0)
+    })
+    it('host anchored filters with paths', function () {
+      this.adBlockClient.parse('||test.com/test')
+      assert.equal(this.adBlockClient.getFilters('filters').length, 1)
       assert.equal(this.adBlockClient.getFilters('cosmeticFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('htmlFilters').length, 0)
       assert.equal(this.adBlockClient.getFilters('exceptionFilters').length, 0)
@@ -85,15 +94,31 @@ describe('getFilters', function () {
       this.adBlockClient.parse('basicfilter')
       const filter = this.adBlockClient.getFilters('filters')[0]
       assert.equal(filter.data, 'basicfilter')
-      assert.equal(Object.keys(filter).length, 1)
+      assert.equal(Object.keys(filter).length, 3)
     })
-    it('parses domainList', function () {
-      this.adBlockClient.parse('somefilter$domain=test.com,test.net')
+    it('parses domainList domains', function () {
+      this.adBlockClient.parse('somefilter$domain=test.com|test.net')
       const filter = this.adBlockClient.getFilters('filters')[0]
       assert.equal(filter.data, 'somefilter')
-      // Currently limited to only return the first
-      assert.equal(filter.domainList, 'test.com')
-      assert.equal(Object.keys(filter).length, 2)
+      assert.deepEqual(filter.domainList, ['test.com', 'test.net'])
+      assert.deepEqual(filter.antiDomainList, [])
+      assert.equal(Object.keys(filter).length, 3)
+    })
+    it('parses domainList anti domains', function () {
+      this.adBlockClient.parse('somefilter$domain=~test.com|~test.net')
+      const filter = this.adBlockClient.getFilters('filters')[0]
+      assert.equal(filter.data, 'somefilter')
+      assert.deepEqual(filter.domainList, [])
+      assert.deepEqual(filter.antiDomainList, ['test.com', 'test.net'])
+      assert.equal(Object.keys(filter).length, 3)
+    })
+    it('parses domainList anti domains', function () {
+      this.adBlockClient.parse('somefilter$domain=example.com|~good.example.com')
+      const filter = this.adBlockClient.getFilters('filters')[0]
+      assert.equal(filter.data, 'somefilter')
+      assert.deepEqual(filter.domainList, ['example.com'])
+      assert.deepEqual(filter.antiDomainList, ['good.example.com'])
+      assert.equal(Object.keys(filter).length, 3)
     })
   })
 })
