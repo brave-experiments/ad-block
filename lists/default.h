@@ -16,7 +16,7 @@ const std::vector<FilterList> default_lists = {
     "EasyList",
     {},
     "https://easylist.to/"
-  }, { 
+  }, {
     "48010209-AD34-4DF5-A80C-3D2A7C3920C0",
     "https://easylist.to/easylist/easyprivacy.txt",
     "EasyPrivacy",

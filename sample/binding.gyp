@@ -14,8 +14,8 @@
       "../node_modules/bloom-filter-cpp/BloomFilter.h",
       "../node_modules/bloom-filter-cpp/hashFn.cpp",
       "../node_modules/bloom-filter-cpp/hashFn.h",
-      "../node_modules/hashset-cpp/HashSet.cpp",
-      "../node_modules/hashset-cpp/HashSet.h"
+      "../node_modules/hashset-cpp/hash_set.cc",
+      "../node_modules/hashset-cpp/hash_set.h"
     ],
     "include_dirs": [
       "..",

@@ -88,7 +88,7 @@ friend class AdBlockClient;
       const char *inputHost = nullptr, int inputHostLen = 0);
 
   // Nothing needs to be updated when a filter is added multiple times
-  void update(const Filter &) {}
+  void Update(const Filter &) {}
   bool hasUnsupportedOptions() const;
 
   // Checks to see if the filter options match for the passed in data
@@ -102,6 +102,9 @@ friend class AdBlockClient;
   bool isDomainOnlyFilter();
 
   uint64_t hash() const;
+  uint64_t GetHash() const {
+    return hash();
+  }
 
   bool operator==(const Filter &rhs) const {
     /*
@@ -133,13 +136,13 @@ friend class AdBlockClient;
     return !(*this == rhs);
   }
 
-  uint32_t serialize(char *buffer);
-  uint32_t deserialize(char *buffer, uint32_t bufferSize);
+  uint32_t Serialize(char *buffer);
+  uint32_t Deserialize(char *buffer, uint32_t bufferSize);
 
   // Holds true if the filter should not free memory because for example it
   // was loaded from a large buffer somewhere else via the serialize and
   // deserialize functions.
-  bool borrowedData;
+  bool borrowed_data;
 
   FilterType filterType;
   FilterOption filterOption;

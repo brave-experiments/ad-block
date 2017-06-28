@@ -14,9 +14,8 @@
 #include "./CppUnitLite/TestHarness.h"
 #include "./CppUnitLite/Test.h"
 #include "./ad_block_client.h"
+#include "./hash_set.h"
 #include "./util.h"
-
-#include "HashSet.h"
 
 using std::string;
 using std::endl;
@@ -587,13 +586,13 @@ TEST(client, parse_easylist) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
-          client.hostAnchoredHashSet->size(),
+          client.hostAnchoredHashSet->GetSize(),
         easyList.filters));
   CHECK(compareNums(client.numCosmeticFilters, easyList.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, easyList.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
-          client.hostAnchoredExceptionHashSet->size(),
+          client.hostAnchoredExceptionHashSet->GetSize(),
         easyList.exceptions));
 }
 
@@ -606,13 +605,13 @@ TEST(client, parse_easyprivacy) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
-          client.hostAnchoredHashSet->size(),
+          client.hostAnchoredHashSet->GetSize(),
         easyPrivacy.filters));
   CHECK(compareNums(client.numCosmeticFilters, easyPrivacy.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, easyPrivacy.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
-          client.hostAnchoredExceptionHashSet->size(),
+          client.hostAnchoredExceptionHashSet->GetSize(),
         easyPrivacy.exceptions));
 }
 
@@ -625,13 +624,13 @@ TEST(client, parse_ublock_unbreak) {
 
   CHECK(compareNums(client.numFilters +
          client.numNoFingerprintFilters +
-          client.hostAnchoredHashSet->size(),
+          client.hostAnchoredHashSet->GetSize(),
         ublockUnbreak.filters));
   CHECK(compareNums(client.numCosmeticFilters, ublockUnbreak.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, ublockUnbreak.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
-          client.hostAnchoredExceptionHashSet->size(),
+          client.hostAnchoredExceptionHashSet->GetSize(),
         ublockUnbreak.exceptions));
 }
 
@@ -644,13 +643,13 @@ TEST(client, parse_brave_unbreak) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
-          client.hostAnchoredHashSet->size(),
+          client.hostAnchoredHashSet->GetSize(),
         braveUnbreak.filters));
   CHECK(compareNums(client.numCosmeticFilters, braveUnbreak.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, braveUnbreak.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
-          client.hostAnchoredExceptionHashSet->size(),
+          client.hostAnchoredExceptionHashSet->GetSize(),
         braveUnbreak.exceptions));
 }
 
@@ -663,7 +662,7 @@ TEST(client, parse_brave_disconnect_simple_malware) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
-          client.hostAnchoredHashSet->size(),
+          client.hostAnchoredHashSet->GetSize(),
         disconnectSimpleMalware.filters));
   CHECK(compareNums(client.numCosmeticFilters,
         disconnectSimpleMalware.cosmeticFilters));
@@ -671,7 +670,7 @@ TEST(client, parse_brave_disconnect_simple_malware) {
         disconnectSimpleMalware.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
-          client.hostAnchoredExceptionHashSet->size(),
+          client.hostAnchoredExceptionHashSet->GetSize(),
         disconnectSimpleMalware.exceptions));
 }
 
@@ -685,14 +684,14 @@ TEST(client, parse_spam404_main_blacklist) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
-          client.hostAnchoredHashSet->size(),
+          client.hostAnchoredHashSet->GetSize(),
         spam404MainBlacklist.filters));
   CHECK(compareNums(client.numCosmeticFilters,
         spam404MainBlacklist.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, spam404MainBlacklist.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
-          client.hostAnchoredExceptionHashSet->size(),
+          client.hostAnchoredExceptionHashSet->GetSize(),
         spam404MainBlacklist.exceptions));
 
   const char *urlToCheck = "http://excellentmovies.net/";
@@ -726,7 +725,7 @@ TEST(client, parse_multiList) {
   /*
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
-          client.hostAnchoredHashSet->size(),
+          client.hostAnchoredHashSet->GetSize(),
         easyList.filters +
           easyPrivacy.filters +
           ublockUnbreak.filters +
@@ -745,7 +744,7 @@ TEST(client, parse_multiList) {
           braveUnbreak.htmlFilters));
   /*
   CHECK(compareNums(client.numExceptionFilters +
-          client.hostAnchoredExceptionHashSet->size() +
+          client.hostAnchoredExceptionHashSet->GetSize() +
           client.numNoFingerprintExceptionFilters,
         easyList.exceptions +
           easyPrivacy.exceptions +
@@ -771,7 +770,7 @@ TEST(client, parse_malware_multiList) {
   /*
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
-          client.hostAnchoredHashSet->size(),
+          client.hostAnchoredHashSet->GetSize(),
         disconnectSimpleMalware.filters +
           spam404MainBlacklist.filters));
   */
@@ -784,7 +783,7 @@ TEST(client, parse_malware_multiList) {
           spam404MainBlacklist.htmlFilters));
 
   CHECK(compareNums(client.numExceptionFilters +
-          client.hostAnchoredExceptionHashSet->size() +
+          client.hostAnchoredExceptionHashSet->GetSize() +
           client.numNoFingerprintExceptionFilters,
         disconnectSimpleMalware.exceptions+
           spam404MainBlacklist.exceptions));
@@ -872,20 +871,20 @@ TEST(serializationTests, serializationTests2) {
       "googlesyndication.com");
   Filter f2(FTNoFilterType, FOThirdParty, FONoFilterOption,
       "googleayndication.com", 21, nullptr, "googleayndication.com");
-  CHECK(client.hostAnchoredHashSet->exists(f));
-  CHECK(client2.hostAnchoredHashSet->exists(f));
-  CHECK(!client.hostAnchoredHashSet->exists(f2));
-  CHECK(!client2.hostAnchoredHashSet->exists(f2));
+  CHECK(client.hostAnchoredHashSet->Exists(f));
+  CHECK(client2.hostAnchoredHashSet->Exists(f));
+  CHECK(!client.hostAnchoredHashSet->Exists(f2));
+  CHECK(!client2.hostAnchoredHashSet->Exists(f2));
 
   Filter f3(static_cast<FilterType>(FTHostAnchored | FTHostOnly | FTException),
       FONoFilterOption, FONoFilterOption, "googlesyndication.ca",
       20, nullptr, "googlesyndication.ca");
   Filter f4(FTNoFilterType, FONoFilterOption, FONoFilterOption,
       "googleayndication.ca", 20, nullptr, "googleayndication.ca");
-  CHECK(client.hostAnchoredExceptionHashSet->exists(f3));
-  CHECK(client2.hostAnchoredExceptionHashSet->exists(f3));
-  CHECK(!client.hostAnchoredExceptionHashSet->exists(f4));
-  CHECK(!client2.hostAnchoredExceptionHashSet->exists(f4));
+  CHECK(client.hostAnchoredExceptionHashSet->Exists(f3));
+  CHECK(client2.hostAnchoredExceptionHashSet->Exists(f3));
+  CHECK(!client.hostAnchoredExceptionHashSet->Exists(f4));
+  CHECK(!client2.hostAnchoredExceptionHashSet->Exists(f4));
 
   delete[] buffer;
 }
