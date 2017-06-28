@@ -227,6 +227,46 @@ uint32_t Filter::getDomainCount(bool anti) {
   return count;
 }
 
+bool Filter::isDomainOnlyFilter() {
+  if (!domainList || domainList[0] == '\0') {
+    return false;
+  }
+
+  // Check cached info first
+  if (domainCount && antiDomainCount == 0) {
+    return true;
+  }
+
+  int count = 0;
+  int anti_count = 0;
+  int startOffset = 0;
+  int len = 0;
+  const char *p = domainList;
+  while (*p != '\0') {
+    if (*p == '|') {
+      if (*(domainList + startOffset) == '~') {
+        anti_count++;
+      } else if (*(domainList + startOffset) != '~') {
+        count++;
+      }
+      startOffset = len + 1;
+      len = -1;
+    }
+    p++;
+    len++;
+  }
+
+  if (*(domainList + startOffset) == '~') {
+    anti_count++;
+  } else if (*(domainList + startOffset) != '~') {
+    count++;
+  }
+
+  domainCount = count;
+  antiDomainCount = anti_count;
+  return domainCount && !antiDomainCount;
+}
+
 void Filter::parseOption(const char *input, int len) {
   FilterOption *pFilterOption = &filterOption;
   const char *pStart = input;

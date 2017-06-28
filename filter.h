@@ -98,6 +98,8 @@ friend class AdBlockClient;
   void parseOptions(const char *input);
   bool containsDomain(const char *domain, bool anti = false) const;
   uint32_t getDomainCount(bool anti = false);
+  // Returns true if the filter is composed of only domains and no anti domains
+  bool isDomainOnlyFilter();
 
   uint64_t hash() const;
 
