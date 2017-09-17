@@ -65,18 +65,22 @@ const generateDataFilesForAllRegions = () => {
     console.log(`Num false positives: ${totalNumFalsePositives}`)
     console.log(`Num exception false positives: ${totalExceptionFalsePositives}`)
   })
+  return p
 }
 
 const generateDataFilesForList = (lists, filename) => {
   let promises = []
   lists.forEach((l) => {
+    console.log(`${l.listURL}...`)
     promises.push(getListBufferFromURL(l.listURL, l.filter))
   })
-  Promise.all(promises).then((listBuffers) => {
+  let p = Promise.all(promises)
+  p = p.then((listBuffers) => {
     generateDataFileFromString(listBuffers, filename)
   }).catch((e) => {
     console.log('Erorr', e)
   })
+  return p
 }
 
 const generateDataFilesForMalware = generateDataFilesForList.bind(null, malware, 'SafeBrowsingData.dat')
@@ -102,5 +106,12 @@ const top500URLList20k = fs.readFileSync('./test/data/sitelist.txt', 'utf8').spl
 // const shortURLList = fs.readFileSync('./test/data/short-sitelist.txt', 'utf8').split('\n')
 
 generateDataFilesForDefaultAdblock()
-generateDataFilesForMalware()
-generateDataFilesForAllRegions()
+  .then(generateDataFilesForMalware)
+  .then(generateDataFilesForAllRegions)
+  .then(() => {
+    console.log('Thank you for updating the data files!')
+  })
+  .catch(() => {
+    console.error('Something went wrong, aborting!')
+    process.exit(1)
+  })
