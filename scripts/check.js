@@ -20,7 +20,7 @@
  *  node scripts/check.js  --host www.cnet.com --list ./test/data/sitelist.txt --discover
 */
 const commander = require('commander')
-const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromFilePath, makeAdBlockClientFromListURL, makeAdBlockClientFromString, readSiteList} = require('../lib/util')
+const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromListURL, makeAdBlockClientFromString, readSiteList} = require('../lib/util')
 const {FilterOptions} = require('..')
 
 commander
@@ -49,12 +49,9 @@ if (commander.host && (commander.location || commander.list)) {
   } else if (commander.filter) {
     p = makeAdBlockClientFromString(commander.filter)
   } else {
-    const defaultAdblockLists = [
-      './test/data/easylist.txt',
-      './test/data/ublock-unbreak.txt',
-      './test/data/brave-unbreak.txt'
-    ]
-    p = makeAdBlockClientFromFilePath(defaultAdblockLists)
+    const defaultLists = require('../lib/defaultAdblockLists')
+      .map((listObj) => listObj.listURL)
+    p = makeAdBlockClientFromListURL(defaultLists)
   }
 }
 
