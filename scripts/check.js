@@ -6,6 +6,8 @@
  * Example invocations:
  * Basic checking a URL:
  *   node scripts/check.js  --host www.cnet.com --location https://s0.2mdn.net/instream/html5/ima3.js
+ * Checking with a particular resource type:
+ *   node scripts/check.js --host www.scrumpoker.online --location https://www.scrumpoker.online/js/angular-google-analytics.js -O script
  * Checking a URL with discovery:
  *   node scripts/check.js  --host www.cnet.com --location "https://slashdot.org?t=1&ad_box_=2" --discover
  * Checking a URL against a particular adblock list:
@@ -23,6 +25,8 @@ const commander = require('commander')
 const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromListURL, makeAdBlockClientFromString, readSiteList} = require('../lib/util')
 const {FilterOptions} = require('..')
 
+const filterStringToFilterOption = (val) => FilterOptions[val]
+
 commander
   .option('-u, --uuid [uuid]', 'UUID of the list to use')
   .option('-d, --dat [dat]', 'file path of the adblock .dat file')
@@ -34,6 +38,7 @@ commander
   .option('-L --list [list]', 'Filename for list of sites to check')
   .option('-D --discover', 'If speciied does filter discovery for matched filter')
   .option('-C, --cache', 'Optionally cache results and use cached results')
+  .option('-O, --filter-option [filterOption]', 'Filter option to use', filterStringToFilterOption, FilterOptions.noFilterOption)
   .parse(process.argv)
 
 let p = Promise.reject('Usage: node check.js --location <location> --host <host> [--uuid <uuid>]')
@@ -58,10 +63,11 @@ if (commander.host && (commander.location || commander.list)) {
 p.then((adBlockClient) => {
   console.log('Parsing stats:', adBlockClient.getParsingStats())
   if (commander.location) {
+    console.log('params:', commander.location, commander.filterOption, commander.host)
     if (commander.discover) {
-      console.log(adBlockClient.findMatchingFilters(commander.location, FilterOptions.noFilterOption, commander.host))
+      console.log(adBlockClient.findMatchingFilters(commander.location, commander.filterOption, commander.host))
     } else {
-      console.log('Matches: ', adBlockClient.matches(commander.location, FilterOptions.noFilterOption, commander.host))
+      console.log('Matches: ', adBlockClient.matches(commander.location, commander.filterOption, commander.host))
     }
   } else {
     const siteList = readSiteList(commander.list)
@@ -79,7 +85,7 @@ p.then((adBlockClient) => {
           }
           return
         }
-        if (adBlockClient.findMatchingFilters(site, FilterOptions.noFilterOption, commander.host)) {
+        if (adBlockClient.findMatchingFilters(site, commander.filterOption, commander.host)) {
           matchCount++
           m.set(site, true)
         } else {
@@ -89,7 +95,7 @@ p.then((adBlockClient) => {
       })
     } else {
       siteList.forEach((site) => {
-        if (adBlockClient.matches(site, FilterOptions.noFilterOption, commander.host)) {
+        if (adBlockClient.matches(site, commander.filterOption, commander.host)) {
           matchCount++
         } else {
           skipCount++
