@@ -22,7 +22,7 @@
  *  node scripts/check.js  --host www.cnet.com --list ./test/data/sitelist.txt --discover
 */
 const commander = require('commander')
-const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromListURL, makeAdBlockClientFromString, readSiteList} = require('../lib/util')
+const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromListURL, makeAdBlockClientFromString, makeAdBlockClientFromFilePath, readSiteList} = require('../lib/util')
 const {FilterOptions} = require('..')
 
 const filterStringToFilterOption = (val) => FilterOptions[val]
@@ -31,6 +31,7 @@ commander
   .option('-u, --uuid [uuid]', 'UUID of the list to use')
   .option('-d, --dat [dat]', 'file path of the adblock .dat file')
   .option('-f, --filter [filter]', 'Brave filter rules')
+  .option('-F, --filter-path [filterPath]', 'Brave filter rules file path')
   .option('-w, --http [http]', 'Web filter to use')
   .option('-h, --host [host]', 'host of the page that is being loaded')
   .option('-l, --location [location]', 'URL to use for the check')
@@ -53,6 +54,8 @@ if (commander.host && (commander.location || commander.list)) {
     p = makeAdBlockClientFromListURL(commander.http)
   } else if (commander.filter) {
     p = makeAdBlockClientFromString(commander.filter)
+  } else if (commander.filterPath) {
+    p = makeAdBlockClientFromFilePath(commander.filterPath)
   } else {
     const defaultLists = require('../lib/defaultAdblockLists')
       .map((listObj) => listObj.listURL)
@@ -69,6 +72,7 @@ p.then((adBlockClient) => {
     } else {
       console.log('Matches: ', adBlockClient.matches(commander.location, commander.filterOption, commander.host))
     }
+    console.log(adBlockClient.getMatchingStats())
   } else {
     const siteList = readSiteList(commander.list)
     let matchCount = 0

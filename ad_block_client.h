@@ -70,6 +70,8 @@ class AdBlockClient {
   unsigned int numExceptionFalsePositives;
   unsigned int numBloomFilterSaves;
   unsigned int numExceptionBloomFilterSaves;
+  unsigned int numHashSetSaves;
+  unsigned int numExceptionHashSetSaves;
 
  protected:
   // Determines if a passed in array of filter pointers matches for any of

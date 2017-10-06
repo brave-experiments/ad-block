@@ -265,6 +265,10 @@ void AdBlockClientWrap::GetMatchingStats(
     Int32::New(isolate, obj->numBloomFilterSaves));
   stats->Set(String::NewFromUtf8(isolate, "numExceptionBloomFilterSaves"),
     Int32::New(isolate, obj->numExceptionBloomFilterSaves));
+  stats->Set(String::NewFromUtf8(isolate, "numHashSetSaves"),
+    Int32::New(isolate, obj->numHashSetSaves));
+  stats->Set(String::NewFromUtf8(isolate, "numExceptionHashSetSaves"),
+    Int32::New(isolate, obj->numExceptionHashSetSaves));
   args.GetReturnValue().Set(stats);
 }
 

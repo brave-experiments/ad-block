@@ -1,7 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* global describe, it */
+/* global describe, before, it */
 
 const assert = require('assert')
 const {AdBlockClient} = require('../..')
@@ -36,27 +36,51 @@ describe('matching', function () {
     it('can have multiple stars in the middle', function () {
       const client = new AdBlockClient()
       client.parse('a/********b\n')
-      assert(client.matches('https://i.ytimg.com/a/d/e/f/b', 'slashdot.org'))
-      assert(client.matches('https://i.ytimg.com/a/d/e/fb', 'slashdot.org'))
-      assert(!client.matches('https://i.ytimg.com/a/d/e/fd', 'slashdot.org'))
+      assert(client.matches('https://i.ytimg.com/a/d/e/f/b', FilterOptions.noFilterOption, 'slashdot.org'))
+      assert(client.matches('https://i.ytimg.com/a/d/e/fb', FilterOptions.noFilterOption, 'slashdot.org'))
+      assert(!client.matches('https://i.ytimg.com/a/d/e/fd', FilterOptions.noFilterOption, 'slashdot.org'))
     })
     it('can block everything with a single *', function () {
       const client = new AdBlockClient()
       client.parse('*')
-      assert(client.matches('https://brianbondy.com/d', 'slashdot.org'))
-      assert(client.matches('https://brianbondy.com', 'slashdot.org'))
+      assert(client.matches('https://brianbondy.com/d', FilterOptions.noFilterOption, 'slashdot.org'))
+      assert(client.matches('https://brianbondy.com', FilterOptions.noFilterOption, 'slashdot.org'))
     })
     it('can have no rule data', function () {
       const client = new AdBlockClient()
       client.parse('')
-      assert(!client.matches('https://brianbondy.com/d', 'slashdot.org'))
-      assert(!client.matches('https://brianbondy.com', 'slashdot.org'))
+      assert(!client.matches('https://brianbondy.com/d', FilterOptions.noFilterOption, 'slashdot.org'))
+      assert(!client.matches('https://brianbondy.com', FilterOptions.noFilterOption, 'slashdot.org'))
     })
     it('can have rule data with just a ^', function () {
       const client = new AdBlockClient()
       client.parse('^')
-      assert(!client.matches('https://brianbondy.com', 'slashdot.org'))
-      assert(!client.matches('https://brianbondy.com', 'slashdot.org'))
+      assert(!client.matches('https://brianbondy.com', FilterOptions.noFilterOption, 'slashdot.org'))
+      assert(!client.matches('https://brianbondy.com', FilterOptions.noFilterOption, 'slashdot.org'))
+    })
+    describe('host anchored exception with matching first party exception', function () {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('-google-analytics.\n@@||www.scrumpoker.online^$~third-party')
+      })
+      it('does not match', function () {
+        assert(!this.client.matches('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online'))
+      })
+      it('detects as a hash set save', function () {
+        assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
+      })
+    })
+    describe('host anchored exception with not matching first party exception', function () {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('-google-analytics.\n@@||www.scrumpoker.online^$~third-party')
+      })
+      it('does match', function () {
+        assert(this.client.matches('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.brianbondy.com'))
+      })
+      it('detects as a hash set save', function () {
+        assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
+      })
     })
   })
 })

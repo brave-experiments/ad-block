@@ -397,6 +397,8 @@ AdBlockClient::AdBlockClient() : filters(nullptr),
   numExceptionFalsePositives(0),
   numBloomFilterSaves(0),
   numExceptionBloomFilterSaves(0),
+  numHashSetSaves(0),
+  numExceptionHashSetSaves(0),
   deserializedBuffer(nullptr) {
 }
 
@@ -463,6 +465,8 @@ void AdBlockClient::clear() {
   numExceptionFalsePositives = 0;
   numBloomFilterSaves = 0;
   numExceptionBloomFilterSaves = 0;
+  numHashSetSaves = 0;
+  numExceptionHashSetSaves = 0;
 }
 
 bool AdBlockClient::hasMatchingFilters(Filter *filter, int numFilters,
@@ -596,7 +600,12 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
         hostAnchoredHashSet, inputHost, inputHostLen,
         contextOption, contextDomain);
     if (bloomFilterMiss && hostAnchoredHashSetMiss) {
-      numBloomFilterSaves++;
+      if (bloomFilterMiss) {
+        numBloomFilterSaves++;
+      }
+      if (hostAnchoredHashSetMiss) {
+        numHashSetSaves++;
+      }
       return false;
     }
 
@@ -640,8 +649,20 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   // Now that we have a matching rule, we should check if no exception rule
   // hits, if none hits, we should block
   if (bloomExceptionFilterMiss && hostAnchoredExceptionHashSetMiss) {
-    numExceptionBloomFilterSaves++;
+    if (bloomExceptionFilterMiss) {
+      numExceptionBloomFilterSaves++;
+    }
+    if (hostAnchoredExceptionHashSetMiss) {
+      numExceptionHashSetSaves++;
+    }
     return true;
+  }
+
+  // If tehre wasn't an exception has set miss, it was a hit, and hash set is
+  // deterministic so we shouldn't block this resource.
+  if (!hostAnchoredExceptionHashSetMiss) {
+    numExceptionHashSetSaves++;
+    return false;
   }
 
   if (!bloomExceptionFilterMiss) {
