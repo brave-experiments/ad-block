@@ -6,9 +6,14 @@
 #include <node_buffer.h>
 #include "./ad_block_client_wrap.h"
 #include "./data_file_version.h"
+#include "./filter_list.h"
+#include "./lists/regions.h"
+#include "./lists/malware.h"
+#include "./lists/default.h"
 
 namespace ad_block_client_wrap {
 
+using v8::Array;
 using v8::Function;
 using v8::FunctionCallbackInfo;
 using v8::FunctionTemplate;
@@ -29,6 +34,41 @@ AdBlockClientWrap::AdBlockClientWrap() {
 }
 
 AdBlockClientWrap::~AdBlockClientWrap() {
+}
+
+Local<Object> ToLocalObject(Isolate* isolate, FilterList filter_list) {
+  Local<Object> list = Object::New(isolate);
+  list->Set(String::NewFromUtf8(isolate, "uuid"),
+    String::NewFromUtf8(isolate, filter_list.uuid.c_str()));
+  list->Set(String::NewFromUtf8(isolate, "listURL"),
+    String::NewFromUtf8(isolate, filter_list.url.c_str()));
+  list->Set(String::NewFromUtf8(isolate, "title"),
+    String::NewFromUtf8(isolate, filter_list.title.c_str()));
+  list->Set(String::NewFromUtf8(isolate, "supportURL"),
+    String::NewFromUtf8(isolate, filter_list.support_url.c_str()));
+
+  Local<Array> langs = Array::New(isolate);
+  int j = 0;
+  std::for_each(filter_list.langs.begin(), filter_list.langs.end(),
+    [&isolate, &langs, &j](const std::string &lang) {
+    langs->Set(j++,
+      String::NewFromUtf8(isolate, lang.c_str()));
+  });
+  if (filter_list.langs.size() > 0) {
+    list->Set(String::NewFromUtf8(isolate, "langs"), langs);
+  }
+  return list;
+}
+
+Local<Array> ToLocalObject(Isolate* isolate,
+    const std::vector<FilterList> &list) {
+  Local<Array> lists = Array::New(isolate);
+  int j = 0;
+  std::for_each(list.begin(), list.end(),
+    [&isolate, &lists, &j](const FilterList &filter_list) {
+    lists->Set(j++, ToLocalObject(isolate, filter_list));
+  });
+  return lists;
 }
 
 void AdBlockClientWrap::Init(Local<Object> exports) {
@@ -58,6 +98,7 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
     AdBlockClientWrap::GenerateBadFingerprintsHeader);
   NODE_SET_PROTOTYPE_METHOD(tpl, "cleanup", AdBlockClientWrap::Cleanup);
 
+  // filter options
   Local<Object> filterOptions = Object::New(isolate);
   filterOptions->Set(String::NewFromUtf8(isolate, "noFilterOption"),
     Int32::New(isolate, 0));
@@ -92,10 +133,20 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
   filterOptions->Set(String::NewFromUtf8(isolate, "notThirdParty"),
     Int32::New(isolate, 040000));
 
+  // Adblock lists
+  Local<Object> lists = Object::New(isolate);
+  lists->Set(String::NewFromUtf8(isolate, "default"),
+    ToLocalObject(isolate, default_lists));
+  lists->Set(String::NewFromUtf8(isolate, "malware"),
+    ToLocalObject(isolate, malware_lists));
+  lists->Set(String::NewFromUtf8(isolate, "regions"),
+    ToLocalObject(isolate, region_lists));
+
   constructor.Reset(isolate, tpl->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "AdBlockClient"),
                tpl->GetFunction());
   exports->Set(String::NewFromUtf8(isolate, "FilterOptions"), filterOptions);
+  exports->Set(String::NewFromUtf8(isolate, "adBlockLists"), lists);
   exports->Set(String::NewFromUtf8(isolate, "adBlockDataFileVersion"),
                Int32::New(isolate, DATA_FILE_VERSION));
 }
@@ -300,3 +351,4 @@ void AdBlockClientWrap::Cleanup(const FunctionCallbackInfo<Value>& args) {
 }
 
 }  // namespace ad_block_client_wrap
+

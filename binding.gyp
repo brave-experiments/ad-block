@@ -11,6 +11,7 @@
       "cosmetic_filter.h",
       "filter.cc",
       "filter.h",
+      "filter_list.h",
       "./node_modules/bloom-filter-cpp/BloomFilter.cpp",
       "./node_modules/bloom-filter-cpp/BloomFilter.h",
       "./node_modules/bloom-filter-cpp/hashFn.cpp",

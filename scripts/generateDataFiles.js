@@ -1,12 +1,10 @@
 const {AdBlockClient, FilterOptions} = require('..')
 const path = require('path')
 const fs = require('fs')
-const regions = require('../lib/regions')
-const malware = require('../lib/malware')
-const defaultAdblockLists = require('../lib/defaultAdblockLists')
 const request = require('request')
 const braveUnbreakPath = './test/data/brave-unbreak.txt'
-const {getListBufferFromURL} = require('../lib/util')
+const {getListBufferFromURL, getListFilterFunction} = require('../lib/util')
+const {adBlockLists} = require('..')
 
 let totalExceptionFalsePositives = 0
 let totalNumFalsePositives = 0
@@ -57,7 +55,7 @@ const generateDataFileFromURL = (listURL, outputDATFilename, filter) => {
 
 const generateDataFilesForAllRegions = () => {
   let p = Promise.resolve()
-  regions.forEach((region) => {
+  adBlockLists.regions.forEach((region) => {
     p = p.then(generateDataFileFromURL.bind(null, region.listURL, `${region.uuid}.dat`))
   })
   p = p.then(() => {
@@ -72,7 +70,8 @@ const generateDataFilesForList = (lists, filename) => {
   let promises = []
   lists.forEach((l) => {
     console.log(`${l.listURL}...`)
-    promises.push(getListBufferFromURL(l.listURL, l.filter))
+    const filterFn = getListFilterFunction(l.uuid)
+    promises.push(getListBufferFromURL(l.listURL, filterFn))
   })
   let p = Promise.all(promises)
   p = p.then((listBuffers) => {
@@ -83,8 +82,8 @@ const generateDataFilesForList = (lists, filename) => {
   return p
 }
 
-const generateDataFilesForMalware = generateDataFilesForList.bind(null, malware, 'SafeBrowsingData.dat')
-const generateDataFilesForDefaultAdblock = generateDataFilesForList.bind(null, defaultAdblockLists, 'ABPFilterParserData.dat')
+const generateDataFilesForMalware = generateDataFilesForList.bind(null, adBlockLists.malware, 'SafeBrowsingData.dat')
+const generateDataFilesForDefaultAdblock = generateDataFilesForList.bind(null, adBlockLists.default, 'ABPFilterParserData.dat')
 
 const checkSiteList = (client, siteList) => {
   const start = new Date().getTime()
