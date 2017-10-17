@@ -15,6 +15,6 @@ void InitAll(Local<Object> exports) {
   AdBlockClientWrap::Init(exports);
 }
 
-NODE_MODULE(addon, InitAll)
+NODE_MODULE(ad_block, InitAll)
 
 }  // namespace ad_block_client_wrap
