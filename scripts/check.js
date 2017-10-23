@@ -57,7 +57,7 @@ if (commander.host && (commander.location || commander.list)) {
   } else if (commander.filterPath) {
     p = makeAdBlockClientFromFilePath(commander.filterPath)
   } else {
-    const defaultLists = require('../lib/defaultAdblockLists')
+    const defaultLists = require('../').adBlockLists.default
       .map((listObj) => listObj.listURL)
     p = makeAdBlockClientFromListURL(defaultLists)
   }
