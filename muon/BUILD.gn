@@ -1,4 +1,4 @@
-source_set("ad_block") {
+static_library("ad_block") {
   configs += [
     "//electron/build:electron_config",
   ]
