@@ -6,15 +6,15 @@
 #include <node.h>
 #include "./ad_block_client_wrap.h"
 
-namespace ad_block_client_wrap {
+namespace {
 
 using v8::Local;
 using v8::Object;
 
 void InitAll(Local<Object> exports) {
-  AdBlockClientWrap::Init(exports);
+  ad_block_client_wrap::AdBlockClientWrap::Init(exports);
 }
 
-NODE_MODULE(ad_block, InitAll)
+}  // namespace
 
-}  // namespace ad_block_client_wrap
+NODE_MODULE(ad_block, InitAll)

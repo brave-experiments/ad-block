@@ -11,6 +11,7 @@
 #include "./cosmetic_filter.h"
 #include "BloomFilter.h"
 #include "HashSet.h"
+#include "hashFn.h"
 
 class AdBlockClient {
  public:

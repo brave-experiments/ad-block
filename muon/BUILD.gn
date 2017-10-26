@@ -1,29 +1,46 @@
-static_library("ad_block") {
-  configs += [
-    "//electron/build:electron_config",
+dep_base = rebase_path("../..", "//")
+
+config("external_config") {
+  include_dirs = [ ".." ]
+}
+
+config("internal_config") {
+  include_dirs = [
+    rebase_path("node/src", dep_base),
   ]
 
-  include_dirs = [
-    "//electron/vendor/ad-block",
-    "//electron/vendor/hashset-cpp",
-    "//electron/vendor/bloom-filter-cpp",
-    "//v8/include/"
-  ]
+  defines = [ "NODE_SHARED_MODE" ]
+
+  cflags = []
+
+  if (is_clang) {
+    cflags += [
+      "-Wno-error",
+      "-Wno-deprecated-declarations",
+    ]
+  }
+}
+
+source_set("ad_block") {
+  public_configs = [ ":external_config" ]
+
+  configs += [ ":internal_config" ]
 
   sources = [
-    "//electron/vendor/ad-block/ad_block_client.cc",
-    "//electron/vendor/ad-block/ad_block_client.h",
-    "//electron/vendor/ad-block/ad_block_client_wrap.cc",
-    "//electron/vendor/ad-block/ad_block_client_wrap.h",
-    "//electron/vendor/ad-block/muon/addon.cc",
-    "//electron/vendor/ad-block/cosmetic_filter.cc",
-    "//electron/vendor/ad-block/cosmetic_filter.h",
-    "//electron/vendor/ad-block/filter.cc",
-    "//electron/vendor/ad-block/filter.h",
+    "../ad_block_client.cc",
+    "../ad_block_client.h",
+    "../ad_block_client_wrap.cc",
+    "../ad_block_client_wrap.h",
+    "../addon.cc",
+    "../cosmetic_filter.cc",
+    "../cosmetic_filter.h",
+    "../filter.cc",
+    "../filter.h",
   ]
 
   deps = [
-    "//electron/vendor/hashset-cpp/muon:hashset_cpp",
-    "//electron/vendor/bloom-filter-cpp/muon:bloom_filter_cpp",
+    rebase_path("hashset-cpp", dep_base),
+    rebase_path("bloom-filter-cpp", dep_base),
+    "//v8",
   ]
 }

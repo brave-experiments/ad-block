@@ -563,8 +563,9 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   const char *inputHost = getUrlHost(input, &inputHostLen);
 
   if (contextDomain) {
-    if (isThirdPartyHost(contextDomain, strlen(contextDomain),
-        inputHost, inputHostLen)) {
+    if (isThirdPartyHost(contextDomain,
+          static_cast<int>(strlen(contextDomain)),
+        inputHost, static_cast<int>(inputHostLen))) {
       contextOption =
         static_cast<FilterOption>(contextOption | FOThirdParty);
     } else {
