@@ -9,7 +9,7 @@ config("internal_config") {
     rebase_path("node/src", dep_base),
   ]
 
-  defines = [ "NODE_SHARED_MODE" ]
+  defines = [ "NODE_SHARED_MODE", "AD_BLOCK_INTERNAL_MODULE" ]
 
   cflags = []
 
