@@ -6,6 +6,7 @@
 #include "./ad_block_client_wrap.h"
 #include <node_buffer.h>
 #include <algorithm>
+#include "./bad_fingerprint.h"
 #include "./data_file_version.h"
 #include "./filter_list.h"
 #include "./lists/regions.h"

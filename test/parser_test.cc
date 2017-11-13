@@ -16,6 +16,8 @@
 #include "./ad_block_client.h"
 #include "./util.h"
 
+#include "HashSet.h"
+
 using std::string;
 using std::endl;
 using std::set;

@@ -4,10 +4,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include <string.h>
+#include <stdio.h>
 #include <math.h>
 #include "./filter.h"
 #include "hashFn.h"
 #include "./ad_block_client.h"
+
+#include "BloomFilter.h"
 
 #ifdef ENABLE_REGEX
 #include <string>

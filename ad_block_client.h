@@ -7,11 +7,13 @@
 #define AD_BLOCK_CLIENT_H_
 
 #include "./filter.h"
-#include "./bad_fingerprint.h"
-#include "./cosmetic_filter.h"
-#include "BloomFilter.h"
-#include "HashSet.h"
-#include "hashFn.h"
+
+class CosmeticFilter;
+class BloomFilter;
+class BadFingerprintsHashSet;
+
+template<class T>
+class HashSet;
 
 class AdBlockClient {
  public:
@@ -84,18 +86,6 @@ class AdBlockClient {
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
   bool initHashSet(HashSet<Filter>**, char *buffer, int len);
   char *deserializedBuffer;
-};
-
-// Fast hash function applicable to 2 byte char checks
-class HashFn2Byte : public HashFn {
- public:
-  HashFn2Byte() : HashFn(0, false) {
-  }
-
-  uint64_t operator()(const char *input, int len,
-      unsigned char lastCharCode, uint64_t lastHash) override;
-
-  uint64_t operator()(const char *input, int len) override;
 };
 
 extern const char *separatorCharacters;

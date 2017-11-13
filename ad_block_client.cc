@@ -6,6 +6,12 @@
 #include <string.h>
 #include <stdio.h>
 #include "./ad_block_client.h"
+#include "./bad_fingerprint.h"
+#include "./bad_fingerprints.h"
+#include "./cosmetic_filter.h"
+#include "./hashFn.h"
+
+#include "BloomFilter.h"
 
 #ifdef PERF_STATS
 #include <iostream>
@@ -13,7 +19,18 @@ using std::cout;
 using std::endl;
 #endif
 
-#include "./bad_fingerprints.h"
+
+// Fast hash function applicable to 2 byte char checks
+class HashFn2Byte : public HashFn {
+ public:
+  HashFn2Byte() : HashFn(0, false) {
+  }
+
+  uint64_t operator()(const char *input, int len,
+      unsigned char lastCharCode, uint64_t lastHash) override;
+
+  uint64_t operator()(const char *input, int len) override;
+};
 
 const int kMaxLineLength = 2048;
 

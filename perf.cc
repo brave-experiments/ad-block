@@ -13,6 +13,7 @@
 #include <vector>
 #include <iterator>
 #include "./ad_block_client.h"
+#include "./bad_fingerprint.h"
 
 using std::string;
 using std::cout;
