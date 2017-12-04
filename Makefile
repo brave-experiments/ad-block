@@ -5,7 +5,7 @@
 .PHONY: clean
 
 build:
-	 ./node_modules/.bin/node-gyp configure && node-gyp build
+	 ./node_modules/.bin/node-gyp configure && ./node_modules/.bin/node-gyp build
 
 test:
 	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja test/binding.gyp
