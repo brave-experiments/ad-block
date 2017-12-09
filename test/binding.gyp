@@ -15,23 +15,23 @@
       "../cosmetic_filter.h",
       "../filter.cc",
       "../filter.h",
-      "../node_modules/bloom-filter-cpp/BloomFilter.cpp",
-      "../node_modules/bloom-filter-cpp/BloomFilter.h",
-      "../node_modules/bloom-filter-cpp/hashFn.cpp",
-      "../node_modules/bloom-filter-cpp/hashFn.h",
-      "../node_modules/hashset-cpp/HashSet.cpp",
-      "../node_modules/hashset-cpp/HashSet.h"
+      "../vendor/bloom-filter-cpp/BloomFilter.cpp",
+      "../vendor/bloom-filter-cpp/BloomFilter.h",
+      "../vendor/bloom-filter-cpp/hashFn.cpp",
+      "../vendor/bloom-filter-cpp/hashFn.h",
+      "../vendor/hashset-cpp/HashSet.cpp",
+      "../vendor/hashset-cpp/HashSet.h"
     ],
     "include_dirs": [
       "..",
-      '../node_modules/bloom-filter-cpp',
-      '../node_modules/hashset-cpp',
-      '../node_modules/cppunitlite',
+      '../vendor/bloom-filter-cpp',
+      '../vendor/hashset-cpp',
+      '../vendor/CppUnitLite',
       '../node_modules/nan'
       "..",
     ],
     "dependencies": [
-      "../node_modules/cppunitlite/binding.gyp:CppUnitLite",
+      "../vendor/CppUnitLite/binding.gyp:CppUnitLite",
     ],
     "conditions": [
       ['OS=="win"', {

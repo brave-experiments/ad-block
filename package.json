@@ -7,9 +7,6 @@
     "test": "test"
   },
   "dependencies": {
-    "bloom-filter-cpp": "^1.1.6",
-    "cppunitlite": "^1.0.0",
-    "hashset-cpp": "^1.0.18",
     "nan": "^2.2.1"
   },
   "devDependencies": {
@@ -28,7 +25,6 @@
     "build": "make",
     "sample": "make sample",
     "perf": "make perf",
-    "preinstall": "npm install bloom-filter-cpp && npm install hashset-cpp",
     "install": "node-gyp rebuild",
     "lint": "npm run lint-cpp && npm run lint-js",
     "lint-cpp": "./scripts/cpplint.py",
