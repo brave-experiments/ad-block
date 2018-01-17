@@ -171,7 +171,9 @@ void AdBlockClientWrap::New(const FunctionCallbackInfo<Value>& args) {
     const int argc = 1;
     Local<Value> argv[argc] = { args[0] };
     Local<Function> cons = Local<Function>::New(isolate, constructor);
-    args.GetReturnValue().Set(cons->NewInstance(argc, argv));
+    args.GetReturnValue().Set(
+        cons->NewInstance(isolate->GetCurrentContext(), argc, argv)
+            .ToLocalChecked());
   }
 }
 
