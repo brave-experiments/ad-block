@@ -31,13 +31,13 @@ const std::vector<FilterList> region_lists = {
   }), FilterList({
     "CC98E4BA-9257-4386-A1BC-1BBF6980324F",
     "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjx-annoyance.txt", // NOLINT
-    "CHN: CJX\"s Annoyance List",
+    "CHN: CJX's Annoyance List",
     {},
     "https://github.com/cjx82630/cjxlist"
   }), FilterList({
     "92AA0D3B-34AC-4657-9A5C-DBAD339AF8E2",
     "https://raw.githubusercontent.com/cjx82630/cjxlist/master/cjxlist.txt",
-    "CHN: CJX\"s EasyList Lite (main focus on Chinese sites)",
+    "CHN: CJX's EasyList Lite (main focus on Chinese sites)",
     {},
     "https://github.com/cjx82630/cjxlist"
   }), FilterList({
@@ -103,7 +103,7 @@ const std::vector<FilterList> region_lists = {
   }), FilterList({
     "4C07DB6B-6377-4347-836D-68702CF1494A",
     "https://secure.fanboy.co.nz/fanboy-indian.txt",
-    "IN: Fanboy\"s India Filters",
+    "IN: Fanboy's India Filters",
     {"hi"},
     "https://www.fanboy.co.nz/filters.html"
   }), FilterList({
@@ -145,7 +145,7 @@ const std::vector<FilterList> region_lists = {
   }), FilterList({
     "51260D6E-28F8-4EEC-B76D-3046DADC27C9",
     "https://www.fanboy.co.nz/fanboy-korean.txt",
-    "KOR: Fanboy\"s Korean",
+    "KOR: Fanboy's Korean",
     {},
     "https://forums.lanik.us/"
   }), FilterList({
@@ -217,7 +217,7 @@ const std::vector<FilterList> region_lists = {
   }), FilterList({
     "7DC2AC80-5BBC-49B8-B473-A31A1145CAC1",
     "https://www.fanboy.co.nz/fanboy-swedish.txt",
-    "SWE: Fanboy\"s Swedish",
+    "SWE: Fanboy's Swedish",
     {"sv"},
     "https://forums.lanik.us/"
   }), FilterList({
@@ -229,7 +229,7 @@ const std::vector<FilterList> region_lists = {
   }), FilterList({
     "6A0209AC-9869-4FD6-A9DF-039B4200D52C",
     "https://www.fanboy.co.nz/fanboy-vietnam.txt",
-    "VIE: Fanboy\"s Vietnamese",
+    "VIE: Fanboy's Vietnamese",
     {"vi"},
     "https://forums.lanik.us/"
   })
