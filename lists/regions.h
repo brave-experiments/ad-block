@@ -216,10 +216,10 @@ const std::vector<FilterList> region_lists = {
     "https://github.com/betterwebleon/slovenian-list"
   }), FilterList({
     "7DC2AC80-5BBC-49B8-B473-A31A1145CAC1",
-    "https://www.fanboy.co.nz/fanboy-swedish.txt",
-    "SWE: Fanboy's Swedish",
+    "https://raw.githubusercontent.com/lassekongo83/Frellwits-filter-lists/master/Frellwits-Swedish-Filter.txt", //NOLINT
+    "SWE: Frellwit's Filter List",
     {"sv"},
-    "https://forums.lanik.us/"
+    "https://github.com/lassekongo83/Frellwits-filter-lists"
   }), FilterList({
     "1BE19EFD-9191-4560-878E-30ECA72B5B3C",
     "https://adguard.com/filter-rules.html?id=13",
