@@ -30,10 +30,10 @@ const std::vector<FilterList> default_lists = {
     "https://github.com/brave/adblock-lists"
   }, {
     "BCDF774A-7845-4121-B7EB-77EB66CEDF84",
-    "https://raw.githubusercontent.com/hoshsadiq/adblock-nocoin-list/master/nocoin.txt", // NOLINT
+    "https://raw.githubusercontent.com/brave/adblock-lists/master/coin-miners.txt", // NOLINT
     "NoCoin Filter List",
     {},
-    "https://github.com/hoshsadiq/adblock-nocoin-list/"
+    "https://github.com/brave/adblock-lists"
   }
 };
 
