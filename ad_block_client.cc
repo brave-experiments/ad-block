@@ -537,7 +537,8 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
     const char *inputHost,
     int inputHostLen,
     FilterOption contextOption,
-    const char *contextDomain) {
+    const char *contextDomain,
+    Filter **foundFilter = nullptr) {
   if (!hashSet) {
     return false;
   }
@@ -558,6 +559,9 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
             nullptr, start, inputHostLen - (start - inputHost)));
       if (filter && filter->matches(input, inputLen,
             contextOption, contextDomain)) {
+        if (foundFilter) {
+          *foundFilter = filter;
+        }
         return false;
       }
     }
@@ -570,7 +574,11 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
   if (!filter) {
     return true;
   }
-  return !filter->matches(input, inputLen, contextOption, contextDomain);
+  bool result = !filter->matches(input, inputLen, contextOption, contextDomain);
+  if (!result && foundFilter) {
+    *foundFilter = filter;
+  }
+  return result;
 }
 
 bool AdBlockClient::matches(const char *input, FilterOption contextOption,
@@ -725,6 +733,13 @@ bool AdBlockClient::findMatchingFilters(const char *input,
       numFilters, input, inputLen, contextOption,
       contextDomain, nullptr, inputHost, inputHostLen, matchingFilter);
   }
+
+  if (!*matchingFilter) {
+    isHostAnchoredHashSetMiss(input, inputLen,
+      hostAnchoredHashSet, inputHost, inputHostLen,
+      contextOption, contextDomain, matchingFilter);
+  }
+
   if (!*matchingFilter) {
     return false;
   }
@@ -732,6 +747,13 @@ bool AdBlockClient::findMatchingFilters(const char *input,
   hasMatchingFilters(noFingerprintExceptionFilters,
     numNoFingerprintExceptionFilters, input, inputLen, contextOption,
     contextDomain, nullptr, inputHost, inputHostLen, matchingExceptionFilter);
+
+  if (!*matchingExceptionFilter) {
+    isHostAnchoredHashSetMiss(input, inputLen,
+      hostAnchoredExceptionHashSet, inputHost, inputHostLen,
+      contextOption, contextDomain, matchingExceptionFilter);
+  }
+
   if (!*matchingExceptionFilter) {
     hasMatchingFilters(exceptionFilters,
       numExceptionFilters, input, inputLen, contextOption,
