@@ -1,3 +1,12 @@
 [submodule "vendor/depot_tools"]
 	path = vendor/depot_tools
 	url = https://chromium.googlesource.com/chromium/tools/depot_tools.git
+[submodule "vendor/bloom-filter-cpp"]
+	path = vendor/bloom-filter-cpp
+	url = https://github.com/brave/bloom-filter-cpp.git
+[submodule "vendor/hashset-cpp"]
+	path = vendor/hashset-cpp
+	url = https://github.com/bbondy/hashset-cpp.git
+[submodule "vendor/CppUnitLite"]
+	path = vendor/CppUnitLite
+	url = https://github.com/smikes/CppUnitLite.git
