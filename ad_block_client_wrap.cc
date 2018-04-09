@@ -406,9 +406,19 @@ void AdBlockClientWrap::GetFilters(
       delete[] dest_buffer;
     }
     result->Set(String::NewFromUtf8(isolate, "isDomainOnlyFilter"),
-        Boolean::New(isolate, filter->isDomainOnlyFilter()));
+        Boolean::New(isolate, filter->isDomainOnlyFilter() &&
+          ((~filter->filterType) & FTException)));
     result->Set(String::NewFromUtf8(isolate, "isAntiDomainOnlyFilter"),
-        Boolean::New(isolate, filter->isAntiDomainOnlyFilter()));
+        Boolean::New(isolate, filter->isAntiDomainOnlyFilter() &&
+          ((~filter->filterType) & FTException)));
+    result->Set(String::NewFromUtf8(isolate, "isDomainOnlyExceptionFilter"),
+        Boolean::New(isolate, filter->isDomainOnlyFilter() &&
+          (filter->filterType & FTException)));
+    result->Set(String::NewFromUtf8(isolate,
+          "isAntiDomainOnlyExceptionFilter"),
+        Boolean::New(isolate, filter->isAntiDomainOnlyFilter() &&
+          (filter->filterType & FTException)));
+
     result->Set(String::NewFromUtf8(isolate, "domainList"), domain_list);
     result->Set(String::NewFromUtf8(isolate,
           "antiDomainList"), anti_domain_list);

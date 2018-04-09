@@ -64,6 +64,8 @@ class AdBlockClient {
   int numHostAnchoredExceptionFilters;
   int numNoFingerprintDomainOnlyFilters;
   int numNoFingerprintAntiDomainOnlyFilters;
+  int numNoFingerprintDomainOnlyExceptionFilters;
+  int numNoFingerprintAntiDomainOnlyExceptionFilters;
 
   BloomFilter *bloomFilter;
   BloomFilter *exceptionBloomFilter;
@@ -71,6 +73,8 @@ class AdBlockClient {
   HashSet<Filter> *hostAnchoredExceptionHashSet;
   HashSet<Filter> *noFingerprintDomainOnlyHashSet;
   HashSet<Filter> *noFingerprintAntiDomainOnlyHashSet;
+  HashSet<Filter> *noFingerprintDomainOnlyExceptionHashSet;
+  HashSet<Filter> *noFingerprintAntiDomainOnlyExceptionHashSet;
 
   // Used only in the perf program to create a list of bad fingerprints
   BadFingerprintsHashSet *badFingerprintsHashSet;
