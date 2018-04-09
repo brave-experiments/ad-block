@@ -185,69 +185,32 @@ bool Filter::containsDomain(const char *domain, bool anti) const {
 }
 
 uint32_t Filter::getDomainCount(bool anti) {
-  if (!domainList || domainList[0] == '\0') {
-    return 0;
-  }
-
-  if (!anti && domainCount) {
-    return domainCount;
-  } else if (anti && antiDomainCount) {
+  calculateDomainCounts();
+  if (anti) {
     return antiDomainCount;
   }
-
-  int count = 0;
-  int startOffset = 0;
-  int len = 0;
-  const char *p = domainList;
-  while (*p != '\0') {
-    if (*p == '|') {
-      if (*(domainList + startOffset) == '~' && anti) {
-        count++;
-      } else if (*(domainList + startOffset) != '~' && !anti) {
-        count++;
-      }
-      startOffset = len + 1;
-      len = -1;
-    }
-    p++;
-    len++;
-  }
-
-  if (*(domainList + startOffset) == '~' && anti) {
-    count++;
-  } else if (*(domainList + startOffset) != '~' && !anti) {
-    count++;
-  }
-
-  if (anti) {
-    antiDomainCount = count;
-  } else {
-    domainCount = count;
-  }
-  return count;
+  return domainCount;
 }
 
-bool Filter::isDomainOnlyFilter() {
+void Filter::calculateDomainCounts() {
+  domainCount = 0;
+  antiDomainCount = 0;
   if (!domainList || domainList[0] == '\0') {
-    return false;
+    return;
   }
-
-  // Check cached info first
-  if (domainCount && antiDomainCount == 0) {
-    return true;
+  // Check if already claculated
+  if (domainCount || antiDomainCount) {
+    return;
   }
-
-  int count = 0;
-  int anti_count = 0;
   int startOffset = 0;
   int len = 0;
   const char *p = domainList;
   while (*p != '\0') {
     if (*p == '|') {
       if (*(domainList + startOffset) == '~') {
-        anti_count++;
+        antiDomainCount++;
       } else if (*(domainList + startOffset) != '~') {
-        count++;
+        domainCount++;
       }
       startOffset = len + 1;
       len = -1;
@@ -255,16 +218,21 @@ bool Filter::isDomainOnlyFilter() {
     p++;
     len++;
   }
-
   if (*(domainList + startOffset) == '~') {
-    anti_count++;
+    antiDomainCount++;
   } else if (*(domainList + startOffset) != '~') {
-    count++;
+    domainCount++;
   }
+}
 
-  domainCount = count;
-  antiDomainCount = anti_count;
+bool Filter::isDomainOnlyFilter() {
+  calculateDomainCounts();
   return domainCount && !antiDomainCount;
+}
+
+bool Filter::isAntiDomainOnlyFilter() {
+  calculateDomainCounts();
+  return antiDomainCount && !domainCount;
 }
 
 void Filter::parseOption(const char *input, int len) {

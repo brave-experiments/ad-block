@@ -407,6 +407,8 @@ void AdBlockClientWrap::GetFilters(
     }
     result->Set(String::NewFromUtf8(isolate, "isDomainOnlyFilter"),
         Boolean::New(isolate, filter->isDomainOnlyFilter()));
+    result->Set(String::NewFromUtf8(isolate, "isAntiDomainOnlyFilter"),
+        Boolean::New(isolate, filter->isAntiDomainOnlyFilter()));
     result->Set(String::NewFromUtf8(isolate, "domainList"), domain_list);
     result->Set(String::NewFromUtf8(isolate,
           "antiDomainList"), anti_domain_list);
