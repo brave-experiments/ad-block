@@ -586,12 +586,16 @@ TEST(client, parse_easylist) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters +
           client.hostAnchoredHashSet->GetSize(),
         easyList.filters));
   CHECK(compareNums(client.numCosmeticFilters, easyList.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, easyList.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
+          client.numNoFingerprintDomainOnlyExceptionFilters +
+          client.numNoFingerprintAntiDomainOnlyExceptionFilters +
           client.hostAnchoredExceptionHashSet->GetSize(),
         easyList.exceptions));
 }
@@ -605,12 +609,16 @@ TEST(client, parse_easyprivacy) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters +
           client.hostAnchoredHashSet->GetSize(),
         easyPrivacy.filters));
   CHECK(compareNums(client.numCosmeticFilters, easyPrivacy.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, easyPrivacy.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
+          client.numNoFingerprintDomainOnlyExceptionFilters +
+          client.numNoFingerprintAntiDomainOnlyExceptionFilters +
           client.hostAnchoredExceptionHashSet->GetSize(),
         easyPrivacy.exceptions));
 }
@@ -624,12 +632,16 @@ TEST(client, parse_ublock_unbreak) {
 
   CHECK(compareNums(client.numFilters +
          client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters +
           client.hostAnchoredHashSet->GetSize(),
         ublockUnbreak.filters));
   CHECK(compareNums(client.numCosmeticFilters, ublockUnbreak.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, ublockUnbreak.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
+          client.numNoFingerprintDomainOnlyExceptionFilters +
+          client.numNoFingerprintAntiDomainOnlyExceptionFilters +
           client.hostAnchoredExceptionHashSet->GetSize(),
         ublockUnbreak.exceptions));
 }
@@ -643,12 +655,16 @@ TEST(client, parse_brave_unbreak) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters +
           client.hostAnchoredHashSet->GetSize(),
         braveUnbreak.filters));
   CHECK(compareNums(client.numCosmeticFilters, braveUnbreak.cosmeticFilters));
   CHECK(compareNums(client.numHtmlFilters, braveUnbreak.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
+          client.numNoFingerprintDomainOnlyExceptionFilters +
+          client.numNoFingerprintAntiDomainOnlyExceptionFilters +
           client.hostAnchoredExceptionHashSet->GetSize(),
         braveUnbreak.exceptions));
 }
@@ -662,6 +678,8 @@ TEST(client, parse_brave_disconnect_simple_malware) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters +
           client.hostAnchoredHashSet->GetSize(),
         disconnectSimpleMalware.filters));
   CHECK(compareNums(client.numCosmeticFilters,
@@ -670,6 +688,8 @@ TEST(client, parse_brave_disconnect_simple_malware) {
         disconnectSimpleMalware.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
+          client.numNoFingerprintDomainOnlyExceptionFilters +
+          client.numNoFingerprintAntiDomainOnlyExceptionFilters +
           client.hostAnchoredExceptionHashSet->GetSize(),
         disconnectSimpleMalware.exceptions));
 }
@@ -684,6 +704,8 @@ TEST(client, parse_spam404_main_blacklist) {
 
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters +
           client.hostAnchoredHashSet->GetSize(),
         spam404MainBlacklist.filters));
   CHECK(compareNums(client.numCosmeticFilters,
@@ -691,6 +713,8 @@ TEST(client, parse_spam404_main_blacklist) {
   CHECK(compareNums(client.numHtmlFilters, spam404MainBlacklist.htmlFilters));
   CHECK(compareNums(client.numExceptionFilters +
           client.numNoFingerprintExceptionFilters +
+          client.numNoFingerprintDomainOnlyExceptionFilters +
+          client.numNoFingerprintAntiDomainOnlyExceptionFilters +
           client.hostAnchoredExceptionHashSet->GetSize(),
         spam404MainBlacklist.exceptions));
 
@@ -725,6 +749,8 @@ TEST(client, parse_multiList) {
   /*
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters +
           client.hostAnchoredHashSet->GetSize(),
         easyList.filters +
           easyPrivacy.filters +
@@ -746,6 +772,8 @@ TEST(client, parse_multiList) {
   CHECK(compareNums(client.numExceptionFilters +
           client.hostAnchoredExceptionHashSet->GetSize() +
           client.numNoFingerprintExceptionFilters,
+          client.numNoFingerprintDomainOnlyExceptionFilters +
+          client.numNoFingerprintAntiDomainOnlyExceptionFilters +
         easyList.exceptions +
           easyPrivacy.exceptions +
           ublockUnbreak.exceptions +
@@ -770,6 +798,8 @@ TEST(client, parse_malware_multiList) {
   /*
   CHECK(compareNums(client.numFilters +
           client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters +
           client.hostAnchoredHashSet->GetSize(),
         disconnectSimpleMalware.filters +
           spam404MainBlacklist.filters));
@@ -784,7 +814,8 @@ TEST(client, parse_malware_multiList) {
 
   CHECK(compareNums(client.numExceptionFilters +
           client.hostAnchoredExceptionHashSet->GetSize() +
-          client.numNoFingerprintExceptionFilters,
+          client.numNoFingerprintExceptionFilters +
+          client.numNoFingerprintAntiDomainOnlyExceptionFilters,
         disconnectSimpleMalware.exceptions+
           spam404MainBlacklist.exceptions));
 }
@@ -806,11 +837,15 @@ TEST(multipleParse, multipleParse2) {
                "b.com$$script[src]\n");
 
   CHECK(compareNums(client.numFilters +
-        client.numNoFingerprintFilters, 3));
+        client.numNoFingerprintFilters +
+          client.numNoFingerprintDomainOnlyFilters +
+          client.numNoFingerprintAntiDomainOnlyFilters, 3));
   CHECK(compareNums(client.numCosmeticFilters, 3));
   CHECK(compareNums(client.numHtmlFilters, 2));
   CHECK(compareNums(client.numExceptionFilters +
-        client.numNoFingerprintExceptionFilters, 3));
+        client.numNoFingerprintExceptionFilters +
+        client.numNoFingerprintDomainOnlyExceptionFilters +
+        client.numNoFingerprintAntiDomainOnlyExceptionFilters, 3));
 }
 
 // Demo app test

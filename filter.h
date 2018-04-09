@@ -98,6 +98,10 @@ friend class AdBlockClient;
   void parseOptions(const char *input);
   bool containsDomain(const char *domain, bool anti = false) const;
   // Returns true if the filter is composed of only domains and no anti domains
+  // Note that the set of all domain and anti-domain rules are not mutually
+  // exclusive.  One xapmle is:
+  // domain=example.com|~foo.example.com restricts the filter to the example.com
+  // domain with the exception of "foo.example.com" subdomain.
   bool isDomainOnlyFilter();
   // Returns true if the filter is composed of only anti-domains and no domains
   bool isAntiDomainOnlyFilter();
