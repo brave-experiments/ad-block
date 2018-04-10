@@ -230,7 +230,7 @@ void AdBlockClientWrap::FindMatchingFilters(
   foundData->Set(String::NewFromUtf8(isolate, "matches"),
     Boolean::New(isolate, matches));
   if (matchingFilter) {
-    foundData->Set(String::NewFromUtf8(isolate, "machingFilter"),
+    foundData->Set(String::NewFromUtf8(isolate, "matchingFilter"),
       String::NewFromUtf8(isolate, matchingFilter->data));
   }
   if (matchingExceptionFilter) {
