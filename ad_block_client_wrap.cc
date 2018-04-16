@@ -339,6 +339,19 @@ void AdBlockClientWrap::GetFilters(
   } else if (!strcmp(filterType, "noFingerprintExceptionFilters")) {
     filter = obj->noFingerprintExceptionFilters;
     numFilters = obj->numNoFingerprintExceptionFilters;
+  } else if (!strcmp(filterType, "noFingerprintDomainOnlyFilters")) {
+    filter = obj->noFingerprintDomainOnlyFilters;
+    numFilters = obj->numNoFingerprintDomainOnlyFilters;
+  } else if (!strcmp(filterType, "noFingerprintAntiDomainOnlyFilters")) {
+    filter = obj->noFingerprintAntiDomainOnlyFilters;
+    numFilters = obj->numNoFingerprintAntiDomainOnlyFilters;
+  } else if (!strcmp(filterType, "noFingerprintDomainOnlyExceptionFilters")) {
+    filter = obj->noFingerprintDomainOnlyExceptionFilters;
+    numFilters = obj->numNoFingerprintDomainOnlyExceptionFilters;
+  } else if (!strcmp(filterType,
+        "noFingerprintAntiDomainOnlyExceptionFilters")) {
+    filter = obj->noFingerprintAntiDomainOnlyExceptionFilters;
+    numFilters = obj->numNoFingerprintAntiDomainOnlyExceptionFilters;
   }
 
   for (int i = 0; i < numFilters; i++) {
