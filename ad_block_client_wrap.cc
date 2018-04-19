@@ -453,8 +453,8 @@ void AdBlockClientWrap::GetFingerprint(
   char * fingerprintBuffer = new char[AdBlockClient::kFingerprintSize + 1];
   if (obj->getFingerprint(fingerprintBuffer, inputBuffer)) {
     args.GetReturnValue().Set(String::NewFromUtf8(isolate, fingerprintBuffer));
-    delete[] fingerprintBuffer;
   }
+  delete[] fingerprintBuffer;
 }
 
 void AdBlockClientWrap::GetMatchingStats(
