@@ -342,6 +342,9 @@ void parseFilter(const char *input, const char *end, Filter *f,
             p += 2;
             continue;
           }
+          // Copied from default label to avoid warning (unannotated fall-through between switch labels)
+          parseState = FPData;
+          break;
         default:
           parseState = FPData;
           break;
