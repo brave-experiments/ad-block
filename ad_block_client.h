@@ -11,6 +11,7 @@
 class CosmeticFilter;
 class BloomFilter;
 class BadFingerprintsHashSet;
+class NoFingerprintDomain;
 
 template<class T>
 class HashSet;
@@ -75,6 +76,10 @@ class AdBlockClient {
   BloomFilter *exceptionBloomFilter;
   HashSet<Filter> *hostAnchoredHashSet;
   HashSet<Filter> *hostAnchoredExceptionHashSet;
+  HashSet<NoFingerprintDomain> *noFingerprintDomainHashSet;
+  HashSet<NoFingerprintDomain> *noFingerprintAntiDomainHashSet;
+  HashSet<NoFingerprintDomain> *noFingerprintDomainExceptionHashSet;
+  HashSet<NoFingerprintDomain> *noFingerprintAntiDomainExceptionHashSet;
 
   // Used only in the perf program to create a list of bad fingerprints
   BadFingerprintsHashSet *badFingerprintsHashSet;
@@ -97,7 +102,8 @@ class AdBlockClient {
       BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen,
       Filter **matchingFilter = nullptr);
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
-  bool initHashSet(HashSet<Filter>**, char *buffer, int len);
+  template<class T>
+  bool initHashSet(HashSet<T>**, char *buffer, int len);
   char *deserializedBuffer;
 };
 

@@ -10,6 +10,7 @@
 #include "./bad_fingerprints.h"
 #include "./cosmetic_filter.h"
 #include "./hashFn.h"
+#include "./no_fingerprint_domain.h"
 
 #include "BloomFilter.h"
 
@@ -70,6 +71,40 @@ const char * getUrlHost(const char *input, int *len) {
   return p;
 }
 
+void AddFilterDomainsToHashSet(Filter* filter,
+    HashSet<NoFingerprintDomain> *hashSet) {
+  if (filter->domainList) {
+    char * filter_domain_list = filter->domainList;
+    int start_offset = 0;
+    int len = 0;
+    const char *p = filter_domain_list;
+    while (true) {
+      if (*p == '|' || *p == '\0') {
+        const char *domain = filter_domain_list + start_offset;
+        if (len > 0 && *domain != '~') {
+          char buffer[1024];
+          memset(buffer, 0, 1024);
+          memcpy(buffer, domain, len);
+          // cout << "Adding filter: " << buffer << endl;
+          hashSet->Add(NoFingerprintDomain(domain, len));
+        } else if (len > 0 && *domain == '~') {
+          char buffer[1024];
+          memset(buffer, 0, 1024);
+          memcpy(buffer, domain + 1, len - 1);
+          // cout << "Adding anti filter: " << buffer << endl;
+          hashSet->Add(NoFingerprintDomain(domain + 1, len - 1));
+        }
+        start_offset += len + 1;
+        len = -1;
+      }
+      if (*p == '\0') {
+        break;
+      }
+      p++;
+      len++;
+    }
+  }
+}
 
 inline bool isFingerprintChar(char c) {
   return c != '|' && c != '*' && c != '^';
@@ -417,6 +452,10 @@ AdBlockClient::AdBlockClient() : filters(nullptr),
   exceptionBloomFilter(nullptr),
   hostAnchoredHashSet(nullptr),
   hostAnchoredExceptionHashSet(nullptr),
+  noFingerprintDomainHashSet(nullptr),
+  noFingerprintAntiDomainHashSet(nullptr),
+  noFingerprintDomainExceptionHashSet(nullptr),
+  noFingerprintAntiDomainExceptionHashSet(nullptr),
   badFingerprintsHashSet(nullptr),
   numFalsePositives(0),
   numExceptionFalsePositives(0),
@@ -488,6 +527,22 @@ void AdBlockClient::clear() {
   if (hostAnchoredExceptionHashSet) {
     delete hostAnchoredExceptionHashSet;
     hostAnchoredExceptionHashSet = nullptr;
+  }
+  if (noFingerprintDomainHashSet) {
+    delete noFingerprintDomainHashSet;
+    noFingerprintDomainHashSet = nullptr;
+  }
+  if (noFingerprintAntiDomainHashSet) {
+    delete noFingerprintAntiDomainHashSet;
+    noFingerprintAntiDomainHashSet = nullptr;
+  }
+  if (noFingerprintDomainExceptionHashSet) {
+    delete noFingerprintDomainExceptionHashSet;
+    noFingerprintDomainExceptionHashSet = nullptr;
+  }
+  if (noFingerprintAntiDomainExceptionHashSet) {
+    delete noFingerprintAntiDomainExceptionHashSet;
+    noFingerprintAntiDomainExceptionHashSet = nullptr;
   }
   if (badFingerprintsHashSet) {
     delete badFingerprintsHashSet;
@@ -565,6 +620,32 @@ void discoverMatchingPrefix(BadFingerprintsHashSet *badFingerprintsHashSet,
   }
 }
 
+bool isNoFingerprintDomainHashSetMiss(HashSet<NoFingerprintDomain> *hashSet,
+    const char *host, int hostLen) {
+  if (!hashSet) {
+    return false;
+  }
+  const char *start = host + hostLen;
+  // Skip past the TLD
+  while (start != host) {
+    start--;
+    if (*(start) == '.') {
+      break;
+    }
+  }
+  while (start != host) {
+    if (*(start - 1) == '.') {
+      if (hashSet->Find(NoFingerprintDomain(start,
+          static_cast<int>(host + hostLen - start)))) {
+        return false;
+      }
+    }
+    start--;
+  }
+  return !hashSet->Find(NoFingerprintDomain(start,
+      static_cast<int>(host + hostLen - start)));
+}
+
 bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
     HashSet<Filter> *hashSet,
     const char *inputHost,
@@ -620,8 +701,9 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   int inputHostLen;
   const char *inputHost = getUrlHost(input, &inputHostLen);
 
+  int contextDomainLen = 0;
   if (contextDomain) {
-    int contextDomainLen = static_cast<int>(strlen(contextDomain));
+    contextDomainLen = static_cast<int>(strlen(contextDomain));
     if (isThirdPartyHost(contextDomain, contextDomainLen,
         inputHost, static_cast<int>(inputHostLen))) {
       contextOption =
@@ -645,13 +727,20 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   // cannot be used for them
   bool hasMatch = false;
 
-  // TODO(bbondy): Only if in the domain string hash set
-  hasMatch = hasMatch || hasMatchingFilters(noFingerprintDomainOnlyFilters,
-      numNoFingerprintDomainOnlyFilters, input, inputLen, contextOption,
-      contextDomain, &inputBloomFilter, inputHost, inputHostLen);
-  hasMatch = hasMatch || hasMatchingFilters(noFingerprintAntiDomainOnlyFilters,
-      numNoFingerprintAntiDomainOnlyFilters, input, inputLen, contextOption,
-      contextDomain, &inputBloomFilter, inputHost, inputHostLen);
+  // Only bother checking the no fingerprint domain related filters if needed
+  if (!isNoFingerprintDomainHashSetMiss(
+        noFingerprintDomainHashSet, contextDomain, contextDomainLen)) {
+    hasMatch = hasMatch || hasMatchingFilters(noFingerprintDomainOnlyFilters,
+        numNoFingerprintDomainOnlyFilters, input, inputLen, contextOption,
+        contextDomain, &inputBloomFilter, inputHost, inputHostLen);
+  }
+  if (isNoFingerprintDomainHashSetMiss(
+        noFingerprintAntiDomainHashSet, contextDomain, contextDomainLen)) {
+    hasMatch = hasMatch ||
+      hasMatchingFilters(noFingerprintAntiDomainOnlyFilters,
+        numNoFingerprintAntiDomainOnlyFilters, input, inputLen, contextOption,
+        contextDomain, &inputBloomFilter, inputHost, inputHostLen);
+  }
 
   hasMatch = hasMatch || hasMatchingFilters(noFingerprintFilters,
       numNoFingerprintFilters, input, inputLen, contextOption,
@@ -704,17 +793,24 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
 
   bool hasExceptionMatch = false;
 
-  // TOOD: Only if in exception hash set
-  hasExceptionMatch = hasExceptionMatch ||
-    hasMatchingFilters(noFingerprintDomainOnlyExceptionFilters,
-      numNoFingerprintDomainOnlyExceptionFilters, input, inputLen,
-      contextOption, contextDomain, &inputBloomFilter, inputHost,
-      inputHostLen);
-  hasExceptionMatch = hasExceptionMatch ||
+  // Only bother checking the no fingerprint domain related filters if needed
+  if (!isNoFingerprintDomainHashSetMiss(
+        noFingerprintDomainExceptionHashSet, contextDomain, contextDomainLen)) {
+    hasExceptionMatch = hasExceptionMatch ||
+      hasMatchingFilters(noFingerprintDomainOnlyExceptionFilters,
+        numNoFingerprintDomainOnlyExceptionFilters, input, inputLen,
+        contextOption, contextDomain, &inputBloomFilter, inputHost,
+        inputHostLen);
+  }
+
+  if (isNoFingerprintDomainHashSetMiss(
+        noFingerprintAntiDomainExceptionHashSet, contextDomain,
+        contextDomainLen)) {
+    hasExceptionMatch = hasExceptionMatch ||
     hasMatchingFilters(noFingerprintAntiDomainOnlyExceptionFilters,
       numNoFingerprintAntiDomainOnlyExceptionFilters, input, inputLen,
       contextOption, contextDomain, &inputBloomFilter, inputHost, inputHostLen);
-
+  }
 
   hasExceptionMatch = hasExceptionMatch ||
     hasMatchingFilters(noFingerprintExceptionFilters,
@@ -866,12 +962,13 @@ void AdBlockClient::initBloomFilter(BloomFilter **pp,
   }
 }
 
-bool AdBlockClient::initHashSet(HashSet<Filter> **pp, char *buffer, int len) {
+template<class T>
+bool AdBlockClient::initHashSet(HashSet<T> **pp, char *buffer, int len) {
   if (*pp) {
     delete *pp;
   }
   if (len > 0) {
-    *pp = new HashSet<Filter>(0, false);
+    *pp = new HashSet<T>(0, false);
 
     return (*pp)->Deserialize(buffer, len);
   }
@@ -907,6 +1004,21 @@ bool AdBlockClient::parse(const char *input) {
     // Optimized to be 1:1 with the easylist / easyprivacy
     // number of host anchored exception hosts.
     hostAnchoredExceptionHashSet = new HashSet<Filter>(2000, false);
+  }
+  if (!noFingerprintDomainHashSet) {
+    noFingerprintDomainHashSet = new HashSet<NoFingerprintDomain>(1000, false);
+  }
+  if (!noFingerprintAntiDomainHashSet) {
+    noFingerprintAntiDomainHashSet =
+      new HashSet<NoFingerprintDomain>(100, false);
+  }
+  if (!noFingerprintDomainExceptionHashSet) {
+    noFingerprintDomainExceptionHashSet =
+      new HashSet<NoFingerprintDomain>(1000, false);
+  }
+  if (!noFingerprintAntiDomainExceptionHashSet) {
+    noFingerprintAntiDomainExceptionHashSet =
+      new HashSet<NoFingerprintDomain>(100, false);
   }
 
   const char *p = input;
@@ -1205,11 +1317,13 @@ bool AdBlockClient::parse(const char *input) {
               (*curExceptionFilters).swapData(&f);
               curExceptionFilters++;
             } else if (f.isDomainOnlyFilter()) {
-              // TODO(bbondy): Need to add each of the domains not just the
-              // filter.
+              AddFilterDomainsToHashSet(&f,
+                  noFingerprintDomainExceptionHashSet);
               (*curNoFingerprintDomainOnlyExceptionFilters).swapData(&f);
               curNoFingerprintDomainOnlyExceptionFilters++;
             } else if (f.isAntiDomainOnlyFilter()) {
+              AddFilterDomainsToHashSet(&f,
+                  noFingerprintAntiDomainExceptionHashSet);
               (*curNoFingerprintAntiDomainOnlyExceptionFilters).swapData(&f);
               curNoFingerprintAntiDomainOnlyExceptionFilters++;
             } else {
@@ -1237,10 +1351,13 @@ bool AdBlockClient::parse(const char *input) {
               (*curFilters).swapData(&f);
               curFilters++;
             } else if (f.isDomainOnlyFilter()) {
-              // TODO(bbondy): Same as above
+              AddFilterDomainsToHashSet(&f,
+                  noFingerprintDomainHashSet);
               (*curNoFingerprintDomainOnlyFilters).swapData(&f);
               curNoFingerprintDomainOnlyFilters++;
             } else if (f.isAntiDomainOnlyFilter()) {
+              AddFilterDomainsToHashSet(&f,
+                  noFingerprintAntiDomainHashSet);
               (*curNoFingerprintAntiDomainOnlyFilters).swapData(&f);
               curNoFingerprintAntiDomainOnlyFilters++;
             } else {
@@ -1338,10 +1455,41 @@ char * AdBlockClient::serialize(int *totalSize,
           &hostAnchoredExceptionHashSetSize);
   }
 
+  uint32_t noFingerprintDomainHashSetSize = 0;
+  char *noFingerprintDomainHashSetBuffer = nullptr;
+  if (noFingerprintDomainHashSet) {
+    noFingerprintDomainHashSetBuffer =
+      noFingerprintDomainHashSet->Serialize(&noFingerprintDomainHashSetSize);
+  }
+
+  uint32_t noFingerprintAntiDomainHashSetSize = 0;
+  char *noFingerprintAntiDomainHashSetBuffer = nullptr;
+  if (noFingerprintAntiDomainHashSet) {
+    noFingerprintAntiDomainHashSetBuffer =
+      noFingerprintAntiDomainHashSet->Serialize(
+          &noFingerprintAntiDomainHashSetSize);
+  }
+
+  uint32_t noFingerprintDomainExceptionHashSetSize = 0;
+  char *noFingerprintDomainExceptionHashSetBuffer = nullptr;
+  if (noFingerprintDomainExceptionHashSet) {
+    noFingerprintDomainExceptionHashSetBuffer =
+      noFingerprintDomainExceptionHashSet->Serialize(
+          &noFingerprintDomainExceptionHashSetSize);
+  }
+
+  uint32_t noFingerprintAntiDomainExceptionHashSetSize = 0;
+  char *noFingerprintAntiDomainExceptionHashSetBuffer = nullptr;
+  if (noFingerprintAntiDomainExceptionHashSet) {
+    noFingerprintAntiDomainExceptionHashSetBuffer =
+      noFingerprintAntiDomainExceptionHashSet->Serialize(
+          &noFingerprintAntiDomainExceptionHashSetSize);
+  }
+
   // Get the number of bytes that we'll need
   char sz[512];
   *totalSize += 1 + snprintf(sz, sizeof(sz),
-      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
+      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
       numFilters,
       numExceptionFilters, adjustedNumCosmeticFilters, adjustedNumHtmlFilters,
       numNoFingerprintFilters, numNoFingerprintExceptionFilters,
@@ -1352,7 +1500,11 @@ char * AdBlockClient::serialize(int *totalSize,
       numHostAnchoredFilters, numHostAnchoredExceptionFilters,
       bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter
         ? exceptionBloomFilter->getByteBufferSize() : 0,
-        hostAnchoredHashSetSize, hostAnchoredExceptionHashSetSize);
+        hostAnchoredHashSetSize, hostAnchoredExceptionHashSetSize,
+        noFingerprintDomainHashSetSize,
+        noFingerprintAntiDomainHashSetSize,
+        noFingerprintDomainExceptionHashSetSize,
+        noFingerprintAntiDomainExceptionHashSetSize);
   *totalSize += serializeFilters(nullptr, 0, filters, numFilters) +
     serializeFilters(nullptr, 0, exceptionFilters, numExceptionFilters) +
     serializeFilters(nullptr, 0, cosmeticFilters, adjustedNumCosmeticFilters) +
@@ -1376,6 +1528,10 @@ char * AdBlockClient::serialize(int *totalSize,
     ? exceptionBloomFilter->getByteBufferSize() : 0;
   *totalSize += hostAnchoredHashSetSize;
   *totalSize += hostAnchoredExceptionHashSetSize;
+  *totalSize += noFingerprintDomainHashSetSize;
+  *totalSize += noFingerprintAntiDomainHashSetSize;
+  *totalSize += noFingerprintDomainExceptionHashSetSize;
+  *totalSize += noFingerprintAntiDomainExceptionHashSetSize;
 
   // Allocate it
   int pos = 0;
@@ -1430,6 +1586,31 @@ char * AdBlockClient::serialize(int *totalSize,
     pos += hostAnchoredExceptionHashSetSize;
     delete hostAnchoredExceptionHashSetBuffer;
   }
+  if (noFingerprintDomainHashSet) {
+    memcpy(buffer + pos, noFingerprintDomainHashSetBuffer,
+        noFingerprintDomainHashSetSize);
+    pos += noFingerprintDomainHashSetSize;
+    delete noFingerprintDomainHashSetBuffer;
+  }
+  if (noFingerprintAntiDomainHashSet) {
+    memcpy(buffer + pos, noFingerprintAntiDomainHashSetBuffer,
+        noFingerprintAntiDomainHashSetSize);
+    pos += noFingerprintAntiDomainHashSetSize;
+    delete noFingerprintAntiDomainHashSetBuffer;
+  }
+  if (noFingerprintDomainExceptionHashSet) {
+    memcpy(buffer + pos, noFingerprintDomainExceptionHashSetBuffer,
+        noFingerprintDomainExceptionHashSetSize);
+    pos += noFingerprintDomainExceptionHashSetSize;
+    delete noFingerprintDomainExceptionHashSetBuffer;
+  }
+  if (noFingerprintAntiDomainExceptionHashSet) {
+    memcpy(buffer + pos, noFingerprintAntiDomainExceptionHashSetBuffer,
+        noFingerprintAntiDomainExceptionHashSetSize);
+    pos += noFingerprintAntiDomainExceptionHashSetSize;
+    delete noFingerprintAntiDomainExceptionHashSetBuffer;
+  }
+
   return buffer;
 }
 
@@ -1476,10 +1657,14 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
 bool AdBlockClient::deserialize(char *buffer) {
   deserializedBuffer = buffer;
   int bloomFilterSize = 0, exceptionBloomFilterSize = 0,
-      hostAnchoredHashSetSize = 0, hostAnchoredExceptionHashSetSize = 0;
+      hostAnchoredHashSetSize = 0, hostAnchoredExceptionHashSetSize = 0,
+      noFingerprintDomainHashSetSize = 0,
+      noFingerprintAntiDomainHashSetSize = 0,
+      noFingerprintDomainExceptionHashSetSize = 0,
+      noFingerprintAntiDomainExceptionHashSetSize = 0;
   int pos = 0;
   sscanf(buffer + pos,
-      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
+      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
       &numFilters,
       &numExceptionFilters, &numCosmeticFilters, &numHtmlFilters,
       &numNoFingerprintFilters, &numNoFingerprintExceptionFilters,
@@ -1489,7 +1674,11 @@ bool AdBlockClient::deserialize(char *buffer) {
       &numNoFingerprintAntiDomainOnlyExceptionFilters,
       &numHostAnchoredFilters, &numHostAnchoredExceptionFilters,
       &bloomFilterSize, &exceptionBloomFilterSize,
-      &hostAnchoredHashSetSize, &hostAnchoredExceptionHashSetSize);
+      &hostAnchoredHashSetSize, &hostAnchoredExceptionHashSetSize,
+      &noFingerprintDomainHashSetSize,
+      &noFingerprintAntiDomainHashSetSize,
+      &noFingerprintDomainExceptionHashSetSize,
+      &noFingerprintAntiDomainExceptionHashSetSize);
   pos += static_cast<int>(strlen(buffer + pos)) + 1;
 
   filters = new Filter[numFilters];
@@ -1546,6 +1735,31 @@ bool AdBlockClient::deserialize(char *buffer) {
       return false;
   }
   pos += hostAnchoredExceptionHashSetSize;
+
+
+  if (!initHashSet(&noFingerprintDomainHashSet,
+        buffer + pos, noFingerprintDomainHashSetSize)) {
+      return false;
+  }
+  pos += noFingerprintDomainHashSetSize;
+
+  if (!initHashSet(&noFingerprintAntiDomainHashSet,
+        buffer + pos, noFingerprintAntiDomainHashSetSize)) {
+      return false;
+  }
+  pos += noFingerprintAntiDomainHashSetSize;
+
+  if (!initHashSet(&noFingerprintDomainExceptionHashSet,
+        buffer + pos, noFingerprintDomainExceptionHashSetSize)) {
+      return false;
+  }
+  pos += noFingerprintDomainExceptionHashSetSize;
+
+  if (!initHashSet(&noFingerprintAntiDomainExceptionHashSet,
+        buffer + pos, noFingerprintAntiDomainExceptionHashSetSize)) {
+      return false;
+  }
+  pos += noFingerprintAntiDomainExceptionHashSetSize;
 
   return true;
 }

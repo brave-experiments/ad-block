@@ -12,6 +12,8 @@
       "filter.cc",
       "filter.h",
       "filter_list.h",
+      "no_fingerprint_domain.cc",
+      "no_fingerprint_domain.h",
       "./node_modules/bloom-filter-cpp/BloomFilter.cpp",
       "./node_modules/bloom-filter-cpp/BloomFilter.h",
       "./node_modules/bloom-filter-cpp/hashFn.cpp",
