@@ -92,6 +92,10 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
     AdBlockClientWrap::Deserialize);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getParsingStats",
     AdBlockClientWrap::GetParsingStats);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "getFilters",
+    AdBlockClientWrap::GetFilters);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "getFingerprint",
+    AdBlockClientWrap::GetFingerprint);
   NODE_SET_PROTOTYPE_METHOD(tpl, "getMatchingStats",
     AdBlockClientWrap::GetMatchingStats);
   NODE_SET_PROTOTYPE_METHOD(tpl, "enableBadFingerprintDetection",
@@ -302,6 +306,155 @@ void AdBlockClientWrap::GetParsingStats(
   stats->Set(String::NewFromUtf8(isolate, "numHostAnchoredExceptionFilters"),
     Int32::New(isolate, obj->numHostAnchoredExceptionFilters));
   args.GetReturnValue().Set(stats);
+}
+
+void AdBlockClientWrap::GetFilters(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
+
+  String::Utf8Value str(args[0]->ToString());
+  const char * filterType = *str;
+
+  Local<v8::Array> result_list = v8::Array::New(isolate);
+  Filter *filter;
+  int numFilters = 0;
+
+  if (!strcmp(filterType, "filters")) {
+    filter = obj->filters;
+    numFilters = obj->numFilters;
+  } else if (!strcmp(filterType, "cosmeticFilters")) {
+    filter = obj->cosmeticFilters;
+    numFilters = obj->numCosmeticFilters;
+  } else if (!strcmp(filterType, "htmlFilters")) {
+    filter = obj->htmlFilters;
+    numFilters = obj->numHtmlFilters;
+  } else if (!strcmp(filterType, "exceptionFilters")) {
+    filter = obj->exceptionFilters;
+    numFilters = obj->numExceptionFilters;
+  } else if (!strcmp(filterType, "noFingerprintFilters")) {
+    filter = obj->noFingerprintFilters;
+    numFilters = obj->numNoFingerprintFilters;
+  } else if (!strcmp(filterType, "noFingerprintExceptionFilters")) {
+    filter = obj->noFingerprintExceptionFilters;
+    numFilters = obj->numNoFingerprintExceptionFilters;
+  } else if (!strcmp(filterType, "noFingerprintDomainOnlyFilters")) {
+    filter = obj->noFingerprintDomainOnlyFilters;
+    numFilters = obj->numNoFingerprintDomainOnlyFilters;
+  } else if (!strcmp(filterType, "noFingerprintAntiDomainOnlyFilters")) {
+    filter = obj->noFingerprintAntiDomainOnlyFilters;
+    numFilters = obj->numNoFingerprintAntiDomainOnlyFilters;
+  } else if (!strcmp(filterType, "noFingerprintDomainOnlyExceptionFilters")) {
+    filter = obj->noFingerprintDomainOnlyExceptionFilters;
+    numFilters = obj->numNoFingerprintDomainOnlyExceptionFilters;
+  } else if (!strcmp(filterType,
+        "noFingerprintAntiDomainOnlyExceptionFilters")) {
+    filter = obj->noFingerprintAntiDomainOnlyExceptionFilters;
+    numFilters = obj->numNoFingerprintAntiDomainOnlyExceptionFilters;
+  }
+
+  for (int i = 0; i < numFilters; i++) {
+    Local<Object> result = Object::New(isolate);
+    if (filter->data && filter->dataLen) {
+      if (filter->dataLen == -1) {
+        filter->dataLen = static_cast<int>(strlen(filter->data));
+      }
+      char * data = new char[filter->dataLen + 1];
+      data[filter->dataLen] = '\0';
+      memcpy(data, filter->data, filter->dataLen);
+      result->Set(String::NewFromUtf8(isolate, "data"),
+        String::NewFromUtf8(isolate, data));
+      delete[] data;
+    }
+    if (filter->host && filter->hostLen) {
+      if (filter->hostLen == -1) {
+        filter->hostLen = static_cast<int>(strlen(filter->host));
+      }
+      char * host = new char[filter->hostLen + 1];
+      host[filter->hostLen] = '\0';
+      memcpy(host, filter->host, filter->hostLen);
+      result->Set(String::NewFromUtf8(isolate, "host"),
+        String::NewFromUtf8(isolate, host));
+      delete[] host;
+    }
+
+    Local<v8::Array> domain_list = v8::Array::New(isolate);
+    Local<v8::Array> anti_domain_list = v8::Array::New(isolate);
+    if (filter->domainList) {
+      char * filter_domain_list = filter->domainList;
+      size_t domain_list_len = strlen(filter_domain_list);
+      // Setup a buffer the max size of a domain, we'll use it for each domain
+      // which is less or the same length.
+      char * dest_buffer = new char[domain_list_len + 1];
+      memset(dest_buffer, 0, domain_list_len + 1);
+      int start_offset = 0;
+      int len = 0;
+      int domain_list_count = 0;
+      int anti_domain_list_count = 0;
+      const char *p = filter_domain_list;
+      while (true) {
+        if (*p == '|' || *p == '\0') {
+          const char *domain = filter_domain_list + start_offset;
+          if (len > 0 && *domain != '~') {
+            memcpy(dest_buffer, domain, len);
+            domain_list->Set(domain_list_count++,
+              String::NewFromUtf8(isolate, dest_buffer));
+          } else if (len > 0 && *domain == '~') {
+            memcpy(dest_buffer, domain + 1, len - 1);
+            anti_domain_list->Set(anti_domain_list_count++,
+              String::NewFromUtf8(isolate, dest_buffer));
+          }
+
+          start_offset += len + 1;
+          len = -1;
+          memset(dest_buffer, 0, domain_list_len + 1);
+        }
+        if (*p == '\0') {
+          break;
+        }
+        p++;
+        len++;
+      }
+      delete[] dest_buffer;
+    }
+    result->Set(String::NewFromUtf8(isolate, "isDomainOnlyFilter"),
+        Boolean::New(isolate, filter->isDomainOnlyFilter() &&
+          ((~filter->filterType) & FTException)));
+    result->Set(String::NewFromUtf8(isolate, "isAntiDomainOnlyFilter"),
+        Boolean::New(isolate, filter->isAntiDomainOnlyFilter() &&
+          ((~filter->filterType) & FTException)));
+    result->Set(String::NewFromUtf8(isolate, "isDomainOnlyExceptionFilter"),
+        Boolean::New(isolate, filter->isDomainOnlyFilter() &&
+          (filter->filterType & FTException)));
+    result->Set(String::NewFromUtf8(isolate,
+          "isAntiDomainOnlyExceptionFilter"),
+        Boolean::New(isolate, filter->isAntiDomainOnlyFilter() &&
+          (filter->filterType & FTException)));
+
+    result->Set(String::NewFromUtf8(isolate, "domainList"), domain_list);
+    result->Set(String::NewFromUtf8(isolate,
+          "antiDomainList"), anti_domain_list);
+
+    result_list->Set(i, result);
+    filter++;
+  }
+  args.GetReturnValue().Set(result_list);
+}
+
+void AdBlockClientWrap::GetFingerprint(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
+  String::Utf8Value str(args[0]->ToString());
+  const char * inputBuffer = *str;
+
+  char * fingerprintBuffer = new char[AdBlockClient::kFingerprintSize + 1];
+  if (obj->getFingerprint(fingerprintBuffer, inputBuffer)) {
+    args.GetReturnValue().Set(String::NewFromUtf8(isolate, fingerprintBuffer));
+  }
+  delete[] fingerprintBuffer;
 }
 
 void AdBlockClientWrap::GetMatchingStats(

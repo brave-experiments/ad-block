@@ -8,11 +8,14 @@
 
 #include <math.h>
 #include <string.h>
-#include "HashSet.h"
+#include "./hash_set.h"
 
 class CosmeticFilter {
  public:
   uint64_t hash() const;
+  uint64_t GetHash() const {
+    return hash();
+  }
 
   ~CosmeticFilter() {
     if (data) {
@@ -42,16 +45,16 @@ class CosmeticFilter {
   }
 
   // Nothing needs to be updated for multiple adds
-  void update(const CosmeticFilter &) {}
+  void Update(const CosmeticFilter &) {}
 
-  uint32_t serialize(char *buffer) {
+  uint32_t Serialize(char *buffer) {
     if (buffer) {
       memcpy(buffer, data, strlen(data) + 1);
     }
     return static_cast<uint32_t>(strlen(data)) + 1;
   }
 
-  uint32_t deserialize(char *buffer, uint32_t bufferSize) {
+  uint32_t Deserialize(char *buffer, uint32_t bufferSize) {
     int len = static_cast<int>(strlen(buffer));
     data = new char[len + 1];
     memcpy(data, buffer, len + 1);
@@ -63,7 +66,7 @@ class CosmeticFilter {
 
 class CosmeticFilterHashSet : public HashSet<CosmeticFilter> {
  public:
-  CosmeticFilterHashSet() : HashSet<CosmeticFilter>(1000) {
+  CosmeticFilterHashSet() : HashSet<CosmeticFilter>(1000, false) {
   }
   char * toStylesheet(uint32_t *len) {
     *len = fillStylesheetBuffer(nullptr);
@@ -76,11 +79,11 @@ class CosmeticFilterHashSet : public HashSet<CosmeticFilter> {
  private:
   uint32_t fillStylesheetBuffer(char *buffer) {
     uint32_t len = 0;
-    for (uint32_t bucketIndex = 0; bucketIndex < bucketCount; bucketIndex++) {
-      HashItem<CosmeticFilter> *hashItem = buckets[bucketIndex];
+    for (uint32_t bucketIndex = 0; bucketIndex < bucket_count_; bucketIndex++) {
+      HashItem<CosmeticFilter> *hashItem = buckets_[bucketIndex];
       len = 0;
       while (hashItem) {
-        CosmeticFilter *cosmeticFilter = hashItem->hashItemStorage;
+        CosmeticFilter *cosmeticFilter = hashItem->hash_item_storage_;
         // [cosmeticFilter],[space]
         int cosmeticFilterLen =
           static_cast<int>(strlen(cosmeticFilter->data));
@@ -88,13 +91,13 @@ class CosmeticFilterHashSet : public HashSet<CosmeticFilter> {
           memcpy(buffer + len, cosmeticFilter->data, cosmeticFilterLen);
         }
         len += cosmeticFilterLen;
-        if (hashItem->next) {
+        if (hashItem->next_) {
           if (buffer) {
             memcpy(buffer + len, ", ", 2);
           }
           len += 2;
         }
-        hashItem = hashItem->next;
+        hashItem = hashItem->next_;
       }
     }
     return len;

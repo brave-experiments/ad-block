@@ -6,6 +6,6 @@
 #ifndef DATA_FILE_VERSION_H_
 #define DATA_FILE_VERSION_H_
 
-static constexpr int DATA_FILE_VERSION = 3;
+static constexpr int DATA_FILE_VERSION = 4;
 
 #endif  // DATA_FILE_VERSION_H_

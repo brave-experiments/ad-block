@@ -27,7 +27,7 @@ static HashFn h(19);
 const char * getUrlHost(const char *input, int *len);
 
 Filter::Filter() :
-  borrowedData(false),
+  borrowed_data(false),
   filterType(FTNoFilterType),
   filterOption(FONoFilterOption),
   antiFilterOption(FONoFilterOption),
@@ -41,7 +41,7 @@ Filter::Filter() :
 }
 
 Filter::~Filter() {
-  if (borrowedData) {
+  if (borrowed_data) {
     return;
   }
   if (data) {
@@ -57,7 +57,7 @@ Filter::~Filter() {
 
 Filter::Filter(const char * data, int dataLen, char *domainList,
       const char * host, int hostLen) :
-      borrowedData(true), filterType(FTNoFilterType),
+      borrowed_data(true), filterType(FTNoFilterType),
       filterOption(FONoFilterOption),
       antiFilterOption(FONoFilterOption), data(const_cast<char*>(data)),
       dataLen(dataLen), domainList(domainList), host(const_cast<char*>(host)),
@@ -71,7 +71,7 @@ Filter::Filter(FilterType filterType, FilterOption filterOption,
          const char * data, int dataLen,
          char *domainList, const char * host,
          int hostLen) :
-    borrowedData(true), filterType(filterType), filterOption(filterOption),
+    borrowed_data(true), filterType(filterType), filterOption(filterOption),
     antiFilterOption(antiFilterOption), data(const_cast<char*>(data)),
       dataLen(dataLen), domainList(domainList), host(const_cast<char *>(host)),
       hostLen(hostLen) {
@@ -80,7 +80,7 @@ Filter::Filter(FilterType filterType, FilterOption filterOption,
   }
 
 Filter::Filter(const Filter &other) {
-  borrowedData = other.borrowedData;
+  borrowed_data = other.borrowed_data;
   filterType = other.filterType;
   filterOption = other.filterOption;
   antiFilterOption = other.antiFilterOption;
@@ -92,7 +92,7 @@ Filter::Filter(const Filter &other) {
     dataLen = static_cast<int>(strlen(other.data));
   }
 
-  if (other.borrowedData) {
+  if (other.borrowed_data) {
     data = other.data;
     domainList = other.domainList;
     host = other.host;
@@ -185,26 +185,32 @@ bool Filter::containsDomain(const char *domain, bool anti) const {
 }
 
 uint32_t Filter::getDomainCount(bool anti) {
-  if (!domainList || domainList[0] == '\0') {
-    return 0;
-  }
-
-  if (!anti && domainCount) {
-    return domainCount;
-  } else if (anti && antiDomainCount) {
+  calculateDomainCounts();
+  if (anti) {
     return antiDomainCount;
   }
+  return domainCount;
+}
 
-  int count = 0;
+void Filter::calculateDomainCounts() {
+  domainCount = 0;
+  antiDomainCount = 0;
+  if (!domainList || domainList[0] == '\0') {
+    return;
+  }
+  // Check if already claculated
+  if (domainCount || antiDomainCount) {
+    return;
+  }
   int startOffset = 0;
   int len = 0;
   const char *p = domainList;
   while (*p != '\0') {
     if (*p == '|') {
-      if (*(domainList + startOffset) == '~' && anti) {
-        count++;
-      } else if (*(domainList + startOffset) != '~' && !anti) {
-        count++;
+      if (*(domainList + startOffset) == '~') {
+        antiDomainCount++;
+      } else if (*(domainList + startOffset) != '~') {
+        domainCount++;
       }
       startOffset = len + 1;
       len = -1;
@@ -212,19 +218,21 @@ uint32_t Filter::getDomainCount(bool anti) {
     p++;
     len++;
   }
-
-  if (*(domainList + startOffset) == '~' && anti) {
-    count++;
-  } else if (*(domainList + startOffset) != '~' && !anti) {
-    count++;
+  if (*(domainList + startOffset) == '~') {
+    antiDomainCount++;
+  } else if (*(domainList + startOffset) != '~') {
+    domainCount++;
   }
+}
 
-  if (anti) {
-    antiDomainCount = count;
-  } else {
-    domainCount = count;
-  }
-  return count;
+bool Filter::isDomainOnlyFilter() {
+  calculateDomainCounts();
+  return domainCount && !antiDomainCount;
+}
+
+bool Filter::isAntiDomainOnlyFilter() {
+  calculateDomainCounts();
+  return antiDomainCount && !domainCount;
 }
 
 void Filter::parseOption(const char *input, int len) {
@@ -756,7 +764,7 @@ uint64_t Filter::hash() const {
   return h(data, dataLen);
 }
 
-uint32_t Filter::serialize(char *buffer) {
+uint32_t Filter::Serialize(char *buffer) {
   uint32_t totalSize = 0;
   char sz[64];
   uint32_t dataLenSize = 1 + snprintf(sz, sizeof(sz),
@@ -803,7 +811,7 @@ bool hasNewlineBefore(char *buffer, uint32_t bufferSize) {
   return false;
 }
 
-uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
+uint32_t Filter::Deserialize(char *buffer, uint32_t bufferSize) {
   dataLen = 0;
   if (!hasNewlineBefore(buffer, bufferSize)) {
     return 0;
@@ -834,7 +842,7 @@ uint32_t Filter::deserialize(char *buffer, uint32_t bufferSize) {
   }
   consumed += domainListLen + 1;
 
-  borrowedData = true;
+  borrowed_data = true;
 
   return consumed;
 }

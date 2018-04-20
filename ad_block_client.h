@@ -11,6 +11,7 @@
 class CosmeticFilter;
 class BloomFilter;
 class BadFingerprintsHashSet;
+class NoFingerprintDomain;
 
 template<class T>
 class HashSet;
@@ -44,12 +45,19 @@ class AdBlockClient {
     return deserializedBuffer;
   }
 
+  static bool getFingerprint(char *buffer, const char *input);
+  static bool getFingerprint(char *buffer, const Filter &f);
+
   Filter *filters;
   Filter *cosmeticFilters;
   Filter *htmlFilters;
   Filter *exceptionFilters;
   Filter *noFingerprintFilters;
   Filter *noFingerprintExceptionFilters;
+  Filter *noFingerprintDomainOnlyFilters;
+  Filter *noFingerprintAntiDomainOnlyFilters;
+  Filter *noFingerprintDomainOnlyExceptionFilters;
+  Filter *noFingerprintAntiDomainOnlyExceptionFilters;
 
   int numFilters;
   int numCosmeticFilters;
@@ -57,6 +65,10 @@ class AdBlockClient {
   int numExceptionFilters;
   int numNoFingerprintFilters;
   int numNoFingerprintExceptionFilters;
+  int numNoFingerprintDomainOnlyFilters;
+  int numNoFingerprintAntiDomainOnlyFilters;
+  int numNoFingerprintDomainOnlyExceptionFilters;
+  int numNoFingerprintAntiDomainOnlyExceptionFilters;
   int numHostAnchoredFilters;
   int numHostAnchoredExceptionFilters;
 
@@ -64,6 +76,10 @@ class AdBlockClient {
   BloomFilter *exceptionBloomFilter;
   HashSet<Filter> *hostAnchoredHashSet;
   HashSet<Filter> *hostAnchoredExceptionHashSet;
+  HashSet<NoFingerprintDomain> *noFingerprintDomainHashSet;
+  HashSet<NoFingerprintDomain> *noFingerprintAntiDomainHashSet;
+  HashSet<NoFingerprintDomain> *noFingerprintDomainExceptionHashSet;
+  HashSet<NoFingerprintDomain> *noFingerprintAntiDomainExceptionHashSet;
 
   // Used only in the perf program to create a list of bad fingerprints
   BadFingerprintsHashSet *badFingerprintsHashSet;
@@ -76,6 +92,8 @@ class AdBlockClient {
   unsigned int numHashSetSaves;
   unsigned int numExceptionHashSetSaves;
 
+  static const int kFingerprintSize;
+
  protected:
   // Determines if a passed in array of filter pointers matches for any of
   // the input
@@ -84,7 +102,8 @@ class AdBlockClient {
       BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen,
       Filter **matchingFilter = nullptr);
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
-  bool initHashSet(HashSet<Filter>**, char *buffer, int len);
+  template<class T>
+  bool initHashSet(HashSet<T>**, char *buffer, int len);
   char *deserializedBuffer;
 };
 

@@ -8,7 +8,7 @@
 
 #include <string.h>
 #include <math.h>
-#include "HashSet.h"
+#include "./hash_set.h"
 
 #ifdef PERF_STATS
 #include <fstream>
@@ -16,7 +16,7 @@
 
 class BadFingerprint {
  public:
-  uint64_t hash() const {
+  uint64_t GetHash() const {
     return 0;
   }
 
@@ -48,16 +48,16 @@ class BadFingerprint {
   }
 
   // Nothing needs to be updated for multiple adds
-  void update(const BadFingerprint &) {}
+  void Update(const BadFingerprint &) {}
 
-  uint32_t serialize(char *buffer) {
+  uint32_t Serialize(char *buffer) {
     if (buffer) {
       memcpy(buffer, data, strlen(data) + 1);
     }
     return static_cast<uint32_t>(strlen(data)) + 1;
   }
 
-  uint32_t deserialize(char *buffer, uint32_t bufferSize) {
+  uint32_t Deserialize(char *buffer, uint32_t bufferSize) {
     uint32_t len = static_cast<uint32_t>(strlen(buffer));
     data = new char[len + 1];
     memcpy(data, buffer, len + 1);
@@ -69,7 +69,7 @@ class BadFingerprint {
 
 class BadFingerprintsHashSet : public HashSet<BadFingerprint> {
  public:
-  BadFingerprintsHashSet() : HashSet<BadFingerprint>(1) {
+  BadFingerprintsHashSet() : HashSet<BadFingerprint>(1, false) {
   }
 
   void generateHeader(const char *filename) {
@@ -80,12 +80,13 @@ class BadFingerprintsHashSet : public HashSet<BadFingerprint> {
     outFile << "#pragma once\n";
     outFile << "/**\n  *\n  * Auto generated bad filters\n  */\n";
     outFile << "const char *badFingerprints[] = {\n";
-    for (uint32_t bucketIndex = 0; bucketIndex < bucketCount; bucketIndex++) {
-      HashItem<BadFingerprint> *hashItem = buckets[bucketIndex];
+    for (uint32_t bucket_index = 0; bucket_index < bucket_count_;
+        bucket_index++) {
+      HashItem<BadFingerprint> *hashItem = buckets_[bucket_index];
       while (hashItem) {
-        BadFingerprint *badFingerprint = hashItem->hashItemStorage;
+        BadFingerprint *badFingerprint = hashItem->hash_item_storage_;
         outFile << "\"" << badFingerprint->data << "\"," << std::endl;
-        hashItem = hashItem->next;
+        hashItem = hashItem->next_;
       }
     }
     outFile << "};\n" << std::endl;

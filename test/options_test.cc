@@ -40,6 +40,24 @@ bool testOptionsWithFilter(Filter *f, const char *input,
       << endl << "Expected: " << expectedAntiOption << endl;
     return false;
   }
+  if (expectedDomains.size() > 0 && expectedAntiDomains.size() == 0 &&
+      !f->isDomainOnlyFilter()) {
+    cout << input << endl << "Domain only filter should be set."
+      << endl << "Actual domain count: " << f->getDomainCount()
+      << endl << "Actual anti domain count: " << f->getDomainCount(true)
+      << endl << "Expected: " << expectedDomains.size()
+      << endl << "Expected anti: " << expectedAntiDomains.size();
+    return false;
+  } else if ((expectedDomains.size() == 0 ||
+        expectedAntiDomains.size() != 0) &&
+      f->isDomainOnlyFilter()) {
+    cout << input << endl << "Domain only filter should NOT be set."
+      << endl << "Actual domain count: " << f->getDomainCount()
+      << endl << "Actual anti domain count: " << f->getDomainCount(true)
+      << endl << "Expected: " << expectedDomains.size()
+      << endl << "Expected anti: " << expectedAntiDomains.size();
+    return false;
+  }
   if (expectedDomains.size() != f->getDomainCount()) {
     cout << input << endl << "Actual domain count: " << f->getDomainCount()
       << endl << "Expected: " << expectedDomains.size() << endl;

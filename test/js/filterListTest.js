@@ -9,7 +9,7 @@ const {adBlockLists} = require('../..')
 describe('adBlockLists', function () {
   describe('default', function () {
     it('contains 4 default lists', function () {
-      assert.equal(adBlockLists.default.length, 4)
+      assert.equal(adBlockLists.default.length, 5)
     })
     it('has uuid property', function () {
       adBlockLists.default.forEach((list) => {

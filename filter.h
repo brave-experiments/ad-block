@@ -24,6 +24,8 @@ enum FilterType {
   FTException = 0200,
   FTEmpty = 0400,
   FTHostOnly = 01000,
+  // E.g. example.org$$script[data-src="banner"] to delete
+  // script element with matching attr
   FTHTMLFiltering = 02000,
   FTListTypesMask = FTException|FTElementHiding|
     FTElementHidingException|FTEmpty|FTComment|
@@ -86,7 +88,7 @@ friend class AdBlockClient;
       const char *inputHost = nullptr, int inputHostLen = 0);
 
   // Nothing needs to be updated when a filter is added multiple times
-  void update(const Filter &) {}
+  void Update(const Filter &) {}
   bool hasUnsupportedOptions() const;
 
   // Checks to see if the filter options match for the passed in data
@@ -95,9 +97,22 @@ friend class AdBlockClient;
 
   void parseOptions(const char *input);
   bool containsDomain(const char *domain, bool anti = false) const;
+  // Returns true if the filter is composed of only domains and no anti domains
+  // Note that the set of all domain and anti-domain rules are not mutually
+  // exclusive.  One xapmle is:
+  // domain=example.com|~foo.example.com restricts the filter to the example.com
+  // domain with the exception of "foo.example.com" subdomain.
+  bool isDomainOnlyFilter();
+  // Returns true if the filter is composed of only anti-domains and no domains
+  bool isAntiDomainOnlyFilter();
   uint32_t getDomainCount(bool anti = false);
+  // One pass, will calcuate internal member for domainCount and antiDomainCount
+  void calculateDomainCounts();
 
   uint64_t hash() const;
+  uint64_t GetHash() const {
+    return hash();
+  }
 
   bool operator==(const Filter &rhs) const {
     /*
@@ -129,13 +144,13 @@ friend class AdBlockClient;
     return !(*this == rhs);
   }
 
-  uint32_t serialize(char *buffer);
-  uint32_t deserialize(char *buffer, uint32_t bufferSize);
+  uint32_t Serialize(char *buffer);
+  uint32_t Deserialize(char *buffer, uint32_t bufferSize);
 
   // Holds true if the filter should not free memory because for example it
   // was loaded from a large buffer somewhere else via the serialize and
   // deserialize functions.
-  bool borrowedData;
+  bool borrowed_data;
 
   FilterType filterType;
   FilterOption filterOption;
