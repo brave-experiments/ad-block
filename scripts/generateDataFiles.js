@@ -76,8 +76,6 @@ const generateDataFilesForList = (lists, filename) => {
   let p = Promise.all(promises)
   p = p.then((listBuffers) => {
     generateDataFileFromString(listBuffers, filename)
-  }).catch((e) => {
-    console.log('Erorr', e)
   })
   return p
 }
@@ -108,9 +106,19 @@ generateDataFilesForDefaultAdblock()
   .then(generateDataFilesForMalware)
   .then(generateDataFilesForAllRegions)
   .then(() => {
-    console.log('Thank you for updating the data files!')
+    console.log('Thank you for updating the data files, don\'t forget to upload them too!')
   })
   .catch(() => {
     console.error('Something went wrong, aborting!')
     process.exit(1)
   })
+
+process.on('uncaughtException', (err) => {
+  console.error('Caught exception:', err)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhnadled rejection:', err)
+  process.exit(1)
+})

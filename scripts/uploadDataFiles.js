@@ -65,3 +65,17 @@ if (commander.dat) {
     }
   })
 }
+p = p.catch((e) => {
+  console.error('A problem was encounterd', e)
+  process.exit(1)
+})
+
+process.on('uncaughtException', (err) => {
+  console.error('Caught exception:', err)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (err) => {
+  console.error('Unhnadled rejection:', err)
+  process.exit(1)
+})
