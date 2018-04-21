@@ -299,8 +299,19 @@ void AdBlockClientWrap::GetParsingStats(
     Int32::New(isolate, obj->numExceptionFilters));
   stats->Set(String::NewFromUtf8(isolate, "numNoFingerprintFilters"),
     Int32::New(isolate, obj->numNoFingerprintFilters));
+  stats->Set(String::NewFromUtf8(isolate, "numNoFingerprintDomainOnlyFilters"),
+    Int32::New(isolate, obj->numNoFingerprintDomainOnlyFilters));
+  stats->Set(String::NewFromUtf8(isolate,
+        "numNoFingerprintAntiDomainOnlyFilters"),
+    Int32::New(isolate, obj->numNoFingerprintAntiDomainOnlyFilters));
   stats->Set(String::NewFromUtf8(isolate, "numNoFingerprintExceptionFilters"),
     Int32::New(isolate, obj->numNoFingerprintExceptionFilters));
+  stats->Set(String::NewFromUtf8(isolate,
+        "numNoFingerprintDomainOnlyExceptionFilters"),
+    Int32::New(isolate, obj->numNoFingerprintDomainOnlyExceptionFilters));
+  stats->Set(String::NewFromUtf8(isolate,
+        "numNoFingerprintAntiDomainOnlyExceptionFilters"),
+    Int32::New(isolate, obj->numNoFingerprintAntiDomainOnlyExceptionFilters));
   stats->Set(String::NewFromUtf8(isolate, "numHostAnchoredFilters"),
     Int32::New(isolate, obj->numHostAnchoredFilters));
   stats->Set(String::NewFromUtf8(isolate, "numHostAnchoredExceptionFilters"),
