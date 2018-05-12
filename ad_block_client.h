@@ -123,4 +123,11 @@ void parseFilter(const char *input, Filter *f,
 bool isSeparatorChar(char c);
 int findFirstSeparatorChar(const char *input, const char *end);
 
+// Checks whether the URL can be blocked by ABP, based on its protocol.
+//
+// We only apply ABP rules against certain protocols (http, https, ws, wss).
+// This function checks to see if the given url is of one of these protocol.
+// For the purposes of this function, blob indicators are ignored (e.g.
+// "blob:http://" is treated the same as "http://").
+bool isBlockableProtocol(const char *url, int urlLen);
 #endif  // AD_BLOCK_CLIENT_H_

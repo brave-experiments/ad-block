@@ -9,6 +9,7 @@
       "../test/rule_types_test.cc",
       "../test/cosmetic_filter_test.cc",
       "../test/util.cc",
+      "../test/matching_test.cc",
       "../ad_block_client.cc",
       "../ad_block_client.h",
       "../cosmetic_filter.cc",

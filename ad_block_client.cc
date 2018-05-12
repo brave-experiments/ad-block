@@ -50,6 +50,52 @@ const int AdBlockClient::kFingerprintSize = 6;
 static HashFn2Byte hashFn2Byte;
 
 /**
+ * Checks to see if a URL is "blockable".
+ *
+ * Blockable URLs are ones that use one of the following protocols (any of
+ * which can be prefixed by "blob:")
+ *  - http
+ *  - https
+ *  - ws
+ *  - wss
+ */
+bool isBlockableProtocol(const char *url, int urlLen) {
+  // First check to see if this is a blob URL.  If the URL is very short,
+  // then trivially it isn't of the above protocols.
+  if (urlLen <= 5) {
+    return false;
+  }
+
+  // For simplicity, convert the first max(13, len) chars of the provided
+  // url to lowercase, and do all protocol matching against that string.
+  int protoSectionLen = urlLen < 13 ? urlLen : 13;
+
+  // Create a lowercase version of the protocol section of the URL
+  // to be tested.
+  char *protoSection = new char[protoSectionLen + 1];
+  memset(protoSection, '\0', protoSectionLen);
+  for (int i = 0; i < protoSectionLen; i += 1) {
+      protoSection[i] = tolower(url[i]);
+  }
+
+  const char* blobProtocolPrefix = "blob:";
+  char* protoStart = protoSection;
+
+  if (strncmp(protoSection, blobProtocolPrefix, 5) == 0) {
+      protoStart += 5;
+  }
+
+  bool isBlockable = (
+    strncmp(protoStart, "ws://", 5) == 0 ||
+    strncmp(protoStart, "wss://", 6) == 0 ||
+    strncmp(protoStart, "http://", 7) == 0 ||
+    strncmp(protoStart, "https://", 8) == 0);
+
+  delete[] protoSection;
+  return isBlockable;
+}
+
+/**
  * Finds the host within the passed in URL and returns its length
  */
 const char * getUrlHost(const char *input, int *len) {
@@ -702,6 +748,11 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
 bool AdBlockClient::matches(const char *input, FilterOption contextOption,
     const char *contextDomain) {
   int inputLen = static_cast<int>(strlen(input));
+
+  if (!isBlockableProtocol(input, inputLen)) {
+      return false;
+  }
+
   int inputHostLen;
   const char *inputHost = getUrlHost(input, &inputHostLen);
 
