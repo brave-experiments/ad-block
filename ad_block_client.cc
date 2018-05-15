@@ -5,6 +5,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include "./protocol.h"
 #include "./ad_block_client.h"
 #include "./bad_fingerprint.h"
 #include "./bad_fingerprints.h"
@@ -34,16 +35,6 @@ class HashFn2Byte : public HashFn {
 };
 
 const int kMaxLineLength = 2048;
-
-enum FilterParseState {
-  FPStart,
-  FPPastWhitespace,
-  FPOneBar,
-  FPOneAt,
-  FPData,
-  // Same as data but won't consider any special char handling like | or $
-  FPDataOnly
-};
 
 const int AdBlockClient::kFingerprintSize = 6;
 
@@ -227,6 +218,16 @@ void parseFilter(const char *input, Filter *f, BloomFilter *bloomFilter,
   parseFilter(input, end, f, bloomFilter, exceptionBloomFilter,
       hostAnchoredHashSet, hostAnchoredExceptionHashSet, simpleCosmeticFilters);
 }
+
+enum FilterParseState {
+  FPStart,
+  FPPastWhitespace,
+  FPOneBar,
+  FPOneAt,
+  FPData,
+  // Same as data but won't consider any special char handling like | or $
+  FPDataOnly
+};
 
 // Not currently multithreaded safe due to the static buffer named 'data'
 void parseFilter(const char *input, const char *end, Filter *f,
@@ -702,6 +703,11 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
 bool AdBlockClient::matches(const char *input, FilterOption contextOption,
     const char *contextDomain) {
   int inputLen = static_cast<int>(strlen(input));
+
+  if (!isBlockableProtocol(input, inputLen)) {
+      return false;
+  }
+
   int inputHostLen;
   const char *inputHost = getUrlHost(input, &inputHostLen);
 
@@ -718,7 +724,7 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
     }
   }
 
-  // Optmization for the manual filter checks which are needed.
+  // Optimization for the manual filter checks which are needed.
   // Avoid having to check individual filters if the filter parts are not found
   // inside the input bloom filter.
   HashFn2Byte hashFns[] = { hashFn2Byte };

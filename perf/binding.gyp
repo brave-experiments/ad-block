@@ -4,6 +4,8 @@
     "type": "executable",
     "sources": [
       "../perf.cc",
+      "../protocol.cc",
+      "../protocol.h",
       "../ad_block_client.cc",
       "../ad_block_client.h",
       "../cosmetic_filter.cc",
