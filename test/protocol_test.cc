@@ -11,9 +11,9 @@
 #include <algorithm>
 #include <iostream>
 #include <set>
+#include "./protocol.h"
 #include "./CppUnitLite/TestHarness.h"
 #include "./CppUnitLite/Test.h"
-#include "./ad_block_client.h"
 #include "./util.h"
 
 // Testing isBlockableProtocol
@@ -41,6 +41,9 @@ TEST(isBlockableProtocol, basic) {
 
   // Each of the following should fail, since they are each non supported /
   // blockable protocols.
+
+  // To short example
+  CHECK(isBlockableProtocol("htt", 3) == false);
 
   // Bad protocol example.
   CHECK(isBlockableProtocol("htttp://example.com", 25) == false);

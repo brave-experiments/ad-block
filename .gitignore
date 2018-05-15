@@ -45,3 +45,6 @@ tags
 .DS_Store
 
 out
+
+# VIM temp files
+*.swp
