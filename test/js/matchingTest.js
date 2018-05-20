@@ -58,30 +58,32 @@ describe('matching', function () {
       assert(!client.matches('https://brianbondy.com', FilterOptions.noFilterOption, 'slashdot.org'))
       assert(!client.matches('https://brianbondy.com', FilterOptions.noFilterOption, 'slashdot.org'))
     })
-    describe('host anchored exception with matching first party exception', function () {
-      before(function () {
-        this.client = new AdBlockClient()
-        this.client.parse('-google-analytics.\n@@||www.scrumpoker.online^$~third-party')
-      })
-      it('does not match', function () {
-        assert(!this.client.matches('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online'))
-      })
-      it('detects as a hash set save', function () {
-        assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
-      })
+  })
+  describe('host anchored exception with matching first party exception', function () {
+    before(function () {
+      this.client = new AdBlockClient()
+      this.client.parse('-google-analytics.\n@@||www.scrumpoker.online^$~third-party')
     })
-    describe('host anchored exception with not matching first party exception', function () {
-      before(function () {
-        this.client = new AdBlockClient()
-        this.client.parse('-google-analytics.\n@@||www.scrumpoker.online^$~third-party')
-      })
-      it('does match', function () {
-        assert(this.client.matches('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.brianbondy.com'))
-      })
-      it('detects as a hash set save', function () {
-        assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
-      })
+    it('does not match', function () {
+      assert(!this.client.matches('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online'))
     })
+    it('detects as a hash set save', function () {
+      assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
+    })
+  })
+  describe('host anchored exception with not matching first party exception', function () {
+    before(function () {
+      this.client = new AdBlockClient()
+      this.client.parse('-google-analytics.\n@@||www.scrumpoker.online^$~third-party')
+    })
+    it('does match', function () {
+      assert(this.client.matches('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.brianbondy.com'))
+    })
+    it('detects as a hash set save', function () {
+      assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
+    })
+  })
+  describe("no-fingerprint rules", function () {
     it('can match against a no-fingerprint rule', function () {
       const client = new AdBlockClient()
       client.parse('adv')
@@ -112,13 +114,26 @@ describe('matching', function () {
       assert(client.matches('https://digg.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
       assert(client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'digg.com'))
     })
-    it('can match against a no-fingerprint domain only exception rule', function () {
-      const client = new AdBlockClient()
-      client.parse('adv\n@@adv$domain=~brianbondy.com')
-      assert(client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'brianbondy.com'))
-      assert(client.matches('https://digg.com/adv', FilterOptions.noFilterOption, 'brianbondy.com'))
-      assert(!client.matches('https://digg.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
-      assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'digg.com'))
+  })
+  describe('findMatchingFilters return values', function () {
+    before(function () {
+      this.client = new AdBlockClient()
+      this.client.parse('/pubads_\n@@||fastly.net/ad2/$image,script,xmlhttprequest\n.net/ad2/\n@@||fastly.net/ad2/$image,script,xmlhttprequest')
+    })
+    it('match', function () {
+      const queryResult = this.client.findMatchingFilters('https://securepubads.g.doubleclick.net/gpt/pubads_impl_rendering_193.js?cb=194', FilterOptions.script, 'www.cnn.com')
+      assert.equal(queryResult.matches, true)
+      assert.equal(queryResult.matchingFilter, '/pubads_')
+    })
+    it('miss', function () {
+      const queryResult = this.client.findMatchingFilters('https://cdn.cnn.com/cnn/.e1mo/img/4.0/logos/menu_entertainment.png', FilterOptions.image, 'www.cnn.com')
+      assert.equal(queryResult.matches, false)
+    })
+    it('whitelisted', function () {
+      const queryResult = this.client.findMatchingFilters('https://0914.global.ssl.fastly.net/ad2/script/x.js?cb=1523383475084', FilterOptions.script, 'www.cnn.com')
+      assert.equal(queryResult.matches, false)
+      assert.equal(queryResult.matchingFilter, '.net/ad2/')
+      assert.equal(queryResult.matchingExceptionFilter, 'fastly.net/ad2/')
     })
   })
 })

@@ -9,6 +9,8 @@
       "ad_block_client.h",
       "cosmetic_filter.cc",
       "cosmetic_filter.h",
+      "protocol.cc",
+      "protocol.h",
       "filter.cc",
       "filter.h",
       "filter_list.h",
