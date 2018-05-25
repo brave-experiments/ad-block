@@ -11,20 +11,19 @@
 
 class FilterList {
  public:
-    FilterList(const std::string &uuid,
-      const std::string &url,
-      const std::string &title,
-      const std::vector<std::string> &langs,
-      const std::string &support_url) :
-        uuid(uuid), url(url), title(title),
-        langs(langs), support_url(support_url) {
-    }
+  FilterList(const std::string& uuid,
+             const std::string& url,
+             const std::string& title,
+             const std::vector<std::string>& langs,
+             const std::string& support_url);
+  FilterList(const FilterList& other);
+  ~FilterList();
 
-    const std::string uuid;
-    const std::string url;
-    const std::string title;
-    const std::vector<std::string> langs;
-    const std::string support_url;
+  const std::string uuid;
+  const std::string url;
+  const std::string title;
+  const std::vector<std::string> langs;
+  const std::string support_url;
 };
 
 #endif  // FILTER_LIST_H_
