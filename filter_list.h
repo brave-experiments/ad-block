@@ -15,7 +15,8 @@ class FilterList {
              const std::string& url,
              const std::string& title,
              const std::vector<std::string>& langs,
-             const std::string& support_url);
+             const std::string& support_url,
+             const std::string& base64_public_key);
   FilterList(const FilterList& other);
   ~FilterList();
 
@@ -24,6 +25,7 @@ class FilterList {
   const std::string title;
   const std::vector<std::string> langs;
   const std::string support_url;
+  const std::string base64_public_key;
 };
 
 #endif  // FILTER_LIST_H_
