@@ -40,6 +40,10 @@ class AdBlockClientWrap : public AdBlockClient, public node::ObjectWrap {
       const v8::FunctionCallbackInfo<v8::Value>& args);
   static void GenerateBadFingerprintsHeader(
       const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GenerateDefaultManifestFile(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void GenerateRegionalManifestFiles(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
   static void FindMatchingFilters(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 

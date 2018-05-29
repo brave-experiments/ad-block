@@ -13,6 +13,7 @@
       "protocol.h",
       "filter.cc",
       "filter.h",
+      "filter_list.cc",
       "filter_list.h",
       "no_fingerprint_domain.cc",
       "no_fingerprint_domain.h",
