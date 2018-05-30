@@ -6,6 +6,7 @@
 #include "./ad_block_client_wrap.h"
 #include <node_buffer.h>
 #include <algorithm>
+#include <fstream>
 #include "./bad_fingerprint.h"
 #include "./data_file_version.h"
 #include "./filter_list.h"
@@ -38,7 +39,7 @@ AdBlockClientWrap::AdBlockClientWrap() {
 AdBlockClientWrap::~AdBlockClientWrap() {
 }
 
-Local<Object> ToLocalObject(Isolate* isolate, FilterList filter_list) {
+Local<Object> ToLocalObject(Isolate* isolate, const FilterList& filter_list) {
   Local<Object> list = Object::New(isolate);
   list->Set(String::NewFromUtf8(isolate, "uuid"),
     String::NewFromUtf8(isolate, filter_list.uuid.c_str()));
@@ -48,6 +49,8 @@ Local<Object> ToLocalObject(Isolate* isolate, FilterList filter_list) {
     String::NewFromUtf8(isolate, filter_list.title.c_str()));
   list->Set(String::NewFromUtf8(isolate, "supportURL"),
     String::NewFromUtf8(isolate, filter_list.support_url.c_str()));
+  list->Set(String::NewFromUtf8(isolate, "base64PublicKey"),
+    String::NewFromUtf8(isolate, filter_list.base64_public_key.c_str()));
 
   Local<Array> langs = Array::New(isolate);
   int j = 0;
@@ -71,6 +74,21 @@ Local<Array> ToLocalObject(Isolate* isolate,
     lists->Set(j++, ToLocalObject(isolate, filter_list));
   });
   return lists;
+}
+
+void GenerateManifestFile(const std::string &name,
+                          const std::string &base64_public_key,
+                          const std::string &filename) {
+  std::ofstream outFile(filename);
+  if (outFile.is_open()) {
+    outFile << "{" << std::endl;
+    outFile << "  \"description\": \"Brave Ad Block Updater extension\"," << std::endl;
+    outFile << "  \"key\": \"" << base64_public_key << "\"," << std::endl;
+    outFile << "  \"manifest_version\": 2," << std::endl;
+    outFile << "  \"name\": \"Brave Ad Block Updater (" << name << ")\"," << std::endl;
+    outFile << "  \"version\": \"0.0.0\"" << std::endl;
+    outFile << "}" << std::endl;
+  }
 }
 
 void AdBlockClientWrap::Init(Local<Object> exports) {
@@ -102,6 +120,10 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
     AdBlockClientWrap::EnableBadFingerprintDetection);
   NODE_SET_PROTOTYPE_METHOD(tpl, "generateBadFingerprintsHeader",
     AdBlockClientWrap::GenerateBadFingerprintsHeader);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "generateDefaultManifestFile",
+    AdBlockClientWrap::GenerateDefaultManifestFile);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "generateRegionalManifestFiles",
+    AdBlockClientWrap::GenerateRegionalManifestFiles);
   NODE_SET_PROTOTYPE_METHOD(tpl, "cleanup", AdBlockClientWrap::Cleanup);
 
   // filter options
@@ -505,6 +527,24 @@ void AdBlockClientWrap::GenerateBadFingerprintsHeader(
   AdBlockClientWrap* obj =
     ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   obj->badFingerprintsHashSet->generateHeader(filename);
+}
+
+void AdBlockClientWrap::GenerateDefaultManifestFile(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  String::Utf8Value str(args[0]->ToString());
+  const char * dir = *str;
+  std::string filename = dir + std::string("/default-manifest.json");
+  GenerateManifestFile("Default", kDefaultBase64PublicKey, filename);
+}
+
+void AdBlockClientWrap::GenerateRegionalManifestFiles(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  String::Utf8Value str(args[0]->ToString());
+  const char * dir = *str;
+  for (auto& entry : region_lists) {
+    std::string filename = dir + std::string("/") + entry.uuid + std::string("-manifest.json");
+    GenerateManifestFile(entry.title, entry.base64_public_key, filename);
+  }
 }
 
 void AdBlockClientWrap::Cleanup(const FunctionCallbackInfo<Value>& args) {

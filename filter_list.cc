@@ -12,12 +12,14 @@ FilterList::FilterList(const std::string& uuid,
                        const std::string& url,
                        const std::string& title,
                        const std::vector<std::string>& langs,
-                       const std::string& support_url)
+                       const std::string& support_url,
+                       const std::string& base64_public_key)
     : uuid(uuid),
       url(url),
       title(title),
       langs(langs),
-      support_url(support_url) {}
+      support_url(support_url),
+      base64_public_key(base64_public_key) {}
 
 FilterList::FilterList(const FilterList& other) = default;
 
