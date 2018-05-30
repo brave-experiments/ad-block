@@ -36,6 +36,7 @@
     "checks": "npm run check-security",
     "check-security": "nsp check",
     "data-files": "node scripts/generateDataFiles.js",
+    "manifest-files": "node scripts/generateManifestFiles.js",
     "upload": "node scripts/uploadDataFiles.js"
   },
   "repository": {
