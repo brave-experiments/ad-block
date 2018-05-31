@@ -9,7 +9,8 @@
 #include <vector>
 #include "../filter_list.h"
 
-const std::string kDefaultBase64PublicKey =
+const std::string kAdBlockDefaultComponentId("cffkpbalmllkdoenhmdmpbkajipdjfam");
+const std::string kAdBlockDefaultBase64PublicKey =
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs0qzJmHSgIiw7IGFCxij"
     "1NnB5hJ5ZQ1LKW9htL4EBOaMJvmqaDs/wfq0nw/goBHWsqqkMBynRTu2Hxxirvdb"
     "cugn1Goys5QKPgAvKwDHJp9jlnADWm5xQvPQ4GE1mK1/I3ka9cEOCzPW6GI+wGLi"
@@ -25,6 +26,7 @@ const std::vector<FilterList> default_lists = {
     "EasyList",
     {},
     "https://easylist.to/",
+    "",
     ""
   }, {
     "200392E7-9A0F-40DF-86EB-6AF7E4071322",
@@ -32,6 +34,7 @@ const std::vector<FilterList> default_lists = {
     "uBlock Unbreak",
     {},
     "https://github.com/gorhill/uBlock",
+    "",
     ""
   }, {
     "2FBEB0BC-E2E1-4170-BAA9-05E76AAB5BA5",
@@ -39,6 +42,7 @@ const std::vector<FilterList> default_lists = {
     "Brave Unblock",
     {},
     "https://github.com/brave/adblock-lists",
+    "",
     ""
   }, {
     "BCDF774A-7845-4121-B7EB-77EB66CEDF84",
@@ -46,6 +50,7 @@ const std::vector<FilterList> default_lists = {
     "NoCoin Filter List",
     {},
     "https://github.com/brave/adblock-lists",
+    "",
     ""
   }
 };

@@ -49,6 +49,8 @@ Local<Object> ToLocalObject(Isolate* isolate, const FilterList& filter_list) {
     String::NewFromUtf8(isolate, filter_list.title.c_str()));
   list->Set(String::NewFromUtf8(isolate, "supportURL"),
     String::NewFromUtf8(isolate, filter_list.support_url.c_str()));
+  list->Set(String::NewFromUtf8(isolate, "componentID"),
+    String::NewFromUtf8(isolate, filter_list.component_id.c_str()));
   list->Set(String::NewFromUtf8(isolate, "base64PublicKey"),
     String::NewFromUtf8(isolate, filter_list.base64_public_key.c_str()));
 
@@ -368,7 +370,7 @@ void AdBlockClientWrap::GenerateDefaultManifestFile(
   String::Utf8Value str(args[0]->ToString());
   const char * dir = *str;
   std::string filename = dir + std::string("/default-manifest.json");
-  GenerateManifestFile("Default", kDefaultBase64PublicKey, filename);
+  GenerateManifestFile("Default", kAdBlockDefaultBase64PublicKey, filename);
 }
 
 void AdBlockClientWrap::GenerateRegionalManifestFiles(
