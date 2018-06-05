@@ -83,7 +83,7 @@ describe('matching', function () {
       assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
     })
   })
-  describe("no-fingerprint rules", function () {
+  describe('no-fingerprint rules', function () {
     it('can match against a no-fingerprint rule', function () {
       const client = new AdBlockClient()
       client.parse('adv')
