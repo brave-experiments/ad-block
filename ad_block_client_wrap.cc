@@ -84,10 +84,10 @@ void GenerateManifestFile(const std::string &name,
   std::ofstream outFile(filename);
   if (outFile.is_open()) {
     outFile << "{" << std::endl;
-    outFile << "  \"description\": \"Brave Ad Block Updater extension\"," << std::endl;
+    outFile << "  \"description\": \"Brave Ad Block Updater extension\"," << std::endl; // NOLINT
     outFile << "  \"key\": \"" << base64_public_key << "\"," << std::endl;
     outFile << "  \"manifest_version\": 2," << std::endl;
-    outFile << "  \"name\": \"Brave Ad Block Updater (" << name << ")\"," << std::endl;
+    outFile << "  \"name\": \"Brave Ad Block Updater (" << name << ")\"," << std::endl; // NOLINT
     outFile << "  \"version\": \"0.0.0\"" << std::endl;
     outFile << "}" << std::endl;
   }
@@ -544,7 +544,7 @@ void AdBlockClientWrap::GenerateRegionalManifestFiles(
   String::Utf8Value str(args[0]->ToString());
   const char * dir = *str;
   for (auto& entry : region_lists) {
-    std::string filename = dir + std::string("/") + entry.uuid + std::string("-manifest.json");
+    std::string filename = dir + std::string("/") + entry.uuid + std::string("-manifest.json"); // NOLINT
     GenerateManifestFile(entry.title, entry.base64_public_key, filename);
   }
 }
