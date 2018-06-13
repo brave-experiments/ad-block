@@ -1,11 +1,10 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
-/* global describe, it, before, after */
+/* global describe, it, before */
 
-const http = require('http')
 const assert = require('assert')
-const {sanitizeABPInput, filterRareRulesPromise, setRareRuleDataUrl} = require('../../lib/filtering')
+const {sanitizeABPInputPromise, filterRareRulesPromise, setRareRuleData} = require('../../lib/filtering')
 const filteredOutRule = '*/test'
 const predicate = (rule) => !rule.startsWith('*')
 
@@ -18,50 +17,68 @@ describe('filtering', function () {
       assert(predicate('test/*/ad'))
     })
   })
+
   describe('sanitizeABPInput', function () {
-    it('Rebuilds lists which do not have filtered out rules', function () {
+    before(() => {
+      setRareRuleData('')
+    })
+
+    it('Rebuilds lists which do not have filtered out rules', function (done) {
       const I = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(I, predicate) === I)
+      sanitizeABPInputPromise(I, predicate)
+        .then(result => {
+          assert(result === I)
+          done()
+        })
     })
-    it('Rebuilds lists which have filtered out rules at the start', function () {
+
+    it('Rebuilds lists which have filtered out rules at the start', function (done) {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(`${filteredOutRule}\n${rules}`, predicate) === rules)
+      sanitizeABPInputPromise(`${filteredOutRule}\n${rules}`, predicate)
+        .then(result => {
+          assert(result === rules)
+          done()
+        })
     })
-    it('Rebuilds lists which have filtered out rules at the end', function () {
+
+    it('Rebuilds lists which have filtered out rules at the end', function (done) {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(`${rules}\n${filteredOutRule}`, predicate) === rules)
+      sanitizeABPInputPromise(`${rules}\n${filteredOutRule}`, predicate)
+        .then(result => {
+          assert(result === rules)
+          done()
+        })
     })
-    it('Rebuilds lists which have filtered out rules in the middle', function () {
+
+    it('Rebuilds lists which have filtered out rules in the middle', function (done) {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(`&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`, predicate) === rules)
+      sanitizeABPInputPromise(`&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`, predicate)
+        .then(result => {
+          assert(result === rules)
+          done()
+        })
     })
-    it('Rebuilds lists which have multiple filtered out rules', function () {
+
+    it('Rebuilds lists which have multiple filtered out rules', function (done) {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
-      assert(sanitizeABPInput(`${filteredOutRule}\n&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`, predicate) === rules)
+      sanitizeABPInputPromise(`${filteredOutRule}\n&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`, predicate)
+        .then(result => {
+          assert(result === rules)
+          done()
+        })
     })
   })
-  describe('filter out rare rules', function () {
+
+  describe('filterRareRulesPromise', function () {
     const rareRuleText = [
       '&ad_channel=',
       '&ad_classid=',
       '&ad_height=',
       '&ad_keyword='
     ].join('\n')
-    const testServer = http.createServer((req, res) => {
-      res.writeHead(200, {'Content-Type': 'text/plain'})
-      res.end(rareRuleText)
-    })
 
-    before(function (done) {
-      testServer.listen(0, '0.0.0.0', () => {
-        const testPort = testServer.address().port
-        setRareRuleDataUrl(`http://localhost:${testPort}/rules.txt`)
-        done()
-      })
-    })
-
-    after(function () {
-      testServer.close()
+    before(() => {
+      setRareRuleData(rareRuleText)
     })
 
     it('rules set as rare should be filtered', function (done) {
@@ -72,6 +89,7 @@ describe('filtering', function () {
       filterRareRulesPromise(testRules.join('\n'))
         .then(results => {
           const parsedResults = results.split('\n')
+          console.log([parsedResults, rareRuleText, testRules])
           assert.equal(parsedResults.length, 1)
           assert.equal(parsedResults[0], '.ad/')
           done()
