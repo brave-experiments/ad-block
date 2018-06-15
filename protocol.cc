@@ -6,6 +6,13 @@
 #include <ctype.h>
 #include "./protocol.h"
 
+// Macro for telling -Wimplicit-fallthrough that a fallthrough is intentional.
+#if defined(__clang__)
+#define FALLTHROUGH [[clang::fallthrough]]
+#else
+#define FALLTHROUGH
+#endif
+
 enum ProtocolParseState {
     ProtocolParseStateStart,
     ProtocolParseStateReadingBlob,
@@ -54,6 +61,7 @@ bool isBlockableProtocol(const char *url, int urlLen) {
           continue;
         }
         // Intentional fall through
+        FALLTHROUGH;
       case ProtocolParseStatePostBlob:
         lowerChar = tolower(*curChar);
         if (lowerChar == 'w') {
@@ -111,6 +119,7 @@ bool isBlockableProtocol(const char *url, int urlLen) {
           numCharsReadInState = 1;
           break;
         }
+        FALLTHROUGH;
       // Intentional fall through
       case ProtocolParseStateReadingSeperator:
         if (*curChar == ':' &&

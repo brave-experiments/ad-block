@@ -7,9 +7,9 @@
     "test": "test"
   },
   "dependencies": {
-    "bloom-filter-cpp": "^1.1.6",
+    "bloom-filter-cpp": "^1.1.8",
     "cppunitlite": "^1.0.0",
-    "hashset-cpp": "^2.0.1",
+    "hashset-cpp": "^2.0.2",
     "nan": "^2.2.1"
   },
   "devDependencies": {
