@@ -36,8 +36,12 @@ source_set("ad_block") {
     "../cosmetic_filter.h",
     "../filter.cc",
     "../filter.h",
+    "../filter_list.cc",
+    "../filter_list.h",
     "../no_fingerprint_domain.cc",
     "../no_fingerprint_domain.h",
+    "../protocol.cc",
+    "../protocol.h",
   ]
 
   deps = [
