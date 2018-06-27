@@ -407,10 +407,16 @@ TEST(client, optionRules) {
       OptionRuleData("http://example.com.au", FOScript, "example.com", false),
     }));
 
-  // Make sure we ignore ping requests for now
+  // Make sure we ignore ping rules for now
   CHECK(checkOptionRule("||example.com^$ping",
     {
       OptionRuleData("http://example.com", FOPing, "example.com", false),
+    }));
+
+  // Make sure we ignore popup rules for now
+  CHECK(checkOptionRule("||example.com^$popup",
+    {
+      OptionRuleData("http://example.com", FOPopup, "example.com", false),
     }));
 
   CHECK(checkOptionRule("||example.com^$third-party,~script",
@@ -572,7 +578,7 @@ struct ListCounts {
 
 ListCounts easyList = { 24813, 31144, 0, 5674 };
 ListCounts easyPrivacy = { 11816, 0, 0, 1018 };
-ListCounts ublockUnbreak = { 4, 8, 0, 95 };
+ListCounts ublockUnbreak = { 4, 8, 0, 94 };
 ListCounts braveUnbreak = { 31, 0, 0, 4 };
 ListCounts disconnectSimpleMalware = { 2450, 0, 0, 0 };
 ListCounts spam404MainBlacklist = { 5629, 166, 0, 0 };

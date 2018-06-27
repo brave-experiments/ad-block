@@ -257,6 +257,12 @@ TEST(options, optionsFromFilter) {
     {},
     {}))
 
+  CHECK(testFilterOptions("https:$popup",
+    static_cast<FilterOption>(FOPopup),
+    FONoFilterOption,
+    {},
+    {}))
+
   CHECK(testFilterOptions(
       "||tst.net^$object-subrequest,third-party,domain=domain1.com|domain5.com",
     static_cast<FilterOption>(FOObjectSubrequest | FOThirdParty),

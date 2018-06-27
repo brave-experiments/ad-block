@@ -281,6 +281,8 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOThirdParty);
   } else if (!strncmp(pStart, "ping", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPing);
+  } else if (!strncmp(pStart, "popup", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPopup);
   }
   // Otherwise just ignore the option, maybe something new we don't support yet
 }

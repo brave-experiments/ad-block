@@ -50,9 +50,10 @@ enum FilterOption {
   FOThirdParty = 020000,  // Used internally only, do not use
   FONotThirdParty = 040000,  // Used internally only, do not use
   FOPing = 0100000,  // Not supported, but we will ignore these rules
+  FOPopup = 0200000,  // Not supported, but we will ignore these rules
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
     FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL,
-  FOUnsupported = FOPing
+  FOUnsupported = FOPing|FOPopup
 };
 
 class Filter {
