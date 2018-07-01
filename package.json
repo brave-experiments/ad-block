@@ -28,7 +28,7 @@
     "build": "make",
     "sample": "make sample",
     "perf": "make perf",
-    "preinstall": "npm install bloom-filter-cpp && npm install hashset-cpp",
+    "preinstall": "npm install bloom-filter-cpp@1.1.8 && npm install hashset-cpp",
     "install": "node-gyp rebuild",
     "lint": "npm run lint-cpp && npm run lint-js",
     "lint-cpp": "./scripts/cpplint.py",
