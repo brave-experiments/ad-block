@@ -4,7 +4,7 @@
 
 Native node module, and C++ library for Adblock Plus filter parsing for lists like EasyList.
 
-It uses a bloom filter and Rabin-Karp algorithm to be super fast.
+It uses a bloom filter and Rabin-Karp algorithm to be super fast
 
 ## To include brave/ad-block in your project:
 
