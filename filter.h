@@ -61,9 +61,11 @@ enum FilterOption {
   FOCSP = 01000000,
   FOFont = 02000000,
   FOMedia = 04000000,
+  FOWebRTC = 010000000,
   FOUnknown = 0400000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
-    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont|FOMedia,
+    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont|FOMedia|
+    FOWebRTC,
   FOUnsupported = FOPing|FOPopup|FOCSP|FOUnknown
 };
 

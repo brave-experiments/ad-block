@@ -289,6 +289,8 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOFont);
   } else if (!strncmp(pStart, "media", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOMedia);
+  } else if (!strncmp(pStart, "webrtc", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOWebRTC);
   } else {
     static std::set<std::string> unknownOptions;
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
