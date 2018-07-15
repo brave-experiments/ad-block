@@ -12,15 +12,13 @@
 
 #include "BloomFilter.h"
 
-#ifdef ENABLE_REGEX
+#include <iostream>
+#include <set>
 #include <string>
+
+#ifdef ENABLE_REGEX
 #include <regex> // NOLINT
 #endif
-
-
-// #include <iostream>
-// using std::cout;
-// using std::endl;
 
 static HashFn h(19);
 
@@ -283,6 +281,14 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPing);
   } else if (!strncmp(pStart, "popup", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPopup);
+  } else {
+    static std::set<std::string> unknownOptions;
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
+    std::string option(pStart, len);
+    if (unknownOptions.find(option) == unknownOptions.end()) {
+      std::cout << "Unrecognized filter option: " << option << std::endl;
+      unknownOptions.insert(option);
+    }
   }
   // Otherwise just ignore the option, maybe something new we don't support yet
 }
