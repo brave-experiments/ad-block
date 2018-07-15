@@ -60,9 +60,10 @@ enum FilterOption {
   // Parse CSPs but consider them unsupported
   FOCSP = 01000000,
   FOFont = 02000000,
+  FOMedia = 04000000,
   FOUnknown = 0400000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
-    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont,
+    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont|FOMedia,
   FOUnsupported = FOPing|FOPopup|FOCSP|FOUnknown
 };
 

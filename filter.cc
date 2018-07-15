@@ -287,6 +287,8 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FORedirect);
   } else if (!strncmp(pStart, "font", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOFont);
+  } else if (!strncmp(pStart, "media", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOMedia);
   } else {
     static std::set<std::string> unknownOptions;
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
