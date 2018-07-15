@@ -147,5 +147,10 @@ describe('matching', function () {
       client.parse('adv$somethingnew=3')
       assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
     })
+    it('redirects are still blocked', function () {
+      const client = new AdBlockClient()
+      client.parse('adv$image,redirect=1x1-transparent.gif&dd')
+      assert(client.matches('https://brianbondy.com/adv', FilterOptions.image, 'slashdot.org'))
+    })
   })
 })

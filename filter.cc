@@ -281,6 +281,8 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPing);
   } else if (!strncmp(pStart, "popup", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPopup);
+  } else if (len >= 9 && !strncmp(pStart, "redirect=", 9)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FORedirect);
   } else {
     static std::set<std::string> unknownOptions;
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);

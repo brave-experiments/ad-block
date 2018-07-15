@@ -47,10 +47,16 @@ enum FilterOption {
   FOCollapse = 02000,
   FODoNotTrack = 04000,
   FOElemHide = 010000,
-  FOThirdParty = 020000,  // Used internally only, do not use
-  FONotThirdParty = 040000,  // Used internally only, do not use
-  FOPing = 0100000,  // Not supported, but we will ignore these rules
-  FOPopup = 0200000,  // Not supported, but we will ignore these rules
+  // Used internally only, do not use
+  FOThirdParty = 020000,
+  // Used internally only, do not use
+  FONotThirdParty = 040000,
+  // Not supported, but we will ignore these rules
+  FOPing = 0100000,
+  // Not supported, but we will ignore these rules
+  FOPopup = 0200000,
+  // This is only used by uBlock and currently all instances are 1x1 transparent gif which we already do for images
+  FORedirect = 0400000,
 
   FOUnknown = 040000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
