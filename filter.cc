@@ -285,6 +285,8 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FORedirect);
   } else if (len >= 9 && !strncmp(pStart, "redirect=", 9)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FORedirect);
+  } else if (!strncmp(pStart, "font", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOFont);
   } else {
     static std::set<std::string> unknownOptions;
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);

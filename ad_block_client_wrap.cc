@@ -162,6 +162,12 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
     Int32::New(isolate, 020000));
   filterOptions->Set(String::NewFromUtf8(isolate, "notThirdParty"),
     Int32::New(isolate, 040000));
+  filterOptions->Set(String::NewFromUtf8(isolate, "ping"),
+    Int32::New(isolate, 0100000));
+  filterOptions->Set(String::NewFromUtf8(isolate, "popup"),
+    Int32::New(isolate, 0200000));
+  filterOptions->Set(String::NewFromUtf8(isolate, "font"),
+    Int32::New(isolate, 02000000));
 
   // Adblock lists
   Local<Object> lists = Object::New(isolate);

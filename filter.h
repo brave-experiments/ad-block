@@ -59,9 +59,10 @@ enum FilterOption {
   FORedirect = 0400000,
   // Parse CSPs but consider them unsupported
   FOCSP = 01000000,
+  FOFont = 02000000,
   FOUnknown = 0400000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
-    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL,
+    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont,
   FOUnsupported = FOPing|FOPopup|FOCSP|FOUnknown
 };
 

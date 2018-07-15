@@ -158,4 +158,18 @@ describe('matching', function () {
       assert(client.matches('https://brianbondy.com/adv', FilterOptions.image, 'slashdot.org'))
     })
   })
+  describe("Type option matching", function () {
+    describe("font", function () {
+      it('option matches for same resource type', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$font')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.font, 'slashdot.org'))
+      })
+      it('doesn\'t matche when resource type differs', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$font')
+        assert(!client.matches('https://brianbondy.com/adv', FilterOptions.image, 'slashdot.org'))
+      })
+    })
+  })
 })
