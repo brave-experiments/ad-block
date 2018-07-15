@@ -57,11 +57,12 @@ enum FilterOption {
   FOPopup = 0200000,
   // This is only used by uBlock and currently all instances are 1x1 transparent gif which we already do for images
   FORedirect = 0400000,
-
-  FOUnknown = 040000000,
+  // Parse CSPs but consider them unsupported
+  FOCSP = 01000000,
+  FOUnknown = 0400000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
     FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL,
-  FOUnsupported = FOPing|FOPopup|FOUnknown
+  FOUnsupported = FOPing|FOPopup|FOCSP|FOUnknown
 };
 
 class Filter {

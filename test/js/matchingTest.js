@@ -142,6 +142,11 @@ describe('matching', function () {
       client.parse('adv$ping')
       assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
     })
+    it('CSPs are ignored', function () {
+      const client = new AdBlockClient()
+      client.parse('adv$csp=script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' data: *.google.com *.gstatic.com *.google-analytics.com')
+      assert(!client.matches('!https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+    })
     it('unknown unsupported options are not blocked', function () {
       const client = new AdBlockClient()
       client.parse('adv$somethingnew=3')
