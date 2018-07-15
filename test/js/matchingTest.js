@@ -136,4 +136,16 @@ describe('matching', function () {
       assert.equal(queryResult.matchingExceptionFilter, 'fastly.net/ad2/')
     })
   })
+  describe("Filters with unknown options are ignored", function () {
+    it('known unsupported options are not blocked', function () {
+      const client = new AdBlockClient()
+      client.parse('adv$ping')
+      assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+    })
+    it('unknown unsupported options are not blocked', function () {
+      const client = new AdBlockClient()
+      client.parse('adv$somethingnew=3')
+      assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+    })
+  })
 })
