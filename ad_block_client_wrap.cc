@@ -172,6 +172,10 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
     Int32::New(isolate, 04000000));
   filterOptions->Set(String::NewFromUtf8(isolate, "webrtc"),
     Int32::New(isolate, 010000000));
+  filterOptions->Set(String::NewFromUtf8(isolate, "empty"),
+    Int32::New(isolate, 0100000000));
+  filterOptions->Set(String::NewFromUtf8(isolate, "websocket"),
+    Int32::New(isolate, 0200000000));
 
   // Adblock lists
   Local<Object> lists = Object::New(isolate);

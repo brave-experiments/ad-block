@@ -180,7 +180,18 @@ describe('matching', function () {
         client.parse('adv$font,image,script')
         assert(client.matches('https://brianbondy.com/adv', FilterOptions.font, 'slashdot.org'))
       })
-
+      it('option matches for rule without options', function () {
+        const client = new AdBlockClient()
+        client.parse('adv')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.font, 'slashdot.org'))
+      })
+    })
+    describe("other", function () {
+      it('option matches for rule without options', function () {
+        const client = new AdBlockClient()
+        client.parse('adv')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.other, 'slashdot.org'))
+      })
     })
   })
 })

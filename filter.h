@@ -62,11 +62,20 @@ enum FilterOption {
   FOFont = 02000000,
   FOMedia = 04000000,
   FOWebRTC = 010000000,
-  FOUnknown = 0400000000,
+  FOGenericHide = 020000000,
+  FOGenericBlock = 040000000,
+  // Used by Adguard, purpose unknown, ignore
+  FOEmpty = 0100000000,
+  FOWebsocket = 0200000000,
+  // important means to ignore all exception filters (those prefixed with @@).
+  FOImportant = 0400000000,
+
+  FOUnknown = 04000000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
     FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont|FOMedia|
     FOWebRTC,
-  FOUnsupported = FOPing|FOPopup|FOCSP|FOUnknown
+  FOUnsupportedSoSkipCheck = FOPing|FOPopup|FOCSP|FOElemHide|FOGenericHide|FOGenericBlock|FOEmpty|FOUnknown,
+  FOUnsupportedButIgnore = FORedirect|FOWebsocket|FOImportant
 };
 
 class Filter {

@@ -277,6 +277,9 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOElemHide);
   } else if (!strncmp(pStart, "third-party", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOThirdParty);
+  } else if (!strncmp(pStart, "first-party", len)) {
+    // Same as ~third-party
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FONotThirdParty);
   } else if (!strncmp(pStart, "ping", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPing);
   } else if (!strncmp(pStart, "popup", len)) {
@@ -291,6 +294,16 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOMedia);
   } else if (!strncmp(pStart, "webrtc", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOWebRTC);
+  } else if (!strncmp(pStart, "generichide", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOGenericHide);
+  } else if (!strncmp(pStart, "genericblock", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOGenericBlock);
+  } else if (!strncmp(pStart, "empty", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOEmpty);
+  } else if (!strncmp(pStart, "websocket", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOWebsocket);
+  } else if (!strncmp(pStart, "important", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOImportant);
   } else {
     static std::set<std::string> unknownOptions;
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
@@ -353,7 +366,7 @@ bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen,
 }
 
 bool Filter::hasUnsupportedOptions() const {
-  return (filterOption & FOUnsupported) != 0;
+  return (filterOption & FOUnsupportedSoSkipCheck) != 0;
 }
 
 // Determines if there's a match based on the options, this doesn't
