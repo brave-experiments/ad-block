@@ -12,15 +12,13 @@
 
 #include "BloomFilter.h"
 
-#ifdef ENABLE_REGEX
+#include <iostream>
+#include <set>
 #include <string>
+
+#ifdef ENABLE_REGEX
 #include <regex> // NOLINT
 #endif
-
-
-// #include <iostream>
-// using std::cout;
-// using std::endl;
 
 static HashFn h(19);
 
@@ -279,10 +277,41 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOElemHide);
   } else if (!strncmp(pStart, "third-party", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOThirdParty);
+  } else if (!strncmp(pStart, "first-party", len)) {
+    // Same as ~third-party
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FONotThirdParty);
   } else if (!strncmp(pStart, "ping", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPing);
   } else if (!strncmp(pStart, "popup", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPopup);
+  } else if (len >= 4 && !strncmp(pStart, "csp=", 4)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FORedirect);
+  } else if (len >= 9 && !strncmp(pStart, "redirect=", 9)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FORedirect);
+  } else if (!strncmp(pStart, "font", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOFont);
+  } else if (!strncmp(pStart, "media", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOMedia);
+  } else if (!strncmp(pStart, "webrtc", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOWebRTC);
+  } else if (!strncmp(pStart, "generichide", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOGenericHide);
+  } else if (!strncmp(pStart, "genericblock", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOGenericBlock);
+  } else if (!strncmp(pStart, "empty", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOEmpty);
+  } else if (!strncmp(pStart, "websocket", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOWebsocket);
+  } else if (!strncmp(pStart, "important", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOImportant);
+  } else {
+    static std::set<std::string> unknownOptions;
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
+    std::string option(pStart, len);
+    if (unknownOptions.find(option) == unknownOptions.end()) {
+      std::cout << "Unrecognized filter option: " << option << std::endl;
+      unknownOptions.insert(option);
+    }
   }
   // Otherwise just ignore the option, maybe something new we don't support yet
 }
@@ -337,7 +366,7 @@ bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen,
 }
 
 bool Filter::hasUnsupportedOptions() const {
-  return (filterOption & FOUnsupported) != 0;
+  return (filterOption & FOUnsupportedSoSkipCheck) != 0;
 }
 
 // Determines if there's a match based on the options, this doesn't

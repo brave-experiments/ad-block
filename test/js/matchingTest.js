@@ -136,4 +136,62 @@ describe('matching', function () {
       assert.equal(queryResult.matchingExceptionFilter, 'fastly.net/ad2/')
     })
   })
+  describe("Filters with unknown options are ignored", function () {
+    it('known unsupported options are not blocked', function () {
+      const client = new AdBlockClient()
+      client.parse('adv$ping')
+      assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+    })
+    it('CSPs are ignored', function () {
+      const client = new AdBlockClient()
+      client.parse('adv$csp=script-src \'self\' \'unsafe-inline\' \'unsafe-eval\' data: *.google.com *.gstatic.com *.google-analytics.com')
+      assert(!client.matches('!https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+    })
+    it('unknown unsupported options are not blocked', function () {
+      const client = new AdBlockClient()
+      client.parse('adv$somethingnew=3')
+      assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+    })
+    it('redirects are still blocked', function () {
+      const client = new AdBlockClient()
+      client.parse('adv$image,redirect=1x1-transparent.gif&dd')
+      assert(client.matches('https://brianbondy.com/adv', FilterOptions.image, 'slashdot.org'))
+    })
+  })
+  describe("Type option matching", function () {
+    describe("font", function () {
+      it('option matches for no resource type filters', function () {
+        const client = new AdBlockClient()
+        client.parse('adv')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.font, 'slashdot.org'))
+      })
+      it('option matches for same resource type', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$font')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.font, 'slashdot.org'))
+      })
+      it('doesn\'t matche when resource type differs', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$font')
+        assert(!client.matches('https://brianbondy.com/adv', FilterOptions.image, 'slashdot.org'))
+      })
+      it('option matches for same resource type for rule with multiple types', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$font,image,script')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.font, 'slashdot.org'))
+      })
+      it('option matches for rule without options', function () {
+        const client = new AdBlockClient()
+        client.parse('adv')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.font, 'slashdot.org'))
+      })
+    })
+    describe("other", function () {
+      it('option matches for rule without options', function () {
+        const client = new AdBlockClient()
+        client.parse('adv')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.other, 'slashdot.org'))
+      })
+    })
+  })
 })

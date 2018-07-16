@@ -47,13 +47,35 @@ enum FilterOption {
   FOCollapse = 02000,
   FODoNotTrack = 04000,
   FOElemHide = 010000,
-  FOThirdParty = 020000,  // Used internally only, do not use
-  FONotThirdParty = 040000,  // Used internally only, do not use
-  FOPing = 0100000,  // Not supported, but we will ignore these rules
-  FOPopup = 0200000,  // Not supported, but we will ignore these rules
+  // Used internally only, do not use
+  FOThirdParty = 020000,
+  // Used internally only, do not use
+  FONotThirdParty = 040000,
+  // Not supported, but we will ignore these rules
+  FOPing = 0100000,
+  // Not supported, but we will ignore these rules
+  FOPopup = 0200000,
+  // This is only used by uBlock and currently all instances are 1x1 transparent gif which we already do for images
+  FORedirect = 0400000,
+  // Parse CSPs but consider them unsupported
+  FOCSP = 01000000,
+  FOFont = 02000000,
+  FOMedia = 04000000,
+  FOWebRTC = 010000000,
+  FOGenericHide = 020000000,
+  FOGenericBlock = 040000000,
+  // Used by Adguard, purpose unknown, ignore
+  FOEmpty = 0100000000,
+  FOWebsocket = 0200000000,
+  // important means to ignore all exception filters (those prefixed with @@).
+  FOImportant = 0400000000,
+
+  FOUnknown = 04000000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
-    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL,
-  FOUnsupported = FOPing|FOPopup
+    FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont|FOMedia|
+    FOWebRTC,
+  FOUnsupportedSoSkipCheck = FOPing|FOPopup|FOCSP|FOElemHide|FOGenericHide|FOGenericBlock|FOEmpty|FOUnknown,
+  FOUnsupportedButIgnore = FORedirect|FOWebsocket|FOImportant
 };
 
 class Filter {
