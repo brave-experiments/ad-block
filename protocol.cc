@@ -8,7 +8,7 @@
 
 // Macro for telling -Wimplicit-fallthrough that a fallthrough is intentional.
 #if defined(__clang__)
-#define FALLTHROUGH [[clang::fallthrough]]
+#define FALLTHROUGH[[clang::fallthrough]]
 #else
 #define FALLTHROUGH
 #endif

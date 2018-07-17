@@ -224,11 +224,12 @@ void AdBlockClientWrap::Clear(const FunctionCallbackInfo<Value>& args) {
 void AdBlockClientWrap::Parse(const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
   String::Utf8Value str(isolate, args[0]->ToString());
+  bool preserveRules(args[1]->BooleanValue());
   const char * buffer = *str;
 
   AdBlockClientWrap* obj =
     ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
-  obj->parse(buffer);
+  obj->parse(buffer, preserveRules);
 }
 
 void AdBlockClientWrap::Matches(const FunctionCallbackInfo<Value>& args) {
@@ -271,10 +272,18 @@ void AdBlockClientWrap::FindMatchingFilters(
   if (matchingFilter) {
     foundData->Set(String::NewFromUtf8(isolate, "matchingFilter"),
       String::NewFromUtf8(isolate, matchingFilter->data));
+    if (matchingFilter->ruleDefinition != nullptr) {
+      foundData->Set(String::NewFromUtf8(isolate, "matchingOrigRule"),
+        String::NewFromUtf8(isolate, matchingFilter->ruleDefinition));
+    }
   }
   if (matchingExceptionFilter) {
     foundData->Set(String::NewFromUtf8(isolate, "matchingExceptionFilter"),
       String::NewFromUtf8(isolate, matchingExceptionFilter->data));
+    if (matchingExceptionFilter->ruleDefinition != nullptr) {
+      foundData->Set(String::NewFromUtf8(isolate, "matchingExceptionOrigRule"),
+        String::NewFromUtf8(isolate, matchingExceptionFilter->ruleDefinition));
+    }
   }
   args.GetReturnValue().Set(foundData);
 }

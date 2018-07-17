@@ -136,7 +136,63 @@ describe('matching', function () {
       assert.equal(queryResult.matchingExceptionFilter, 'fastly.net/ad2/')
     })
   })
-  describe('Filters with unknown options are ignored', function () {
+
+  describe('original filter rules', function () {
+    describe('returning original filter rule', function () {
+      before(function () {
+        this.client = new AdBlockClient()
+        const rules = [
+          '-google-analytics.',
+          '@@||www.scrumpoker.online^$~third-party',
+          '.net/ad',
+          '@@||fastly.net/ad2/$image,script,xmlhttprequest'
+        ]
+        this.client.parse(rules.join('\n'), true)
+      })
+      it('match rule returned', function () {
+        const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online')
+        assert.equal(queryResult.matchingOrigRule, '-google-analytics.')
+      })
+      it('exception rule returned', function () {
+        const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.brianbondy.com')
+        assert.equal(queryResult.matchingExceptionOrigRule, '@@||www.scrumpoker.online^$~third-party')
+      })
+      it('rules with multiple options', function () {
+        const queryResult = this.client.findMatchingFilters('https://0914.global.ssl.fastly.net/ad2/img/x.gif?cb=1523404173915', FilterOptions.image, 'www.cnn.com')
+        assert.equal(queryResult.matches, false)
+        assert.equal(queryResult.matchingOrigRule, '.net/ad')
+        assert.equal(queryResult.matchingExceptionOrigRule, '@@||fastly.net/ad2/$image,script,xmlhttprequest')
+      })
+    })
+    describe('do not return original filter text when not needed / requested', function () {
+      before(function () {
+        this.client = new AdBlockClient()
+        const rules = [
+          '-google-analytics.',
+          '@@||www.scrumpoker.online^$~third-party',
+          '.net/ad',
+          '@@||fastly.net/ad2/$image,script,xmlhttprequest'
+        ]
+        this.client.parse(rules.join('\n')) // <- since not "true", then no rule data should be preserved
+      })
+      it('match rule returned', function () {
+        const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online')
+        assert.equal(queryResult.matchingOrigRule, undefined)
+      })
+      it('exception rule returned', function () {
+        const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.brianbondy.com')
+        assert.equal(queryResult.matchingExceptionOrigRule, undefined)
+      })
+      it('rules with multiple options', function () {
+        const queryResult = this.client.findMatchingFilters('https://0914.global.ssl.fastly.net/ad2/img/x.gif?cb=1523404173915', FilterOptions.image, 'www.cnn.com')
+        assert.equal(queryResult.matches, false)
+        assert.equal(queryResult.matchingOrigRule, undefined)
+        assert.equal(queryResult.matchingExceptionOrigRule, undefined)
+      })
+    })
+  })
+
+  describe("Filters with unknown options are ignored", function () {
     it('known unsupported options are not blocked', function () {
       const client = new AdBlockClient()
       client.parse('adv$ping')
