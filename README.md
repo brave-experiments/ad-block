@@ -6,6 +6,15 @@ Native node module, and C++ library for Adblock Plus filter parsing for lists li
 
 It uses a bloom filter and Rabin-Karp algorithm to be super fast.
 
+## Compatibility
+
+This project supports almost all of the
+[EasyList](https://adblockplus.org/filters) rule formats.  It also supports
+some rule formats specific to other projects, like [uBlock](https://github.com/gorhill/uBlock/)
+and [AdGuard](https://adguard.com/en/welcome.html). For more details on
+what rule formats are supported, please see the included `COMPATIBILITY.md`
+file.
+
 ## To include brave/ad-block in your project:
 
 ```
