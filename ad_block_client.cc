@@ -21,6 +21,7 @@ using std::cout;
 using std::endl;
 #endif
 
+std::set<std::string> unknownOptions;
 
 // Fast hash function applicable to 2 byte char checks
 class HashFn2Byte : public HashFn {
