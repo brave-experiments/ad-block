@@ -305,7 +305,6 @@ void Filter::parseOption(const char *input, int len) {
   } else if (!strncmp(pStart, "important", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOImportant);
   } else {
-    static std::set<std::string> unknownOptions;
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
     std::string option(pStart, len);
     if (unknownOptions.find(option) == unknownOptions.end()) {

@@ -6,6 +6,8 @@
 #ifndef AD_BLOCK_CLIENT_H_
 #define AD_BLOCK_CLIENT_H_
 
+#include <string>
+#include <set>
 #include "./filter.h"
 
 class CosmeticFilter;
@@ -107,6 +109,7 @@ class AdBlockClient {
   char *deserializedBuffer;
 };
 
+extern std::set<std::string> unknownOptions;
 extern const char *separatorCharacters;
 void parseFilter(const char *input, const char *end, Filter *f,
     BloomFilter *bloomFilter = nullptr,
