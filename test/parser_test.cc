@@ -726,7 +726,7 @@ TEST(client, parse_spam404_main_blacklist) {
 
   const char *urlToCheck = "http://excellentmovies.net/";
   const char *currentPageDomain = "excellentmovies.net";
-  CHECK(client.matches(urlToCheck, FODocument, currentPageDomain));
+  CHECK(client.matches(urlToCheck, FOImage, currentPageDomain));
 }
 
 
