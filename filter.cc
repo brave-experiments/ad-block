@@ -379,6 +379,12 @@ bool Filter::matchesOptions(const char *input, FilterOption context,
   if (hasUnsupportedOptions()) {
     return false;
   }
+
+  // If the context is for a document, but the filter option isn't an explicit
+  // document rule, then ignore it.
+  if (!(filterOption & FODocument) && (context & FODocument)) {
+    return false;
+  }
   // Maybe the user of the library can't determine a context because they're
   // blocking a the HTTP level, don't block here because we don't have enough
   // information

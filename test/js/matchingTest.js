@@ -193,5 +193,28 @@ describe('matching', function () {
         assert(client.matches('https://brianbondy.com/adv', FilterOptions.other, 'slashdot.org'))
       })
     })
+    describe("document", function () {
+      it('should not match when filter rule has no type', function () {
+        const client = new AdBlockClient()
+        client.parse('adv')
+        assert(!client.matches('https://brianbondy.com/adv', FilterOptions.document, 'slashdot.org'))
+      })
+      it('should not match when filter rule is an image', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$image')
+        assert(!client.matches('https://brianbondy.com/adv', FilterOptions.document, 'slashdot.org'))
+      })
+      it('should match when filter rule is a document', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$document')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.document, 'slashdot.org'))
+      })
+      it('filter rule that is for documents should not match other types', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$document')
+        assert(!client.matches('https://brianbondy.com/adv', FilterOptions.other, 'slashdot.org'))
+      })
+    })
+
   })
 })
