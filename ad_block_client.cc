@@ -21,7 +21,7 @@ using std::cout;
 using std::endl;
 #endif
 
-std::set<std::string> unknownOptions;
+std::set<std::string>* g_unknownOptions = nullptr;
 
 // Fast hash function applicable to 2 byte char checks
 class HashFn2Byte : public HashFn {
@@ -470,6 +470,7 @@ AdBlockClient::AdBlockClient() : filters(nullptr),
   numHashSetSaves(0),
   numExceptionHashSetSaves(0),
   deserializedBuffer(nullptr) {
+  g_unknownOptions = new std::set<std::string>();
 }
 
 AdBlockClient::~AdBlockClient() {
@@ -553,6 +554,10 @@ void AdBlockClient::clear() {
   if (badFingerprintsHashSet) {
     delete badFingerprintsHashSet;
     badFingerprintsHashSet = nullptr;
+  }
+  if (g_unknownOptions) {
+    delete g_unknownOptions;
+    g_unknownOptions = nullptr;
   }
 
   numFilters = 0;

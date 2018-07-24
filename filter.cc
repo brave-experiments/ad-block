@@ -307,9 +307,9 @@ void Filter::parseOption(const char *input, int len) {
   } else {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
     std::string option(pStart, len);
-    if (unknownOptions.find(option) == unknownOptions.end()) {
+    if (g_unknownOptions && g_unknownOptions->find(option) == g_unknownOptions->end()) {
       std::cout << "Unrecognized filter option: " << option << std::endl;
-      unknownOptions.insert(option);
+      g_unknownOptions->insert(option);
     }
   }
   // Otherwise just ignore the option, maybe something new we don't support yet
