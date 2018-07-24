@@ -9,6 +9,8 @@
 #include <string>
 #include <set>
 #include "./filter.h"
+#include <set>
+#include <string>
 
 class CosmeticFilter;
 class BloomFilter;
@@ -109,7 +111,7 @@ class AdBlockClient {
   char *deserializedBuffer;
 };
 
-extern std::set<std::string> unknownOptions;
+extern std::set<std::string>* g_unknownOptions;
 extern const char *separatorCharacters;
 void parseFilter(const char *input, const char *end, Filter *f,
     BloomFilter *bloomFilter = nullptr,
