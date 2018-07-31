@@ -1,4 +1,9 @@
-dep_base = rebase_path("../..", "//")
+if (is_android) {
+  import("//build/config/android/rules.gni")
+  dep_base = rebase_path("./", "//")
+} else {
+  dep_base = rebase_path("../..", "//")
+}
 
 config("internal_config") {
   include_dirs = [ ".." ]
