@@ -397,6 +397,16 @@ bool Filter::matchesOptions(const char *input, FilterOption context,
         && (antiFilterOption & FOResourcesOnly & context)) {
       return false;
     }
+  } else {
+    // When there's no filter option specified for the context, the resource
+    // type context is not known.  In this case, never match against
+    // rules with an explicit resource type specified.
+    if (filterOption & FOResourcesOnly) {
+      return false;
+    }
+    if (antiFilterOption & FOResourcesOnly) {
+      return false;
+    }
   }
 
   // Domain options check

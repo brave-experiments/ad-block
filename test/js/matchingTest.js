@@ -215,6 +215,17 @@ describe('matching', function () {
         assert(!client.matches('https://brianbondy.com/adv', FilterOptions.other, 'slashdot.org'))
       })
     })
-
+    describe("noFilterOption", function () {
+      it('should not match when filter rule has no resource type', function () {
+        const client = new AdBlockClient()
+        client.parse('adv')
+        assert(client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+      })
+      it('should not match when filter rule has a resource type', function () {
+        const client = new AdBlockClient()
+        client.parse('adv$image')
+        assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+      })
+    })
   })
 })
