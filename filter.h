@@ -75,7 +75,7 @@ enum FilterOption {
     FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont|FOMedia|
     FOWebRTC,
   FOUnsupportedSoSkipCheck = FOPing|FOPopup|FOCSP|FOElemHide|FOGenericHide|FOGenericBlock|FOEmpty|FOUnknown,
-  FOUnsupportedButIgnore = FORedirect|FOWebsocket|FOImportant
+  FOUnsupportedButIgnore = FORedirect|FOImportant
 };
 
 class Filter {
