@@ -73,8 +73,8 @@ enum FilterOption {
   FOUnknown = 04000000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
     FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont|FOMedia|
-    FOWebRTC,
-  FOUnsupportedSoSkipCheck = FOPing|FOPopup|FOCSP|FOElemHide|FOGenericHide|FOGenericBlock|FOEmpty|FOUnknown,
+    FOWebRTC|FOWebsocket|FOPing,
+  FOUnsupportedSoSkipCheck = FOPopup|FOCSP|FOElemHide|FOGenericHide|FOGenericBlock|FOEmpty|FOUnknown,
   FOUnsupportedButIgnore = FORedirect|FOImportant
 };
 
