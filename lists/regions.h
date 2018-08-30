@@ -234,6 +234,14 @@ const std::vector<FilterList> region_lists = {
     "https://forums.lanik.us/viewforum.php?f=100",
     "fbmjnabmpmfnfknjmbegjmjigmelggmf",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqqfwmNS4XOq9pWC3XSMt5WcqoKaj3lRpYAwZKTP+6DwA9pG+Zw+0iWC95riSLjqPgX+0d2cZaqjinuNn3mUMOeGdbwSIeRLE50J5J/dMmkg5YO09orZKLBjMfJG5IDgfXdZLSJtmzKC4Xj2y6KSuQ7N0Sg5f1Ecc19nFbcFazCaIhKvcoA84J7Twf2IoCDuPMsGplgZCBtFQkKeqILaVhJZeD0my6pdC2KJREbM3eRnntE44O0sbmemCfHs9BV50hVb913zGDZ379eTqg3mPjvH+VnY+7RvjVPayJP4+51zRJYKi18W7KMry3sj4ZZ3EyNKmbwlGQOzAyd/Qtj4I3wIDAQAB"
+ }), FilterList({
+    "",
+    "https://github.com/DandelionSprout/adfilt/raw/master/NorwegianList.txt",
+    "NOR: Dandelion Sprout's Norwegian filters",
+    {"no"},
+    "https://github.com/DandelionSprout/adfilt",
+    "",
+    ""
   }), FilterList({
     "BF9234EB-4CB7-4CED-9FCB-F1FD31B0666C",
     "https://www.certyficate.it/adblock/adblock.txt",
