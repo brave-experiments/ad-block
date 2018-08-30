@@ -237,7 +237,7 @@ const std::vector<FilterList> region_lists = {
  }), FilterList({
     "",
     "https://github.com/DandelionSprout/adfilt/raw/master/NorwegianList.txt",
-    "NOR: Dandelion Sprout's Norwegian filters",
+    "NOR: Dandelion Sprout's Norwegian Filters",
     {"no"},
     "https://github.com/DandelionSprout/adfilt",
     "",
