@@ -83,7 +83,7 @@ describe('matching', function () {
       assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
     })
   })
-  describe("no-fingerprint rules", function () {
+  describe('no-fingerprint rules', function () {
     it('can match against a no-fingerprint rule', function () {
       const client = new AdBlockClient()
       client.parse('adv')
@@ -136,7 +136,7 @@ describe('matching', function () {
       assert.equal(queryResult.matchingExceptionFilter, 'fastly.net/ad2/')
     })
   })
-  describe("Filters with unknown options are ignored", function () {
+  describe('Filters with unknown options are ignored', function () {
     it('known unsupported options are not blocked', function () {
       const client = new AdBlockClient()
       client.parse('adv$ping')
@@ -158,8 +158,8 @@ describe('matching', function () {
       assert(client.matches('https://brianbondy.com/adv', FilterOptions.image, 'slashdot.org'))
     })
   })
-  describe("Type option matching", function () {
-    describe("font", function () {
+  describe('Type option matching', function () {
+    describe('font', function () {
       it('option matches for no resource type filters', function () {
         const client = new AdBlockClient()
         client.parse('adv')
@@ -186,14 +186,14 @@ describe('matching', function () {
         assert(client.matches('https://brianbondy.com/adv', FilterOptions.font, 'slashdot.org'))
       })
     })
-    describe("other", function () {
+    describe('other', function () {
       it('option matches for rule without options', function () {
         const client = new AdBlockClient()
         client.parse('adv')
         assert(client.matches('https://brianbondy.com/adv', FilterOptions.other, 'slashdot.org'))
       })
     })
-    describe("document", function () {
+    describe('document', function () {
       it('should not match when filter rule has no type', function () {
         const client = new AdBlockClient()
         client.parse('adv')
@@ -215,7 +215,7 @@ describe('matching', function () {
         assert(!client.matches('https://brianbondy.com/adv', FilterOptions.other, 'slashdot.org'))
       })
     })
-    describe("noFilterOption", function () {
+    describe('noFilterOption', function () {
       it('should not match when filter rule has no resource type', function () {
         const client = new AdBlockClient()
         client.parse('adv')
@@ -225,6 +225,23 @@ describe('matching', function () {
         const client = new AdBlockClient()
         client.parse('adv$image')
         assert(!client.matches('https://brianbondy.com/adv', FilterOptions.noFilterOption, 'slashdot.org'))
+      })
+    })
+  })
+  describe('left anchored exception filter', function () {
+    describe('simple block match', function () {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('|http://baddomain.example/')
+      })
+      it('matches exactly from the left', function () {
+        assert(this.client.matches('http://baddomain.example/banner.gif', FilterOptions.image, 'http://baddomain.example/'))
+      })
+      it('does not match if scheme does not match', function () {
+        assert(!this.client.matches('https://baddomain.example/banner.gif', FilterOptions.image, 'http://baddomain.example/'))
+      })
+      it('does not match not at start', function () {
+        assert(!this.client.matches('http://gooddomain.example/analyze?http://baddomain.example', FilterOptions.image, 'http://baddomain.example/'))
       })
     })
   })
