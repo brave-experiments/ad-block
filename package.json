@@ -15,10 +15,9 @@
   "devDependencies": {
     "commander": "^2.15.1",
     "mocha": "^5.2.0",
-    "node-gyp": "^3.7.0",
-    "nsp": "^3.2.1",
+    "node-gyp": "^3.8.0",
     "pre-commit": "^1.2.2",
-    "s3": "^4.4.0",
+    "s3-client": "^4.4.2",
     "standard": "^11.0.1"
   },
   "scripts": {
@@ -34,7 +33,7 @@
     "lint-cpp": "./scripts/cpplint.py",
     "lint-js": "standard",
     "checks": "npm run check-security",
-    "check-security": "nsp check",
+    "check-security": "npm audit",
     "data-files": "node scripts/generateDataFiles.js",
     "manifest-files": "node scripts/generateManifestFiles.js",
     "upload": "node scripts/uploadDataFiles.js"

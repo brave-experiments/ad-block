@@ -3,7 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const fs = require('fs')
-const s3 = require('s3')
+const s3 = require('s3-client')
 const commander = require('commander')
 const path = require('path')
 const dataFileVersion = 4
