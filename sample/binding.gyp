@@ -10,6 +10,8 @@
       "../cosmetic_filter.h",
       "../filter.cc",
       "../filter.h",
+      "../filter_list.cc",
+      "../filter_list.h",
       "../no_fingerprint_domain.cc",
       "../no_fingerprint_domain.h",
       "../node_modules/bloom-filter-cpp/BloomFilter.cpp",
@@ -17,7 +19,9 @@
       "../node_modules/bloom-filter-cpp/hashFn.cpp",
       "../node_modules/bloom-filter-cpp/hashFn.h",
       "../node_modules/hashset-cpp/hash_set.cc",
-      "../node_modules/hashset-cpp/hash_set.h"
+      "../node_modules/hashset-cpp/hash_set.h",
+      "../protocol.cc",
+      "../protocol.h",
     ],
     "include_dirs": [
       "..",
@@ -37,6 +41,7 @@
       "OTHER_LDFLAGS": ["-stdlib=libc++"],
       "MACOSX_DEPLOYMENT_TARGET": "10.9",
       "GCC_ENABLE_CPP_EXCEPTIONS": "YES",
+      "ARCHS": ["x86_64"],
     },
     "cflags": [
       "-std=c++11"
