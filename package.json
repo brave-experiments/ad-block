@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "bloom-filter-cpp": "^1.2.0",
-    "cppunitlite": "^1.0.0",
+    "cppunitlite": "brave/CppUnitLite",
     "hashset-cpp": "^2.1.0",
     "nan": "^2.10.0"
   },
