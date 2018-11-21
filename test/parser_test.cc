@@ -51,8 +51,8 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType,
   bool ret = true;
   string lastChecked;
   std::for_each(blocked.begin(), blocked.end(),
-      [&filter, &ret, &lastChecked](string const &s) {
-    ret = ret && filter.matches(s.c_str());
+      [&filter, &ret, &lastChecked, &expectedFilterOption](string const &s) {
+    ret = ret && filter.matches(s.c_str(), (FilterOption)(expectedFilterOption & FOResourcesOnly));
     lastChecked = s;
   });
   if (!ret) {
@@ -61,8 +61,8 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType,
   }
 
   std::for_each(notBlocked.begin(), notBlocked.end(),
-      [&filter, &ret, &lastChecked](string const &s) {
-    ret = ret && !filter.matches(s.c_str());
+      [&filter, &ret, &lastChecked, &expectedFilterOption](string const &s) {
+    ret = ret && !filter.matches(s.c_str(), (FilterOption)(expectedFilterOption & FOResourcesOnly));
     lastChecked = s;
   });
   if (!ret) {
@@ -407,10 +407,11 @@ TEST(client, optionRules) {
       OptionRuleData("http://example.com.au", FOScript, "example.com", false),
     }));
 
-  // Make sure we ignore ping rules for now
+  // We should block ping rules if the resource type is FOPing
   CHECK(checkOptionRule("||example.com^$ping",
     {
-      OptionRuleData("http://example.com", FOPing, "example.com", false),
+      OptionRuleData("http://example.com", FOPing, "example.com", true),
+      OptionRuleData("http://example.com", FOImage, "example.com", false),
     }));
 
   // Make sure we ignore popup rules for now
@@ -577,7 +578,7 @@ struct ListCounts {
 };
 
 ListCounts easyList = { 24478, 31144, 0, 5589 };
-ListCounts easyPrivacy = { 11816, 0, 0, 1018 };
+ListCounts easyPrivacy = { 11817, 0, 0, 1020 };
 ListCounts ublockUnbreak = { 4, 8, 0, 94 };
 ListCounts braveUnbreak = { 31, 0, 0, 4 };
 ListCounts disconnectSimpleMalware = { 2450, 0, 0, 0 };
