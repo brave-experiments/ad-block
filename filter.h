@@ -55,7 +55,8 @@ enum FilterOption {
   FOPing = 0100000,
   // Not supported, but we will ignore these rules
   FOPopup = 0200000,
-  // This is only used by uBlock and currently all instances are 1x1 transparent gif which we already do for images
+  // This is only used by uBlock and currently all instances are 1x1
+  // transparent gif which we already do for images
   FORedirect = 0400000,
   // Parse CSPs but consider them unsupported
   FOCSP = 01000000,
@@ -178,6 +179,10 @@ friend class AdBlockClient;
   FilterType filterType;
   FilterOption filterOption;
   FilterOption antiFilterOption;
+
+  // The text of the filter list rule, as it appeared before being parsed.
+  char *ruleDefinition;
+
   char *data;
   int dataLen;
   char *domainList;

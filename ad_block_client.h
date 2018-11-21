@@ -24,7 +24,8 @@ class AdBlockClient {
   ~AdBlockClient();
 
   void clear();
-  bool parse(const char *input);
+//   bool parse(const char *input);
+  bool parse(const char *input, bool preserveRules = false);
   bool matches(const char *input,
       FilterOption contextOption = FONoFilterOption,
       const char *contextDomain = nullptr);
@@ -116,13 +117,15 @@ void parseFilter(const char *input, const char *end, Filter *f,
     BloomFilter *exceptionBloomFilter = nullptr,
     HashSet<Filter> *hostAnchoredHashSet = nullptr,
     HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr,
-    HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr);
+    HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr,
+    bool preserveRules = false);
 void parseFilter(const char *input, Filter *f,
     BloomFilter *bloomFilter = nullptr,
     BloomFilter *exceptionBloomFilter = nullptr,
     HashSet<Filter> *hostAnchoredHashSet = nullptr,
     HashSet<Filter> *hostAnchoredExceptionHashSet = nullptr,
-    HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr);
+    HashSet<CosmeticFilter> *simpleCosmeticFilters = nullptr,
+    bool preserveRules = false);
 bool isSeparatorChar(char c);
 int findFirstSeparatorChar(const char *input, const char *end);
 

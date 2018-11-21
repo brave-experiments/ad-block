@@ -6,12 +6,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
-#include "./filter.h"
-#include "hashFn.h"
-#include "./ad_block_client.h"
-
-#include "BloomFilter.h"
-
 #include <iostream>
 #include <set>
 #include <string>
@@ -19,6 +13,12 @@
 #ifdef ENABLE_REGEX
 #include <regex> // NOLINT
 #endif
+
+#include "./filter.h"
+#include "hashFn.h"
+#include "./ad_block_client.h"
+
+#include "BloomFilter.h"
 
 static HashFn h(19);
 
@@ -29,6 +29,7 @@ Filter::Filter() :
   filterType(FTNoFilterType),
   filterOption(FONoFilterOption),
   antiFilterOption(FONoFilterOption),
+  ruleDefinition(nullptr),
   data(nullptr),
   dataLen(-1),
   domainList(nullptr),
@@ -45,6 +46,9 @@ Filter::~Filter() {
   if (data) {
     delete[] data;
   }
+  if (ruleDefinition) {
+    delete[] ruleDefinition;
+  }
   if (domainList) {
     delete[] domainList;
   }
@@ -54,24 +58,27 @@ Filter::~Filter() {
 }
 
 Filter::Filter(const char * data, int dataLen, char *domainList,
-      const char * host, int hostLen) :
+               const char * host, int hostLen) :
       borrowed_data(true), filterType(FTNoFilterType),
       filterOption(FONoFilterOption),
-      antiFilterOption(FONoFilterOption), data(const_cast<char*>(data)),
-      dataLen(dataLen), domainList(domainList), host(const_cast<char*>(host)),
+      antiFilterOption(FONoFilterOption), ruleDefinition(nullptr),
+      data(const_cast<char*>(data)), dataLen(dataLen),
+      domainList(domainList), host(const_cast<char*>(host)),
       hostLen(hostLen) {
     domainCount = 0;
     antiDomainCount = 0;
   }
 
 Filter::Filter(FilterType filterType, FilterOption filterOption,
-         FilterOption antiFilterOption,
-         const char * data, int dataLen,
-         char *domainList, const char * host,
-         int hostLen) :
-    borrowed_data(true), filterType(filterType), filterOption(filterOption),
-    antiFilterOption(antiFilterOption), data(const_cast<char*>(data)),
-      dataLen(dataLen), domainList(domainList), host(const_cast<char *>(host)),
+               FilterOption antiFilterOption,
+               const char * data, int dataLen,
+               char *domainList, const char * host,
+               int hostLen) :
+      borrowed_data(true), filterType(filterType),
+      filterOption(filterOption),
+      antiFilterOption(antiFilterOption), ruleDefinition(nullptr),
+      data(const_cast<char*>(data)), dataLen(dataLen),
+      domainList(domainList), host(const_cast<char *>(host)),
       hostLen(hostLen) {
     domainCount = 0;
     antiDomainCount = 0;
@@ -94,6 +101,7 @@ Filter::Filter(const Filter &other) {
     data = other.data;
     domainList = other.domainList;
     host = other.host;
+    ruleDefinition = other.ruleDefinition;
   } else {
     if (other.data) {
       data = new char[dataLen];
@@ -115,6 +123,14 @@ Filter::Filter(const Filter &other) {
     } else {
       host = nullptr;
     }
+
+    if (other.ruleDefinition) {
+      size_t len = strlen(other.ruleDefinition) + 1;
+      ruleDefinition = new char[len];
+      snprintf(ruleDefinition, len, "%s", other.ruleDefinition);
+    } else {
+      ruleDefinition = nullptr;
+    }
   }
 }
 
@@ -124,6 +140,7 @@ void Filter::swapData(Filter *other) {
   FilterOption tempAntiFilterOption = antiFilterOption;
   char *tempData = data;
   int tempDataLen = dataLen;
+  char *tempRuleDefinition = ruleDefinition;
   char *tempDomainList = domainList;
   char *tempHost = host;
   int tempHostLen = hostLen;
@@ -131,6 +148,7 @@ void Filter::swapData(Filter *other) {
   filterType = other->filterType;
   filterOption = other->filterOption;
   antiFilterOption = other->antiFilterOption;
+  ruleDefinition = other->ruleDefinition;;
   data = other->data;
   dataLen = other->dataLen;
   domainList = other->domainList;
@@ -140,6 +158,7 @@ void Filter::swapData(Filter *other) {
   other->filterType = tempFilterType;
   other->filterOption = tempFilterOption;
   other->antiFilterOption = tempAntiFilterOption;
+  other->ruleDefinition = tempRuleDefinition;
   other->data = tempData;
   other->dataLen = tempDataLen;
   other->domainList = tempDomainList;

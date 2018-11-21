@@ -213,7 +213,8 @@ void parseFilter(const char *input, Filter *f, BloomFilter *bloomFilter,
     BloomFilter *exceptionBloomFilter,
     HashSet<Filter> *hostAnchoredHashSet,
     HashSet<Filter> *hostAnchoredExceptionHashSet,
-    HashSet<CosmeticFilter> *simpleCosmeticFilters) {
+    HashSet<CosmeticFilter> *simpleCosmeticFilters,
+    bool preserveRules) {
   const char *end = input;
   while (*end != '\0') end++;
   parseFilter(input, end, f, bloomFilter, exceptionBloomFilter,
@@ -236,9 +237,12 @@ void parseFilter(const char *input, const char *end, Filter *f,
     BloomFilter *exceptionBloomFilter,
     HashSet<Filter> *hostAnchoredHashSet,
     HashSet<Filter> *hostAnchoredExceptionHashSet,
-    HashSet<CosmeticFilter> *simpleCosmeticFilters) {
+    HashSet<CosmeticFilter> *simpleCosmeticFilters,
+    bool preserveRules) {
   FilterParseState parseState = FPStart;
   const char *p = input;
+  const char *filterRuleStart = p;
+  const char *filterRuleEndPos = p;
   char data[kMaxLineLength];
   memset(data, 0, sizeof data);
   int i = 0;
@@ -260,6 +264,7 @@ void parseFilter(const char *input, const char *end, Filter *f,
         case '|':
           if (parseState == FPStart || parseState == FPPastWhitespace) {
             parseState = FPOneBar;
+            filterRuleEndPos++;
             p++;
             continue;
           } else if (parseState == FPOneBar) {
@@ -267,6 +272,7 @@ void parseFilter(const char *input, const char *end, Filter *f,
             f->filterType =
               static_cast<FilterType>(f->filterType | FTHostAnchored);
             parseState = FPData;
+            filterRuleEndPos++;
             p++;
 
             int len = findFirstSeparatorChar(p, end);
@@ -287,6 +293,7 @@ void parseFilter(const char *input, const char *end, Filter *f,
             f->filterType =
               static_cast<FilterType>(f->filterType | FTRightAnchored);
             parseState = FPData;
+            filterRuleEndPos++;
             p++;
             continue;
           }
@@ -294,12 +301,14 @@ void parseFilter(const char *input, const char *end, Filter *f,
         case '@':
           if (parseState == FPStart || parseState == FPPastWhitespace) {
             parseState = FPOneAt;
+            filterRuleEndPos++;
             p++;
             continue;
           } else if (parseState == FPOneAt) {
             parseState = FPOneBar;
             f->filterType = FTException;
             parseState = FPPastWhitespace;
+            filterRuleEndPos++;
             p++;
             continue;
           }
@@ -318,6 +327,8 @@ void parseFilter(const char *input, const char *end, Filter *f,
         case ' ':
           // Skip leading whitespace
           if (parseState == FPStart) {
+            filterRuleStart++;
+            filterRuleEndPos++;
             p++;
             continue;
           }
@@ -331,6 +342,13 @@ void parseFilter(const char *input, const char *end, Filter *f,
               f->data = new char[len];
               f->data[len - 1] = '\0';
               memcpy(f->data, input + i + 1, len - 1);
+
+              if (preserveRules) {
+                f->ruleDefinition = new char[len];
+                f->ruleDefinition[len - 1] = '\0';
+                memcpy(f->ruleDefinition, input + i + 1, len - 1);
+              }
+
               f->filterType = FTRegex;
               return;
             } else {
@@ -340,6 +358,9 @@ void parseFilter(const char *input, const char *end, Filter *f,
           break;
         }
         case '$':
+          // Handle adguard HTML filtering rules syntax
+          // e.g. example.org$$script[data-src="banner"]
+          // see https://kb.adguard.com/en/general/how-to-create-your-own-ad-filters#html-filtering-rules-syntax-1
           if (*(p+1) == '$') {
               if (i != 0) {
                 f->domainList = new char[i + 1];
@@ -348,8 +369,12 @@ void parseFilter(const char *input, const char *end, Filter *f,
               }
               parseState = FPDataOnly;
               f->filterType = FTHTMLFiltering;
-              p+=2;
+              p += 2;
+              filterRuleEndPos += 2;
               continue;
+          }
+          while (*filterRuleEndPos != '\0' && !isEndOfLine(*filterRuleEndPos)) {
+            filterRuleEndPos++;
           }
           f->parseOptions(p + 1);
           earlyBreak = true;
@@ -390,12 +415,20 @@ void parseFilter(const char *input, const char *end, Filter *f,
     }
     data[i] = *p;
     i++;
+    filterRuleEndPos++;
     p++;
   }
 
   if (parseState == FPStart) {
     f->filterType = FTEmpty;
     return;
+  }
+
+  if (preserveRules) {
+    int ruleTextLength = filterRuleEndPos - filterRuleStart;
+    f->ruleDefinition = new char[ruleTextLength + 1];
+    memcpy(f->ruleDefinition, filterRuleStart, ruleTextLength);
+    f->ruleDefinition[ruleTextLength] = '\0';
   }
 
   data[i] = '\0';
@@ -879,7 +912,7 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
 }
 
 /**
- * Obtains the first matching filter or nullptrl, and if one is found, finds
+ * Obtains the first matching filter or nullptr, and if one is found, finds
  * the first matching exception filter or nullptr.
  *
  * @return true if the filter should be blocked
@@ -993,9 +1026,9 @@ void setFilterBorrowedMemory(Filter *filters, int numFilters) {
   }
 }
 
-// Parses the filter data into a few collections of filters and enables efficent
-// querying.
-bool AdBlockClient::parse(const char *input) {
+// Parses the filter data into a few collections of filters and enables
+// efficent querying.
+bool AdBlockClient::parse(const char *input, bool preserveRules) {
   // If the user is parsing and we have regex support,
   // then we can determine the fingerprints for the bloom filter.
   // Otherwise it needs to be done manually via initBloomFilter and
@@ -1318,7 +1351,8 @@ bool AdBlockClient::parse(const char *input) {
       parseFilter(lineStart, p, &f, bloomFilter, exceptionBloomFilter,
           hostAnchoredHashSet,
           hostAnchoredExceptionHashSet,
-          &simpleCosmeticFilters);
+          &simpleCosmeticFilters,
+          preserveRules);
       if (!f.hasUnsupportedOptions()) {
         switch (f.filterType & FTListTypesMask) {
           case FTException:
