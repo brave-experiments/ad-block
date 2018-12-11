@@ -76,10 +76,10 @@ const std::vector<FilterList> region_lists = {
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxvmMjXthrTjGl0WDrL+4qYSVao5vKPGerr2VeUiZ1o94+P0IJyZzq3d7UP2nOvhveGl15YYxYss+sD/sUkUW57XMx+H4TF5OzGCwV8nkz4VoMIfEU6CKgYmRGHV2VoMdIHG7R++jX20+GAoeBw+aBx9+AHlBouf1kvqbkutVh+Bre1cVa6YsgsPVcmhiEp7wjz2yB23f44+pBIQgWlKWn7z9e1osG4LUCGk6gavtRoNGS3TAUf1Sq9EUibFJVmBjujVoiQKD8GIFKmLM9Fxl1Q+xgG2PCCSBz5lSesHkphDpwhszedurpKbWsnsRPqbqR3GmpceKQheWL/Y56tf2gwIDAQAB"
   }), FilterList({
     "0783DBFD-B5E0-4982-9B4A-711BDDB925B7",
-    "http://adblock.ee/list.php",
+    "https://adblock.ee/list.php",
     "EST: Eesti saitidele kohandatud filter",
     {"et"},
-    "http://adblock.ee/",
+    "https://adblock.ee/",
     "fnpjliiiicbbpkfihnggnmobcpppjhlj",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnrl1tavPfozqu7CmqNfVUtZfUlIitbWpFBRn+HVW0oEFUNqAwNlwHqy9QZP88wKvb5N3EJj6NAq6je4ii6nMkDn59teNzGA4m8QSkeOWT6pNm98FZA6HNHPnhnYSG2sT8tpQ8Uyh4ySrxj2ijVM0Hc01WKQ6zjkvZWOuZWllsCejRZmxGOLUUy5mtKhIfHiuleZ7AmKx46AiVFvrpvV5x8G2HKAlF/uDc6LmV0lfXcROt5RlY+kD/sQ6wKcatibpHbLoRHOJx3ac13+pvt85773af0MdrvdCYjxvqn3DJlKw9qqk/B59n+XdTmWcfC9k77Z0teoMM5EBy8G1nGbelwIDAQAB"
   }), FilterList({
@@ -92,10 +92,10 @@ const std::vector<FilterList> region_lists = {
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsDGkXlpuILNJ/iPEsXXdw+ZVBPf7L11UkG2az6NaeumxKfOTBDivPCXz48lWG4d6jySR8n+eMOaqX8FUVc50AGnWfq/Ud7PJdkvYNEyTNjZw7yQUta3q1yfc5gVsc1IiG9s0GuZxzSWnI0zfwMIG6JNTZTdPeIL1VxnFySXwyYKr1QhkVcpiN5AYNA8jXmZmmZ716Cti+1kAlGLQSO0ABqFZhJvSMGUb+12z6BW20tc4spt8QgY6a8CFMasdoD3hz+gKo+rvQlgPGWQhWxuTgRJZQnyS3EKeJYBaaS11c3xfIqkK85VXuMt9x/3bu9NkXFpXcNwqBo9zs+gxodVSgwIDAQAB"
   }), FilterList({
     "1C6D8556-3400-4358-B9AD-72689D7B2C46",
-    "http://adb.juvander.net/Finland_adb.txt",
+    "https://adb.juvander.net/Finland_adb.txt",
     "FIN: Finnish Addition to Easylist",
     {"fi"},
-    "http://www.juvander.fi/AdblockFinland",
+    "https://www.juvander.fi/AdblockFinland",
     "kdcalgmhljnckmnfcboeabeepgnlaemf",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3seBXoyYSdtiqNAIaS5v9jP6Pr8xqgFnZyHknxNsC92fHyRW2nbuwMr78pWA4vPIyV6BFG5jS8k2RXEbWiOKNNsw7nWlfT4QMwkEu4uU1vqxsNDtdc1rdrc69aBegyNOQBS+W6aP1ESHp68AoalYKMHKpc+fi00sdQwYU9Y5oW9q4uRX3baAyuGZjP0xuKN3t+T1QnhbhkldP2WP0ooU/VRMhy2rYoE+W6eQRGrghJJG/wWznz5AiPD9EpPST/hoVWOKVco+12IbdILw7yGX2c65xPcLr6obVR+549QrgxU0W02XxS2lXKGc1NT2Zdl6ugh6XpW1RHVz7SjLIZgifwIDAQAB"
   }), FilterList({
@@ -124,7 +124,7 @@ const std::vector<FilterList> region_lists = {
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4HNXDsDBPP4b/irxacZMYnaPjNMXS31e11nsFBvN9lFOkuwF3bEk9uEk0fDzocF6GSpXbUE0HVTqfKTTnZfvG9m+C3nT8j6N7BB/wST72s0zXCjSlLWJPGmFnFb/EDkFAGmA9FU4C+j28Obehd94OC9pSqu8DYK4LbMWPmk2fgpO9N3ZV/5Y2Ni69WKJwT72prSMzyVVEAYluCYPQWY93g6dJ9RBtwnHCmdK5TG/bN2q6f50Cw/aJSv8nshSdp+KJK6yi6fBOxF5Xb0Bj+xZGC4K4SW9JjElswaGJi2PX5I11w7xC24jNaW6BUHcJ6IXudIVmBFQxWWxkMVwfgqNlwIDAQAB"
   }), FilterList({
     "93123971-5AE6-47BA-93EA-BE1E4682E2B6",
-    "https://raw.githubusercontent.com/heradhis/indonesianadblockrules/master/subscriptions/abpindo.txt", //NOLINT
+    "https://raw.githubusercontent.com/heradhis/indonesianadblockrules/master/subscriptions/abpindo.txt", // NOLINT
     "IDN: ABPindo",
     {"id"},
     "https://github.com/heradhis/indonesianadblockrules",
@@ -148,10 +148,10 @@ const std::vector<FilterList> region_lists = {
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm3AZE2ne7R55X2j6RxAQHAZKl1hNPgwLOFsYpfAJ6m0uXmKJspguWxatJ9jDBbYLmtXnwX2WORILq1+r4kFtTcN8GNYe7/7o5yDLucI/W9d2vCjmEg95v50MzVQZSwd2gNZVZtL1s0S6pBwX0zI+6kHIFr2xqGV/FNE8L75f30rriQ0xKmenI1OWjyn8gNqIp4mKZW6XxkMRRS9+e0ynDi4ysQA9Ub5YHJxm0t62eqTmIyemgRhP6Rdbi0+GXbqFPjDfC26rtD3wy5f3aYL1V+2ADpdDyCeNlwCH7+vC7LWujqNTgK8wVJ4eH5VbUKC1e9cm/T57OsHJMDC5fbUuswIDAQAB"
   }), FilterList({
     "48796273-E783-431E-B864-44D3DCEA66DC",
-    "http://adblock.gardar.net/is.abp.txt",
+    "https://adblock.gardar.net/is.abp.txt",
     "ISL: Icelandic ABP List",
     {"is"},
-    "http://adblock.gardar.net/",
+    "https://adblock.gardar.net/",
     "njhlaafgablgnekjaodhgbaomabjibaf",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqSwaNKhg90HCheaJu3sHocbZUjXDs90I0OmijNkDeS291wUjvXAm5YqhNE8aZmPSMVZBjBCwKXrrtTOkMA1b1uBqJ2P83fCZsgNZWbGTD8MorMrU6vyqkWCqLRc+bTTUgzAd55ckUJ/M+HVnjo6QfqUuB3kVzjpwJorQQZUYOLcgDY/Q5/tbrXI5+OGVxAb21pmnk8JHXNNWB2NvpA2o3p0ke/7WEoUH24l91ndOkXkN87eO8rSysl07Eq7gshbednYYiCxRPjuX0aPqbXMYNWXa5NdvIXFJcD2xV/l/QvXRYl+7Ca1igSXaiKc5eJyKSRqY4lf2vG0XCH6VZVxZuQIDAQAB"
   }), FilterList({
@@ -212,10 +212,10 @@ const std::vector<FilterList> region_lists = {
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAux80m8cYDEXwq+nMwmui6NCO9SFAdcGly5eq4uGEIQNB1R6Tr9JMqosHLZ4PnaUJqJwFfLWfmxzXj3q0DIpqqpdSq/jTYT/MvOldC+VQFO+NIjXhtysh4Z5F0BzlsQx/leMnV6yoyQjBX53n9cl3BvQK/EdbuQSDiNqX2TSVLm7hnr7Vf8m4XYRSCSJybY/1Tk3Cqgqywlkr+YN58L1/txXCQ9LJ5SxJ9I56TxqA1uT97hBmQikvnopuLh1SovDfjtCZwWwaGDD4ujW+Qaeh9dRrojS47iwG/Twu1xbb7ra8cn8BxdzsPjUSSurpPz/9sUooYOGJO44p7u77sxeTXQIDAQAB"
   }), FilterList({
     "4E8B1A63-DEBE-4B8B-AD78-3811C632B353",
-    "http://margevicius.lt/easylistlithuania.txt",
+    "https://margevicius.lt/easylistlithuania.txt",
     "LTU: Adblock Plus Lithuania",
     {"lt"},
-    "http://margevicius.lt/easylist_lithuania/",
+    "https://margevicius.lt/easylist_lithuania/",
     "ekodlgldheejnlkhiceghfgdcplpeoek",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5dB+7xR4lcPQCW84V4zhLiYhAvKxgdo2/cze+C8E3+ye1AO+a1CWbdPgft36vtTm4nkDzyC3P9O/aEU8jxShKEU1DDk8YBdRnvctQ9PPvwNyeS9LCYeT5a9crE9M/Z+kaFyq0SRe5cpowOBG8x4OYTt9Y7L9whEGzZYRZlgklli1AES6e2B9XUAdHXV/wHsaf2FrdPFtDfZZEFdr60edk4f0iGppiwkaGJiOWVF1ya47NoSMl4fIF7Klw9OkfKLJHjk9YXZmXCfqxQl8FnBFe/SzbSTVCAhdaggQAwG4VmojjMrBHcQl0VJDmpoY2jFZkiO3GLmAZCYIYaN1tFA8ZwIDAQAB"
   }), FilterList({
@@ -239,7 +239,7 @@ const std::vector<FilterList> region_lists = {
     "https://www.certyficate.it/adblock/adblock.txt",
     "POL: polskie filtry do Adblocka i uBlocka",
     {"pl"},
-    "http://www.certyficate.it/adblock-ublock-polish-filters/",
+    "https://www.certyficate.it/adblock-ublock-polish-filters/",
     "paoecjnjjbclkgbempaeemcbeldldlbo",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsUqWP6CeMx79UyZ3GZ1XcBGexIgml00sB286wZ7dJsfqG7oI0EGRoqrDeRreYcOTl+HvXsRJvR1FfkKJzD5svdhR4mn4lI+FXUDCvgEZ9CFa0YfASuoTIrdZtG74Twu2ai52ZJzrQ9ike97bdwzuZo+uymw26S+5/+IQbriIYoxEbJd7EryZuo+W65LdSat/NOKKf1QnVTIOoqMrXiewRYywnmZATfDIi0uKXuQfF15lbNBkQllmPH1xlMkz2WnvSvqI4HKPAmEFJWVUkiNhGKFZkTk1+88CgGGPVsKllxLaDOD+j8Kb0+h44RxObHTF/vFkfh8FfzujFj3HtevjCQIDAQAB"
   }), FilterList({
@@ -247,7 +247,7 @@ const std::vector<FilterList> region_lists = {
     "https://adguard.com/en/filter-rules.html?id=1",
     "RUS: Adguard Russian Filter",
     {},
-    "http://forum.adguard.com/forumdisplay.php?69-%D0%A4%D0%B8%D0%BB%D1%8C%D1%82%D1%80%D1%8B-Adguard", // NOLINT
+    "https://forum.adguard.com/forumdisplay.php?69-%D0%A4%D0%B8%D0%BB%D1%8C%D1%82%D1%80%D1%8B-Adguard", // NOLINT
     "dmoefgliihlcfplldbllllbofegmojne",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA4p+4n2wNFQCqQBBJDsvs+oqNYGzX3cbpY7fKbCjrRVE5esJK5HZJDoUUg43pPvKrCOIQ+lF+dXpBaCNnO4O/7JeFt2IFRJnKhE3ipIBAAbFymfo5T2uWFdyh6HcK0FNyJ/7FyHnANe7vYhXJS1Fqmh6jTYkAEIbrbmxtzrDMefx3XJcVhUV3XAPlP+K3MerxudIH++4fn3X0vKob5oQQQ9ZZ1PVcW6ZdZTQwQWtaVDb6prT+ULaphRRmnZpZuRXyHMv9KC8YP3K5ou+/Yd3uxxMwKmJXD67ZoNMtS/Dtr0btQsLxiEgox5Swd4iqyLM/SMxr3LqgUIlNwn7KRbMnZwIDAQAB"
   }), FilterList({
@@ -295,7 +295,7 @@ const std::vector<FilterList> region_lists = {
     "https://adguard.com/filter-rules.html?id=13",
     "TUR: Adguard Turkish Filter",
     {"tr"},
-    "http://forum.adguard.com/forumdisplay.php?51-Filter-Rules",
+    "https://forum.adguard.com/forumdisplay.php?51-Filter-Rules",
     "oooemoeokehlgldpjjhcgbndjcekllim",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2We4hmp3TwsrKyOb6rF/mCjy9TW3w9n9CD1rZMXUF3U6CCgxH4lps5HiLlxUFaIhhcUEXrGlXbk4TE2LlTv4VS53O23YixZXQ/xMmpWSyBvc3/jBCrAAcvDLAZY53J1T/9t7DNZdpXkX3rNpYB4L5/5dyzQI+sZZoTBe5dLyJOR1uDZJphpXRWSKqBRLn4SJ5uOGgtqG5J4rMhB+SUrNhWs8AyM8+tdoaxOjx7n+PA2Rx7/foty1Bbd7Hfc1Eg0C9R40inJNgH+IDxZ07ZFqiAuY1Z16lr4bwunk7ft4tTafci0M2t86JkoH0B4yiTBKthB6AkmZ0/dejeQeOBszYQIDAQAB"
   }), FilterList({
