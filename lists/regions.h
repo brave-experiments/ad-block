@@ -92,10 +92,10 @@ const std::vector<FilterList> region_lists = {
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsDGkXlpuILNJ/iPEsXXdw+ZVBPf7L11UkG2az6NaeumxKfOTBDivPCXz48lWG4d6jySR8n+eMOaqX8FUVc50AGnWfq/Ud7PJdkvYNEyTNjZw7yQUta3q1yfc5gVsc1IiG9s0GuZxzSWnI0zfwMIG6JNTZTdPeIL1VxnFySXwyYKr1QhkVcpiN5AYNA8jXmZmmZ716Cti+1kAlGLQSO0ABqFZhJvSMGUb+12z6BW20tc4spt8QgY6a8CFMasdoD3hz+gKo+rvQlgPGWQhWxuTgRJZQnyS3EKeJYBaaS11c3xfIqkK85VXuMt9x/3bu9NkXFpXcNwqBo9zs+gxodVSgwIDAQAB"
   }), FilterList({
     "1C6D8556-3400-4358-B9AD-72689D7B2C46",
-    "https://adb.juvander.net/Finland_adb.txt",
+    "https://raw.githubusercontent.com/finnish-easylist-addition/finnish-easylist-addition/master/Finland_adb.txt",
     "FIN: Finnish Addition to Easylist",
     {"fi"},
-    "https://www.juvander.fi/AdblockFinland",
+    "https://github.com/finnish-easylist-addition/finnish-easylist-addition",
     "kdcalgmhljnckmnfcboeabeepgnlaemf",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3seBXoyYSdtiqNAIaS5v9jP6Pr8xqgFnZyHknxNsC92fHyRW2nbuwMr78pWA4vPIyV6BFG5jS8k2RXEbWiOKNNsw7nWlfT4QMwkEu4uU1vqxsNDtdc1rdrc69aBegyNOQBS+W6aP1ESHp68AoalYKMHKpc+fi00sdQwYU9Y5oW9q4uRX3baAyuGZjP0xuKN3t+T1QnhbhkldP2WP0ooU/VRMhy2rYoE+W6eQRGrghJJG/wWznz5AiPD9EpPST/hoVWOKVco+12IbdILw7yGX2c65xPcLr6obVR+549QrgxU0W02XxS2lXKGc1NT2Zdl6ugh6XpW1RHVz7SjLIZgifwIDAQAB"
   }), FilterList({
