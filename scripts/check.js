@@ -38,31 +38,39 @@ commander
   .option('-h, --host [host]', 'host of the page that is being loaded')
   .option('-l, --location [location]', 'URL to use for the check')
   .option('-o, --output [output]', 'Optionally saves a DAT file')
-  .option('-L --list [list]', 'Filename for list of sites to check')
-  .option('-D --discover', 'If speciied does filter discovery for matched filter')
-  .option('-s --stats', 'If speciied outputs parsing stats')
+  .option('-L, --list [list]', 'Filename for list of sites to check')
+  .option('-D, --discover', 'If specified does filter discovery for matched filter')
+  .option('-s, --stats', 'If specified outputs parsing stats')
   .option('-C, --cache', 'Optionally cache results and use cached results')
   .option('-O, --filter-option [filterOption]', 'Filter option to use', filterStringToFilterOption, FilterOptions.noFilterOption)
   .parse(process.argv)
 
-let p = Promise.reject('Usage: node check.js --location <location> --host <host> [--uuid <uuid>]')
+let p = Promise.reject(new Error('Usage: node check.js --location <location> --host <host> [--uuid <uuid>]'))
+
+const ruleDiscovery = commander.discover && !commander.dat
+const parseOptions = {
+  keepRuleText: !!ruleDiscovery,
+}
 
 if (commander.host && (commander.location || commander.list) || commander.stats) {
   p.catch(() => {})
   if (commander.uuid) {
-    p = makeAdBlockClientFromListUUID(commander.uuid)
+    p = makeAdBlockClientFromListUUID(commander.uuid, parseOptions)
   } else if (commander.dat) {
+    if (ruleDiscovery) {
+      console.log('Note, rule discovery is not supported when reading from DAT files')
+    }
     p = makeAdBlockClientFromDATFile(commander.dat)
   } else if (commander.http) {
-    p = makeAdBlockClientFromListURL(commander.http)
+    p = makeAdBlockClientFromListURL(commander.http, undefined, parseOptions)
   } else if (commander.filter) {
-    p = makeAdBlockClientFromString(commander.filter)
+    p = makeAdBlockClientFromString(commander.filter, parseOptions)
   } else if (commander.filterPath) {
-    p = makeAdBlockClientFromFilePath(commander.filterPath)
+    p = makeAdBlockClientFromFilePath(commander.filterPath, parseOptions)
   } else {
     const defaultLists = require('../').adBlockLists.default
       .map((listObj) => listObj.listURL)
-    p = makeAdBlockClientFromListURL(defaultLists)
+    p = makeAdBlockClientFromListURL(defaultLists, undefined, parseOptions)
   }
 }
 
