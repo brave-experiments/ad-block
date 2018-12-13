@@ -339,6 +339,19 @@ TEST(client, exceptionRules) {
     {
       "http://yahoo.co.jp/promotion/imgs"
     }, {}));
+
+  CHECK(checkMatch("^ads^",
+    {
+      "http://yahoo.co.jp/ads/imgs",
+      "http://yahoo.co.jp/ads",
+      "http://yahoo.co.jp/ads?xyz",
+      "http://yahoo.co.jp/xyz?ads",
+    }, {
+      "http://yahoo.co.jp/uploads/imgs",
+      "http://yahoo.co.jp/adsx/imgs",
+      "http://yahoo.co.jp/adsshmads/imgs",
+      "ads://ads.co.ads/aads",
+    }));
 }
 
 struct OptionRuleData {

@@ -497,90 +497,42 @@ const char * getNextPos(const char *input, char separator, const char *end) {
   return p;
 }
 
-int indexOf(const char *source, const char *filterPartStart,
-    const char *filterPartEnd) {
-  const char *s = source;
-  const char *fStart = filterPartStart;
-  const char *notCheckedSource = source;
-
-  while (*s != '\0') {
-    if (fStart == filterPartEnd) {
-      return static_cast<int>(s - source - (filterPartEnd - filterPartStart));
-    }
-    if (*s != *fStart) {
-      notCheckedSource++;
-      s = notCheckedSource;
-      fStart = filterPartStart;
-      continue;
-    }
-
-    fStart++;
-    s++;
-  }
-
-  if (fStart == filterPartEnd) {
-    return static_cast<int>(s - source - (filterPartEnd - filterPartStart));
-  }
-
-  return -1;
-}
-
 /**
  * Similar to str1.indexOf(filter, startingPos) but with
  * extra consideration to some ABP filter rules like ^.
  */
-int indexOfFilter(const char* input, int inputLen, const char *filterPosStart,
-    const char *filterPosEnd) {
-  bool prefixedSeparatorChar = false;
-  int filterLen = static_cast<int>(filterPosEnd - filterPosStart);
-  int index = 0;
-  int beginIndex = -1;
+int indexOfFilter(const char* input, int inputLen,
+                  const char* filterBegin, const char *filterEnd) {
+  const int filterLen = filterEnd - filterBegin;
+  if (1 == filterLen && '^' == *filterBegin) return -1;
   if (filterLen > inputLen) {
     return -1;
   }
 
-  const char *filterPartStart = filterPosStart;
-  const char *filterPartEnd = getNextPos(filterPosStart, '^', filterPosEnd);
-  if (filterPartEnd - filterPosEnd > 0) {
-    filterPartEnd = filterPosEnd;
-  }
+  for (int i = 0; i < inputLen; ++i) {
+    bool match = true;
+    for (int j = 0; j < filterLen; ++j) {
+      const char inputChar = input[i+j];
+      const char filterChar = filterBegin[j];
 
-  while (*(input + index) != '\0') {
-    if (filterPartStart == filterPartEnd && filterPartStart != filterPosStart) {
-      prefixedSeparatorChar = true;
-    }
-    int lastIndex = index;
-    index = indexOf(input + index, filterPartStart, filterPartEnd);
-    if (index == -1) {
-      return -1;
-    }
-    index += lastIndex;
-    if (beginIndex == -1) {
-      beginIndex = index;
-    }
-
-    index += static_cast<int>(filterPartEnd - filterPartStart);
-
-    if (prefixedSeparatorChar) {
-      char testChar = *(input + index + (filterPartEnd - filterPartStart));
-      if (!isSeparatorChar(testChar)) {
-        return -1;
+      if (filterChar != inputChar) {
+        // ^abc^ matches both /abc/ and /abc
+        if ('^' == filterChar &&
+            (isSeparatorChar(inputChar) || '\0' == inputChar)) {
+          continue;
+        }
+        if ('\0' == inputChar) {
+          return -1;
+        }
+        match = false;
+        break;
       }
     }
-
-    if (filterPartEnd == filterPosEnd || *filterPartEnd == '\0') {
-      break;
-    }
-    const char *temp = getNextPos(filterPartEnd + 1, '^', filterPosEnd);
-    filterPartStart = filterPartEnd + 1;
-    filterPartEnd = temp;
-    prefixedSeparatorChar = false;
-    if (filterPartEnd - filterPosEnd > 0) {
-      break;
+    if (match) {
+      return i;
     }
   }
-
-  return beginIndex;
+  return -1;
 }
 
 bool Filter::matches(const char *input, FilterOption contextOption,
