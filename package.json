@@ -8,12 +8,12 @@
   },
   "dependencies": {
     "bloom-filter-cpp": "^1.2.0",
-    "cppunitlite": "brave/CppUnitLite",
     "hashset-cpp": "^2.1.0",
     "nan": "^2.10.0"
   },
   "devDependencies": {
     "commander": "^2.15.1",
+    "cppunitlite": "brave/CppUnitLite",
     "mocha": "^5.2.0",
     "node-gyp": "^3.8.0",
     "pre-commit": "^1.2.2",
