@@ -13616,6 +13616,12 @@ const char *badFingerprints[] = {
 "r.ebay",
 ".ebay.",
 "ebay.c",
+"/Asset",
+"/ads/r",
+"//ads.",
+"ipts/H",
+"//adv.",
+"pageur",
 };
 
 const char *badSubstrings[] = {"http", "www" };

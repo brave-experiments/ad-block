@@ -301,4 +301,136 @@ describe('matching', function () {
       })
     })
   })
+  describe('domain filtered rules', function () {
+    describe('All exclude domain rules', function() {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('wp-content/$domain=~aaaaa.com|~bbbbb.com|~ccccc.com')
+      })
+
+      it('filter has all anti domains but with different input domain should block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'www.brianbondy.com'))
+      })
+      it('filter has all anti domains and with a same input domain should not block', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'aaaaa.com'))
+      })
+    })
+    describe('All include domain rules', function() {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('wp-content/$domain=aaaaa.com|bbbbb.com|ccccc.com')
+      })
+      it('filter has all anti=false domains but with different input domain should not block', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'www.brianbondy.com'))
+      })
+      it('filter has all anti=false domains and with a same domain should not block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'aaaaa.com'))
+      })
+    })
+    describe('Rule with blocking parent domain and subdomain which is allowed', function() {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('wp-content/$domain=example.com|~foo.example.com|x.com|y.com|z.com')
+      })
+      it('for test URL of unrelated domain should not match', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'brianbondy.com'))
+      })
+      it('for test URL of parent should block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'example.com'))
+      })
+      it('for test URL of subdomain should allow', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'foo.example.com'))
+      })
+      it('for test URL of deeper subdomain should allow', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'boo.foo.example.com'))
+      })
+      it('for test URL of subdomain of top level rule should block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'boo.example.com'))
+      })
+    })
+    describe('Rule with anti-block parent domain and subdomain which is blocked', function() {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('wp-content/$domain=~example.com|foo.example.com|x.com|z.com|y.com')
+      })
+      it('for test URL of unrelated domain should not match', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'brianbondy.com'))
+      })
+      it('for test URL of parent should not block', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'example.com'))
+      })
+      it('for test URL of subdomain should block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'foo.example.com'))
+      })
+      it('for test URL of deeper subdomain should block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'boo.foo.example.com'))
+      })
+      it('for test URL of subdomain of top level rule should allow', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'boo.example.com'))
+      })
+    })
+
+    describe('Three level deep rules', function() {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('wp-content/$domain=example.com|~brave.example.com|foo.brave.example.com')
+      })
+      it('for test URL of unrelated domain should not match', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'brianbondy.com'))
+      })
+      it('for test URL of parent should block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'example.com'))
+      })
+      it('for test URL of exception subdomain should allow', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'brave.example.com'))
+      })
+      it('for test URL of deeper subdomain should block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'foo.brave.example.com'))
+      })
+    })
+    describe('Three level deep rules reversed', function() {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('wp-content/$domain=~example.com|brave.example.com|~foo.brave.example.com')
+      })
+      it('for test URL of unrelated domain should match', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'brianbondy.com'))
+      })
+      it('for test URL of parent should allow', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'example.com'))
+      })
+      it('for test URL of exception subdomain should block', function () {
+        assert(this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'brave.example.com'))
+      })
+      it('for test URL of deeper subdomain should allow', function () {
+        assert(!this.client.matches('https://www.sportsnet.ca/wp-content/plugins',
+            FilterOptions.image, 'foo.brave.example.com'))
+      })
+    })
+
+
+
+
+  })
 })

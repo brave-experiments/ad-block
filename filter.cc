@@ -9,6 +9,8 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <iostream>
+using namespace std;
 
 #ifdef ENABLE_REGEX
 #include <regex> // NOLINT
@@ -34,9 +36,8 @@ Filter::Filter() :
   dataLen(-1),
   domainList(nullptr),
   host(nullptr),
-  domainCount(0),
-  antiDomainCount(0),
-  hostLen(-1) {
+  hostLen(-1),
+  domainsParsed(false) {
 }
 
 Filter::~Filter() {
@@ -64,9 +65,8 @@ Filter::Filter(const char * data, int dataLen, char *domainList,
       antiFilterOption(FONoFilterOption), ruleDefinition(nullptr),
       data(const_cast<char*>(data)), dataLen(dataLen),
       domainList(domainList), host(const_cast<char*>(host)),
-      hostLen(hostLen) {
-    domainCount = 0;
-    antiDomainCount = 0;
+      hostLen(hostLen),
+      domainsParsed(false) {
   }
 
 Filter::Filter(FilterType filterType, FilterOption filterOption,
@@ -79,9 +79,8 @@ Filter::Filter(FilterType filterType, FilterOption filterOption,
       antiFilterOption(antiFilterOption), ruleDefinition(nullptr),
       data(const_cast<char*>(data)), dataLen(dataLen),
       domainList(domainList), host(const_cast<char *>(host)),
-      hostLen(hostLen) {
-    domainCount = 0;
-    antiDomainCount = 0;
+      hostLen(hostLen),
+      domainsParsed(false) {
   }
 
 Filter::Filter(const Filter &other) {
@@ -90,9 +89,10 @@ Filter::Filter(const Filter &other) {
   filterOption = other.filterOption;
   antiFilterOption = other.antiFilterOption;
   dataLen = other.dataLen;
-  domainCount = other.domainCount;
-  antiDomainCount = other.antiDomainCount;
   hostLen = other.hostLen;
+  domainsParsed = other.domainsParsed;
+  domains = other.domains;
+  antiDomains = other.antiDomains;
   if (other.dataLen == -1 && other.data) {
     dataLen = static_cast<int>(strlen(other.data));
   }
@@ -179,77 +179,29 @@ bool isDomain(const char *input, int len, const char *domain, bool anti) {
   return !memcmp(p, domain, len);
 }
 
-bool Filter::containsDomain(const char *domain, bool anti) const {
-  if (!domainList) {
-    return false;
+bool Filter::containsDomain(const std::string& domain, bool anti) const {
+  if (!anti) {
+    return std::find(domains.begin(), domains.end(), std::string(domain)) != domains.end();
   }
-
-  int startOffset = 0;
-  int len = 0;
-  const char *p = domainList;
-  while (*p != '\0') {
-    if (*p == '|') {
-      if (isDomain(domainList + startOffset, len, domain, anti)) {
-        return true;
-      }
-      startOffset += len + 1;
-      len = -1;
-    }
-    p++;
-    len++;
-  }
-  return isDomain(domainList + startOffset, len, domain, anti);
+  return std::find(antiDomains.begin(), antiDomains.end(), std::string(domain)) != antiDomains.end();
 }
 
 uint32_t Filter::getDomainCount(bool anti) {
-  calculateDomainCounts();
+  parseDomains(domainList);
   if (anti) {
-    return antiDomainCount;
+    return antiDomains.size();
   }
-  return domainCount;
-}
-
-void Filter::calculateDomainCounts() {
-  domainCount = 0;
-  antiDomainCount = 0;
-  if (!domainList || domainList[0] == '\0') {
-    return;
-  }
-  // Check if already claculated
-  if (domainCount || antiDomainCount) {
-    return;
-  }
-  int startOffset = 0;
-  int len = 0;
-  const char *p = domainList;
-  while (*p != '\0') {
-    if (*p == '|') {
-      if (*(domainList + startOffset) == '~') {
-        antiDomainCount++;
-      } else if (*(domainList + startOffset) != '~') {
-        domainCount++;
-      }
-      startOffset = len + 1;
-      len = -1;
-    }
-    p++;
-    len++;
-  }
-  if (*(domainList + startOffset) == '~') {
-    antiDomainCount++;
-  } else if (*(domainList + startOffset) != '~') {
-    domainCount++;
-  }
+  return domains.size();
 }
 
 bool Filter::isDomainOnlyFilter() {
-  calculateDomainCounts();
-  return domainCount && !antiDomainCount;
+  parseDomains(domainList);
+  return domains.size() && !antiDomains.size();
 }
 
 bool Filter::isAntiDomainOnlyFilter() {
-  calculateDomainCounts();
-  return antiDomainCount && !domainCount;
+  parseDomains(domainList);
+  return antiDomains.size() && !domains.size();
 }
 
 void Filter::parseOption(const char *input, int len) {
@@ -387,6 +339,44 @@ bool Filter::hasUnsupportedOptions() const {
   return (filterOption & FOUnsupportedSoSkipCheck) != 0;
 }
 
+bool Filter::contextDomainMatchesFilter(const char *contextDomain) {
+  parseDomains(domainList);
+  // If there are no context domains, then this filter can still apply
+  // to all domains.
+  if (domains.size() == 0 && antiDomains.size() == 0) {
+    return true;
+  }
+
+  const char *p = contextDomain;
+  // Start keeps track of the start of the last match
+  // We do this to avoid extra TLD checks for rules.
+  const char *start = contextDomain;
+  while (*p != '\0') {
+    if (*p == '.') {
+      std::string domain(start);
+      if (containsDomain(domain, false)) {
+        return true;
+      }
+      if (containsDomain(domain, true)) {
+        return false;
+      }
+      // Set start to just past the period and increment p
+      start = ++p;
+    }
+    p++;
+  }
+
+  // No exact match, if there are only anti domain filters, then this
+  // rule applies.
+  if (domains.size() == 0 && antiDomains.size() > 0) {
+    return true;
+  }
+
+  // Otherwise there are only domains, and we haven't matched anything
+  // so it's not a match.
+  return domains.size() < antiDomains.size();
+}
+
 // Determines if there's a match based on the options, this doesn't
 // mean that the filter rule should be accepted, just that the filter rule
 // should be considered given the current context.
@@ -430,44 +420,7 @@ bool Filter::matchesOptions(const char *input, FilterOption context,
 
   // Domain options check
   if (domainList && contextDomain) {
-    // + 2 because we always end in a |\0 for these buffers
-    int bufSize = static_cast<int>(strlen(domainList)) + 2;
-
-    char shouldBlockDomainsBuffer[2048];
-    char shouldSkipDomainsBuffer[2048];
-
-    // This is purely an optimizaiton to avoid allocation a bunch of things
-    // we don't need to. This will use stack allocation above as long as it's
-    // possible to fit in it.
-    char *shouldBlockDomains = shouldBlockDomainsBuffer;
-    char *shouldSkipDomains = shouldSkipDomainsBuffer;
-    bool allocatedBuffers = false;
-    if (bufSize > 2048) {
-      shouldBlockDomains = new char[bufSize];
-      shouldSkipDomains = new char[bufSize];
-      allocatedBuffers = true;
-    }
-
-    memset(shouldBlockDomains, 0, bufSize);
-    memset(shouldSkipDomains, 0, bufSize);
-    filterDomainList(domainList, shouldBlockDomains, contextDomain, false);
-    filterDomainList(domainList, shouldSkipDomains, contextDomain, true);
-
-    int leftOverBlocking =
-      getLeftoverDomainCount(shouldBlockDomains, shouldSkipDomains);
-    int leftOverSkipping =
-      getLeftoverDomainCount(shouldSkipDomains, shouldBlockDomains);
-    int shouldBlockDomainsLen = static_cast<int>(strlen(shouldBlockDomains));
-    int shouldSkipDomainsLen = static_cast<int>(strlen(shouldSkipDomains));
-
-    if (allocatedBuffers) {
-      delete[] shouldBlockDomains;
-      delete[] shouldSkipDomains;
-    }
-
-    if ((shouldBlockDomainsLen == 0 && getDomainCount() != 0) ||
-        (shouldBlockDomainsLen > 0 && leftOverBlocking == 0) ||
-        (shouldSkipDomainsLen > 0 && leftOverSkipping > 0)) {
+    if (!contextDomainMatchesFilter(contextDomain)) {
       return false;
     }
   }
@@ -654,121 +607,35 @@ bool Filter::matches(const char *input, int inputLen,
   return true;
 }
 
-void Filter::filterDomainList(const char *domainList, char *destBuffer,
-    const char *contextDomain, bool anti) {
-  if (!domainList) {
+void Filter::parseDomains(const char* domainList) {
+  if (!domainList || domainsParsed) {
     return;
   }
-
-  char *curDest = destBuffer;
-  int contextDomainLen = static_cast<int>(strlen(contextDomain));
   int startOffset = 0;
   int len = 0;
-  const char *p = domainList;
-  while (true) {
-    if (*p == '|' || *p == '\0') {
-      const char *domain = domainList + startOffset;
-      if (!isThirdPartyHost(domain[0] == '~'
-            ? domain + 1 : domain, domain[0] == '~'
-            ? len -1 : len, contextDomain, contextDomainLen)) {
-        // We're only considering domains, not anti domains
-        if (!anti && len > 0 && *domain != '~') {
-          memcpy(curDest, domain, len);
-          curDest[len] = '|';
-          curDest[len + 1] = '\0';
-        } else if (anti && len > 0 && *domain == '~') {
-          memcpy(curDest, domain + 1, len - 1);
-          curDest[len] = '|';
-          curDest[len + 1] = '\0';
-        }
-      }
-
-      startOffset += len + 1;
-      len = -1;
-    }
-
-    if (*p == '\0') {
-      break;
-    }
-    p++;
-    len++;
-  }
-}
-
-bool isEveryDomainThirdParty(const char *shouldSkipDomains,
-    const char *shouldBlockDomain, int shouldBlockDomainLen) {
-  bool everyDomainThirdParty = true;
-  if (!shouldSkipDomains) {
-    return false;
-  }
-
-  int startOffset = 0;
-  int len = 0;
-  const char *p = shouldSkipDomains;
-  while (true) {
-    if (*p == '|' || *p == '\0') {
-      const char *domain = shouldSkipDomains + startOffset;
-      if (*domain == '~') {
-        everyDomainThirdParty = everyDomainThirdParty &&
-          isThirdPartyHost(shouldBlockDomain, shouldBlockDomainLen,
-              domain + 1, len - 1);
-      } else {
-        everyDomainThirdParty = everyDomainThirdParty &&
-          isThirdPartyHost(shouldBlockDomain, shouldBlockDomainLen,
-              domain, len);
-      }
-
-      startOffset += len + 1;
-      len = -1;
-    }
-
-    if (*p == '\0') {
-      break;
-    }
-    p++;
-    len++;
-  }
-
-  return everyDomainThirdParty;
-}
-
-int Filter::getLeftoverDomainCount(const char *shouldBlockDomains,
-    const char *shouldSkipDomains) {
-  int leftOverBlocking = 0;
-
-  if (strlen(shouldBlockDomains) == 0) {
-    return 0;
-  }
-
-  int startOffset = 0;
-  int len = 0;
-  const char *p = domainList;
+  const char* p = domainList;
   while (true) {
     if (*p == '|' || *p == '\0') {
       const char *domain = domainList + startOffset;
       if (*domain == '~') {
-        if (isEveryDomainThirdParty(shouldSkipDomains,
-              domain + 1, len - 1)) {
-          leftOverBlocking++;
-        }
+        cout << "about to insert: " << std::string(domain + 1, len - 1) << endl;
+        antiDomains.insert(std::string(domain + 1, len - 1));
+        cout << "inserted" << endl;
       } else {
-        if (isEveryDomainThirdParty(shouldSkipDomains, domain, len)) {
-          leftOverBlocking++;
-        }
+        cout << "2.about to insert: " << std::string(domain, len) << endl;
+        domains.insert(std::string(domain, len));
+        cout << "2.inserted" << endl;
       }
-
       startOffset += len + 1;
       len = -1;
     }
-
     if (*p == '\0') {
       break;
     }
     p++;
     len++;
   }
-
-  return leftOverBlocking;
+  domainsParsed = true;
 }
 
 uint64_t Filter::hash() const {
