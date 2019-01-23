@@ -19,6 +19,7 @@
 #include "./ad_block_client.h"
 
 #include "BloomFilter.h"
+#include "hash_set.h"
 
 static HashFn h(19);
 
@@ -379,8 +380,8 @@ bool Filter::contextDomainMatchesFilter(const char *contextDomain) {
       if (containsDomain(start, contextDomainLen - (start - contextDomain), true)) {
         return false;
       }
-      // Set start to just past the period and increment p
-      start = ++p;
+      // Set start to just past the period
+      start = p + 1;
     }
     p++;
   }

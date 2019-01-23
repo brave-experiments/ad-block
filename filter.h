@@ -10,9 +10,9 @@
 #include <string.h>
 #include "./base.h"
 #include "./context_domain.h"
-#include "./hash_set.h"
 
 class BloomFilter;
+template <typename T> class HashSet;
 
 enum FilterType {
   FTNoFilterType = 0,
@@ -122,7 +122,11 @@ friend class AdBlockClient;
       const char *contextDomain = nullptr);
 
   void parseOptions(const char *input);
-  bool containsDomain(const char* contextDomain, size_t contextDomainLen, bool anti = false) const;
+
+  // Checks to see if the specified context domain is in the
+  // domain (or antiDmomain) list.
+  bool containsDomain(const char* contextDomain, size_t contextDomainLen,
+      bool anti = false) const;
   // Returns true if the filter is composed of only domains and no anti domains
   // Note that the set of all domain and anti-domain rules are not mutually
   // exclusive.  One xapmle is:
