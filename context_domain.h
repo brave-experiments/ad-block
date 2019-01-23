@@ -6,19 +6,14 @@
 #ifndef CONTEXT_DOMAIN_H_
 #define CONTEXT_DOMAIN_H_
 
-#include <math.h>
 #include <string.h>
-#include "hashFn.h"
-
-static HashFn context_domain_hash(19);
+#include "base.h"
 
 // This class must operate off of borrowed memory
 // Serialization and deserialization is not supported intentionally.
 class ContextDomain {
  public:
-  uint64_t GetHash() const {
-    return context_domain_hash(start_, len_);
-  }
+  uint64_t GetHash() const;
 
   ~ContextDomain() {
   }
