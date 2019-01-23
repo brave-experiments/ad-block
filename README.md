@@ -34,7 +34,6 @@ console.log('public/ad/* should not match b2.  Actual: ', b2)
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #include <string>
 
 using namespace std;
