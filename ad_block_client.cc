@@ -1194,32 +1194,6 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
     new Filter[newNumNoFingerprintAntiDomainOnlyExceptionFilters
     + numNoFingerprintAntiDomainOnlyExceptionFilters];
 
-  memset(newFilters, 0,
-      sizeof(Filter) * (newNumFilters + numFilters));
-  memset(newCosmeticFilters, 0,
-      sizeof(Filter) * (newNumCosmeticFilters + numCosmeticFilters));
-  memset(newHtmlFilters, 0,
-      sizeof(Filter) * (newNumHtmlFilters + numHtmlFilters));
-  memset(newExceptionFilters, 0,
-      sizeof(Filter) * (newNumExceptionFilters + numExceptionFilters));
-  memset(newNoFingerprintFilters, 0,
-      sizeof(Filter) * (newNumNoFingerprintFilters + numNoFingerprintFilters));
-  memset(newNoFingerprintExceptionFilters, 0,
-      sizeof(Filter) * (newNumNoFingerprintExceptionFilters
-        + numNoFingerprintExceptionFilters));
-  memset(newNoFingerprintDomainOnlyFilters, 0,
-      sizeof(Filter) * (newNumNoFingerprintDomainOnlyFilters +
-        numNoFingerprintDomainOnlyFilters));
-  memset(newNoFingerprintAntiDomainOnlyFilters, 0,
-      sizeof(Filter) * (newNumNoFingerprintAntiDomainOnlyFilters +
-        numNoFingerprintAntiDomainOnlyFilters));
-  memset(newNoFingerprintDomainOnlyExceptionFilters, 0,
-      sizeof(Filter) * (newNumNoFingerprintDomainOnlyExceptionFilters
-        + numNoFingerprintDomainOnlyExceptionFilters));
-  memset(newNoFingerprintAntiDomainOnlyExceptionFilters, 0,
-      sizeof(Filter) * (newNumNoFingerprintAntiDomainOnlyExceptionFilters
-        + numNoFingerprintAntiDomainOnlyExceptionFilters));
-
   Filter *curFilters = newFilters;
   Filter *curCosmeticFilters = newCosmeticFilters;
   Filter *curHtmlFilters = newHtmlFilters;
@@ -1241,30 +1215,39 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
       noFingerprintDomainOnlyExceptionFilters ||
       noFingerprintAntiDomainOnlyFilters ||
       noFingerprintAntiDomainOnlyExceptionFilters) {
-    // Copy the old data in
-    memcpy(newFilters, filters, sizeof(Filter) * numFilters);
-    memcpy(newCosmeticFilters, cosmeticFilters,
-        sizeof(Filter) * numCosmeticFilters);
-    memcpy(newHtmlFilters, htmlFilters,
-        sizeof(Filter) * numHtmlFilters);
-    memcpy(newExceptionFilters, exceptionFilters,
-        sizeof(Filter) * numExceptionFilters);
-    memcpy(newNoFingerprintFilters, noFingerprintFilters,
-        sizeof(Filter) * (numNoFingerprintFilters));
-    memcpy(newNoFingerprintExceptionFilters, noFingerprintExceptionFilters,
-        sizeof(Filter) * (numNoFingerprintExceptionFilters));
-    memcpy(newNoFingerprintDomainOnlyFilters, noFingerprintDomainOnlyFilters,
-        sizeof(Filter) * (numNoFingerprintDomainOnlyFilters));
-    memcpy(newNoFingerprintAntiDomainOnlyFilters,
-        noFingerprintAntiDomainOnlyFilters,
-        sizeof(Filter) * (numNoFingerprintAntiDomainOnlyFilters));
-    memcpy(newNoFingerprintDomainOnlyExceptionFilters,
-        noFingerprintDomainOnlyExceptionFilters,
-        sizeof(Filter) * (numNoFingerprintDomainOnlyExceptionFilters));
-    memcpy(newNoFingerprintAntiDomainOnlyExceptionFilters,
-        noFingerprintAntiDomainOnlyExceptionFilters,
-        sizeof(Filter) * (numNoFingerprintAntiDomainOnlyExceptionFilters));
 
+    // Copy the old data in, we can't simply use memcpy here
+    // since filtres manages some pointers that get deleted.
+    for (int i = 0; i < numFilters; i++) {
+      newFilters[i].swapData(&(filters[i]));
+    }
+    for (int i = 0; i < numCosmeticFilters; i++) {
+      newCosmeticFilters[i].swapData(&(cosmeticFilters[i]));
+    }
+    for (int i = 0; i < numHtmlFilters; i++) {
+      newHtmlFilters[i].swapData(&(htmlFilters[i]));
+    }
+    for (int i = 0; i < numExceptionFilters; i++) {
+      newExceptionFilters[i].swapData(&(exceptionFilters[i]));
+    }
+    for (int i = 0; i < numNoFingerprintFilters; i++) {
+      newNoFingerprintFilters[i].swapData(&(noFingerprintFilters[i]));
+    }
+    for (int i = 0; i < numNoFingerprintExceptionFilters; i++) {
+      newNoFingerprintExceptionFilters[i].swapData(&(noFingerprintExceptionFilters[i]));
+    }
+    for (int i = 0; i < numNoFingerprintDomainOnlyFilters; i++) {
+      newNoFingerprintDomainOnlyFilters[i].swapData(&(noFingerprintDomainOnlyFilters[i]));
+    }
+    for (int i = 0; i < numNoFingerprintAntiDomainOnlyFilters; i++) {
+      newNoFingerprintAntiDomainOnlyFilters[i].swapData(&(noFingerprintAntiDomainOnlyFilters[i]));
+    }
+    for (int i = 0; i < numNoFingerprintDomainOnlyExceptionFilters; i++) {
+      newNoFingerprintDomainOnlyExceptionFilters[i].swapData(&(noFingerprintDomainOnlyExceptionFilters[i]));
+    }
+    for (int i = 0; i < numNoFingerprintAntiDomainOnlyExceptionFilters; i++) {
+      newNoFingerprintAntiDomainOnlyExceptionFilters[i].swapData(&(noFingerprintAntiDomainOnlyExceptionFilters[i]));
+    }
 
     // Free up the old memory for filter storage
     // Set the old filter lists borrwedMemory to true since it'll be taken by

@@ -9,8 +9,10 @@
 #include <stdint.h>
 #include <string.h>
 #include "./base.h"
+#include "./context_domain.h"
 
 class BloomFilter;
+template <typename T> class HashSet;
 
 enum FilterType {
   FTNoFilterType = 0,
@@ -120,7 +122,11 @@ friend class AdBlockClient;
       const char *contextDomain = nullptr);
 
   void parseOptions(const char *input);
-  bool containsDomain(const char *domain, bool anti = false) const;
+
+  // Checks to see if the specified context domain is in the
+  // domain (or antiDmomain) list.
+  bool containsDomain(const char* contextDomain, size_t contextDomainLen,
+      bool anti = false) const;
   // Returns true if the filter is composed of only domains and no anti domains
   // Note that the set of all domain and anti-domain rules are not mutually
   // exclusive.  One xapmle is:
@@ -130,8 +136,6 @@ friend class AdBlockClient;
   // Returns true if the filter is composed of only anti-domains and no domains
   bool isAntiDomainOnlyFilter();
   uint32_t getDomainCount(bool anti = false);
-  // One pass, will calcuate internal member for domainCount and antiDomainCount
-  void calculateDomainCounts();
 
   uint64_t hash() const;
   uint64_t GetHash() const {
@@ -187,17 +191,15 @@ friend class AdBlockClient;
   int dataLen;
   char *domainList;
   char *host;
-  uint32_t domainCount;
-  uint32_t antiDomainCount;
   int hostLen;
+  HashSet<ContextDomain>* domains;
+  HashSet<ContextDomain>* antiDomains;
+  bool domainsParsed;
 
  protected:
-  // Filters the domain list down to what's applicable for the context domain
-  void filterDomainList(const char *domainList, char *destBuffer,
-      const char *contextDomain, bool anti);
-  // Checks for what is not excluded by the opposite list
-  int getLeftoverDomainCount(const char *shouldBlockDomains,
-      const char *shouldSkipDomains);
+  // Fills |domains| and |antiDomains| sets
+  void parseDomains(const char *domainList);
+  bool contextDomainMatchesFilter(const char *contextDomain);
 
   // Parses a single option
   void parseOption(const char *input, int len);

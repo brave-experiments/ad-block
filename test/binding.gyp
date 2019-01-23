@@ -15,6 +15,8 @@
       "../protocol.h",
       "../ad_block_client.cc",
       "../ad_block_client.h",
+      "../context_domain.cc",
+      "../context_domain.h",
       "../cosmetic_filter.cc",
       "../cosmetic_filter.h",
       "../filter.cc",

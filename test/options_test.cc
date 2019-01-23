@@ -73,7 +73,7 @@ bool testOptionsWithFilter(Filter *f, const char *input,
   bool ret = true;
   std::for_each(expectedDomains.begin(), expectedDomains.end(),
       [&f, &expectedDomains, &ret, input](string const &s) {
-    if (!f->containsDomain(s.c_str())) {
+    if (!f->containsDomain(s.c_str(), s.size(), false)) {
       cout << input << endl << "Actual domains: "
       << (f->domainList ? f->domainList : "") << endl << "Expected: ";
       printSet(expectedDomains);
@@ -88,7 +88,7 @@ bool testOptionsWithFilter(Filter *f, const char *input,
 
   std::for_each(expectedAntiDomains.begin(), expectedAntiDomains.end(),
       [&f, &expectedAntiDomains, &ret, input](string const &s) {
-    if (!f->containsDomain(s.c_str(), true)) {
+    if (!f->containsDomain(s.c_str(), s.size(), true)) {
       cout << input << endl << "Actual anti domains: "
         << (f->domainList ? f->domainList : "") << endl << "Expected: ";
       printSet(expectedAntiDomains);
