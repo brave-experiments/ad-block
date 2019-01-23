@@ -94,7 +94,7 @@ int main(int argc, char**argv) {
 
   int size;
   // This buffer is allocate on the heap, you must call delete[] when you're done using it.
-  char *buffer = client.serialize(size);
+  char *buffer = client.serialize(&size);
   writeFile("./ABPFilterParserData.dat", buffer, size);
 
   AdBlockClient client2;
