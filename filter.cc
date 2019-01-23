@@ -154,8 +154,8 @@ void Filter::swapData(Filter *other) {
   char *tempHost = host;
   int tempHostLen = hostLen;
   bool tempDomainsParsed = domainsParsed;
-  auto tempDomains = domains;
-  auto tempAntiDomains = antiDomains;
+  HashSet<ContextDomain>* tempDomains = domains;
+  HashSet<ContextDomain>* tempAntiDomains = antiDomains;
 
   filterType = other->filterType;
   filterOption = other->filterOption;

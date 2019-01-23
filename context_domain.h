@@ -8,47 +8,42 @@
 
 #include <math.h>
 #include <string.h>
-#include "./hashFn.h"
+#include "hashFn.h"
 
 static HashFn context_domain_hash(19);
 
+// This class must operate off of borrowed memory
+// Serialization and deserialization is not supported intentionally.
 class ContextDomain {
  public:
   uint64_t GetHash() const {
-    return context_domain_hash(data_, data_len_);
+    return context_domain_hash(start_, len_);
   }
 
   ~ContextDomain() {
-    if (data_) {
-      delete[] data_;
-    }
-  }
-  explicit ContextDomain(const char* data) {
-    data_len_ = static_cast<uint32_t>(strlen(data));
-    data_ = new char[data_len_];
-    memcpy(data_, data, data_len_);
   }
 
-  ContextDomain(const char* data, int data_len) {
-    data_len_ = data_len;
-    data_ = new char[data_len];
-    memcpy(data_, data, data_len);
+  ContextDomain(const char* start, int len) {
+    start_ = start;
+    len_ = len;
   }
 
   ContextDomain(const ContextDomain &rhs) {
-    data_len_ = rhs.data_len_;
-    data_ = new char[data_len_];
-    memcpy(data_, rhs.data_, data_len_);
+    start_ = rhs.start_;
+    len_ = rhs.len_;
   }
 
-  ContextDomain() : data_(nullptr), data_len_(0) {
+  ContextDomain() : start_(nullptr), len_(0) {
   }
 
   bool operator==(const ContextDomain&rhs) const {
-    if (data_len_ != rhs.data_len_) {
+    if (!start_ || !rhs.start_) {
       return false;
     }
-    return !memcmp(data_, rhs.data_, data_len_);
+    if (len_ != rhs.len_) {
+      return false;
+    }
+    return !memcmp(start_, rhs.start_, len_);
   }
 
   bool operator!=(const ContextDomain &rhs) const {
@@ -67,8 +62,8 @@ class ContextDomain {
   }
 
  private:
-  char* data_;
-  uint32_t data_len_;
+  const char* start_;
+  int len_;
 };
 
 #endif  // CONTEXT_DOMAIN_H_
