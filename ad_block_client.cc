@@ -1606,37 +1606,37 @@ char * AdBlockClient::serialize(int *totalSize,
   if (hostAnchoredHashSet) {
     memcpy(buffer + pos, hostAnchoredHashSetBuffer, hostAnchoredHashSetSize);
     pos += hostAnchoredHashSetSize;
-    delete hostAnchoredHashSetBuffer;
+    delete[] hostAnchoredHashSetBuffer;
   }
   if (hostAnchoredExceptionHashSet) {
     memcpy(buffer + pos, hostAnchoredExceptionHashSetBuffer,
         hostAnchoredExceptionHashSetSize);
     pos += hostAnchoredExceptionHashSetSize;
-    delete hostAnchoredExceptionHashSetBuffer;
+    delete[] hostAnchoredExceptionHashSetBuffer;
   }
   if (noFingerprintDomainHashSet) {
     memcpy(buffer + pos, noFingerprintDomainHashSetBuffer,
         noFingerprintDomainHashSetSize);
     pos += noFingerprintDomainHashSetSize;
-    delete noFingerprintDomainHashSetBuffer;
+    delete[] noFingerprintDomainHashSetBuffer;
   }
   if (noFingerprintAntiDomainHashSet) {
     memcpy(buffer + pos, noFingerprintAntiDomainHashSetBuffer,
         noFingerprintAntiDomainHashSetSize);
     pos += noFingerprintAntiDomainHashSetSize;
-    delete noFingerprintAntiDomainHashSetBuffer;
+    delete[] noFingerprintAntiDomainHashSetBuffer;
   }
   if (noFingerprintDomainExceptionHashSet) {
     memcpy(buffer + pos, noFingerprintDomainExceptionHashSetBuffer,
         noFingerprintDomainExceptionHashSetSize);
     pos += noFingerprintDomainExceptionHashSetSize;
-    delete noFingerprintDomainExceptionHashSetBuffer;
+    delete[] noFingerprintDomainExceptionHashSetBuffer;
   }
   if (noFingerprintAntiDomainExceptionHashSet) {
     memcpy(buffer + pos, noFingerprintAntiDomainExceptionHashSetBuffer,
         noFingerprintAntiDomainExceptionHashSetSize);
     pos += noFingerprintAntiDomainExceptionHashSetSize;
-    delete noFingerprintAntiDomainExceptionHashSetBuffer;
+    delete[] noFingerprintAntiDomainExceptionHashSetBuffer;
   }
 
   return buffer;
