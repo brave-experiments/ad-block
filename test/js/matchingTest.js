@@ -154,7 +154,7 @@ describe('matching', function () {
         assert.equal(queryResult.matchingOrigRule, '-google-analytics.')
       })
       it('exception rule returned', function () {
-        const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.brianbondy.com')
+        const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online')
         assert.equal(queryResult.matchingExceptionOrigRule, '@@||www.scrumpoker.online^$~third-party')
       })
       it('rules with multiple options', function () {
@@ -429,8 +429,30 @@ describe('matching', function () {
       })
     })
 
-
-
-
+    describe('first-party host', function() {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('analytics.brave.com^\n@@https://analytics.*/piwik.$~third-party')
+      })
+      it('for same host finds exception', function () {
+        assert(!this.client.matches('https://analytics.brave.com/piwik.js',
+            FilterOptions.image, 'analytics.brave.com'))
+      })
+      it('for same diff host does not find exception', function () {
+        assert(this.client.matches('https://analytics.brave.com/piwik.js',
+            FilterOptions.image, 'batcommunity.org'))
+      })
+      it('findMatchingFilters for same host finds exception', function () {
+        const queryResult = this.client.findMatchingFilters('https://analytics.brave.com/piwik.js', FilterOptions.script, 'analytics.brave.com')
+        assert.equal(queryResult.matches, false)
+        assert.equal(queryResult.matchingFilter, 'analytics.brave.com^')
+        assert.equal(queryResult.matchingExceptionFilter, 'https://analytics.*/piwik.')
+      })
+      it('findMatchingFilters for same diff host does not find exception', function () {
+        const queryResult = this.client.findMatchingFilters('https://analytics.brave.com/piwik.js', FilterOptions.script, 'batcommunity.org')
+        assert.equal(queryResult.matches, true)
+        assert.equal(queryResult.matchingFilter, 'analytics.brave.com^')
+      })
+    })
   })
 })
