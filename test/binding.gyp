@@ -1,6 +1,6 @@
 {
   "targets": [{
-    "target_name": "test",
+    "target_name": "ad-block-test",
     "type": "executable",
     "sources": [
       "../test/test_main.cc",

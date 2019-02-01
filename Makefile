@@ -11,7 +11,7 @@ test:
 	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja test/binding.gyp
 	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f xcode test/binding.gyp
 	ninja -C build/out/Default -f build.ninja
-	./build/out/Default/test || [ $$? -eq 0 ]
+	./build/out/Default/ad-block-test || [ $$? -eq 0 ]
 
 sample:
 	./node_modules/node-gyp/gyp/gyp_main.py --generator-output=./build --depth=. -f ninja sample/binding.gyp
