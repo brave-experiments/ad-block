@@ -143,6 +143,13 @@ int main(int argc, char**argv) {
 
     `npm install`
 
+4. Install ninja:
+	##### MAC
+	     brew install ninja
+
+	##### WINDOWS
+
+	Go to the releases page of the Ninja build tool, and download a suitable binary for Windows. Place ninja.exe in a suitable spot. For example, C:\Ninja. Now make sure that CMake can find ninja.exe by adding C:\Ninja to your %PATH%.
 
 ## Make the node module
 
