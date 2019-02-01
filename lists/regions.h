@@ -243,6 +243,14 @@ const std::vector<FilterList> region_lists = {
     "paoecjnjjbclkgbempaeemcbeldldlbo",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsUqWP6CeMx79UyZ3GZ1XcBGexIgml00sB286wZ7dJsfqG7oI0EGRoqrDeRreYcOTl+HvXsRJvR1FfkKJzD5svdhR4mn4lI+FXUDCvgEZ9CFa0YfASuoTIrdZtG74Twu2ai52ZJzrQ9ike97bdwzuZo+uymw26S+5/+IQbriIYoxEbJd7EryZuo+W65LdSat/NOKKf1QnVTIOoqMrXiewRYywnmZATfDIi0uKXuQfF15lbNBkQllmPH1xlMkz2WnvSvqI4HKPAmEFJWVUkiNhGKFZkTk1+88CgGGPVsKllxLaDOD+j8Kb0+h44RxObHTF/vFkfh8FfzujFj3HtevjCQIDAQAB"
   }), FilterList({
+    "AD3E8454-F376-11E8-8EB2-F2801F1B9FD1",
+    "https://raw.githubusercontent.com/tcptomato/ROad-Block/master/road-block-filters-light.txt",
+    "ROU: Romanian Ad (ROad) Block List Light",
+    {"ro"},
+    "https://github.com/tcptomato/ROad-Block",
+    "",
+    ""
+  }), FilterList({
     "1088D292-2369-4D40-9BDF-C7DC03C05966",
     "https://adguard.com/en/filter-rules.html?id=1",
     "RUS: Adguard Russian Filter",
@@ -275,6 +283,14 @@ const std::vector<FilterList> region_lists = {
     "pdecoifadfkklajdlmndjpkhabpklldh",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2eGyWcTM6Cpmkw6CBBxQbJCgp3Q4jyh+JR/Aqq5G+OFzxFpwlqW0dH9kNuUs30iSt1tt1gMZGYnhPKiGhtX3nV1iYg2K8k82wNqA5+ODfHxnnVn536UoC7rmjXL+mhpymxgkjGCQ+1HVmnCcSC9mxTPy65ihor+YZcRRPo0IhjQTx3NgdpzkGYvpQVjwnw3a5FpRBCbbp3X2x3EGV3DcjvT6DvvxSU/mAUPlXISo9OFHYUpADilqAevXQIs49LSmefSDu4pezGyR/JoRLh7QR4N3fC17V2E0GazWxvn2U985hPE3tvFcH+LM3EypVRCl6E9AiUZCeumqMBffyXw1AwIDAQAB"
   }), FilterList({
+      "1FEAF960-F377-11E8-8EB2-F2801F1B9FD1",
+      "https://filters.adtidy.org/extension/ublock/filters/9.txt",
+      "spa, por: Adguard Spanish/Portuguese",
+      {"es", "pt"},
+      "https://github.com/AdguardTeam/AdguardFilters#adguard-filters",
+      "",
+      ""
+  }), FilterList({
     "418D293D-72A8-4A28-8718-A1EE40A45AAF",
     "https://raw.githubusercontent.com/betterwebleon/slovenian-list/master/filters.txt", // NOLINT
     "SVN: Slovenian List",
@@ -290,6 +306,14 @@ const std::vector<FilterList> region_lists = {
     "https://github.com/lassekongo83/Frellwits-filter-lists",
     "oimfmeehpinnecjghphifehbbnddjkmf",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA17Vf1qj8dWwYVtGpBHWc9gLiITU1XrTnb1sDASIeuKYp9JNBtEnBwy4oBlOoZd2uWFKxXrRtaimdwqa627gi9DB17t/RgzisXSpLubXbVVelRWllaX26SioGxsGcQhS2/e1Bc0inQ8GODM6mk5FPZ9RObFN1N/QVz35anN4VNcjtETD/XpujYXE1BU3C0KGBlWwc+cQZ6sGojWEPrb7aRXSTJ5y/ugwGomTTpbT+Jt9nFrMfuAmJHvWS0Ev96dDmn1zsuoPGUExVFjGBunphRYMVCg9LUGzY0FN5+dp6fljrTJrtUOEfvh40vmjahKd0w6bKpgTAOUEaWulmVSr37QIDAQAB"
+  }), FilterList({
+    "658F092A-F377-11E8-8EB2-F2801F1B9FD1",
+    "https://raw.githubusercontent.com/easylist-thailand/easylist-thailand/master/subscription/easylist-thailand.txt",
+    "THA: EasyList Thailand",
+    {"th"},
+    "https://github.com/easylist-thailand/easylist-thailand",
+    "",
+    ""
   }), FilterList({
     "1BE19EFD-9191-4560-878E-30ECA72B5B3C",
     "https://adguard.com/filter-rules.html?id=13",
