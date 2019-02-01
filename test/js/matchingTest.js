@@ -455,4 +455,35 @@ describe('matching', function () {
       })
     })
   })
+
+  describe('third-party match', function () {
+    before(function () {
+      this.client = new AdBlockClient()
+      this.client.parse('||bannersnack.com^$third-party')
+    })
+    it('consider eTLD+1 domains as 1p', function () {
+      const altSubDomainQuery = this.client.findMatchingFilters(
+        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+        FilterOptions.script,
+        'www.bannersnack.com'
+      )
+      assert.equal(altSubDomainQuery.matches, false)
+
+      const bareDomainQuery = this.client.findMatchingFilters(
+        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+        FilterOptions.script,
+        'bannersnack.com'
+      )
+      assert.equal(bareDomainQuery.matches, false)
+    })
+
+    it('consider non eTLD+1 domains as 3p', function () {
+      const queryResult = this.client.findMatchingFilters(
+        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+        FilterOptions.script,
+        'www.example.org'
+      )
+      assert.equal(queryResult.matches, true)
+    })
+  })
 })

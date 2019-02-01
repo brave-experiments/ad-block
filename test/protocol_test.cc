@@ -43,7 +43,7 @@ TEST(isBlockableProtocol, basic) {
   // blockable protocols.
 
   // To short example
-  CHECK(isBlockableProtocol("htt", 3) == false);
+  CHECK(isBlockableProtocol("htt", 3) == true);
 
   // Bad protocol example.
   CHECK(isBlockableProtocol("htttp://example.com", 25) == false);
