@@ -12,6 +12,8 @@
 #include "./cosmetic_filter.h"
 #include "./hashFn.h"
 #include "./no_fingerprint_domain.h"
+#include "etld/matcher.h"
+#include "etld/serialization.h"
 
 #include "BloomFilter.h"
 
@@ -20,6 +22,10 @@
 using std::cout;
 using std::endl;
 #endif
+
+using brave_etld::SerializedBuffer;
+using brave_etld::SerializationResult;
+using brave_etld::matcher_from_serialization;
 
 std::set<std::string> unknownOptions;
 
@@ -587,6 +593,10 @@ void AdBlockClient::clear() {
     delete badFingerprintsHashSet;
     badFingerprintsHashSet = nullptr;
   }
+  if (etldMatcher) {
+    delete etldMatcher;
+    etldMatcher = nullptr;
+  }
 
   numFilters = 0;
   numCosmeticFilters = 0;
@@ -685,7 +695,8 @@ bool isNoFingerprintDomainHashSetMiss(HashSet<NoFingerprintDomain> *hashSet,
       static_cast<int>(host + hostLen - start)));
 }
 
-bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
+bool isHostAnchoredHashSetMiss(const AdBlockClient * client,
+    const char *input, int inputLen,
     HashSet<Filter> *hashSet,
     const char *inputHost,
     int inputHostLen,
@@ -709,7 +720,9 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
     if (*(start - 1) == '.') {
       Filter *filter = hashSet->Find(Filter(start,
             static_cast<int>(inputHost + inputHostLen - start),
-            nullptr, start, inputHostLen - (start - inputHost)));
+            nullptr,
+            start,
+            inputHostLen - (start - inputHost)));
       if (filter && filter->matches(input, inputLen,
             contextOption, contextDomain)) {
         if (foundFilter) {
@@ -722,8 +735,10 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
   }
 
   Filter *filter = hashSet->Find(Filter(start,
-        static_cast<int>(inputHost + inputHostLen - start), nullptr,
-        start, inputHostLen));
+        static_cast<int>(inputHost + inputHostLen - start),
+        nullptr,
+        start,
+        inputHostLen));
   if (!filter) {
     return true;
   }
@@ -756,7 +771,7 @@ bool AdBlockClient::matches(const char* input, FilterOption contextOption,
   if (contextDomain) {
     contextDomainLen = static_cast<int>(strlen(contextDomain));
     if (isThirdPartyHost(contextDomain, contextDomainLen,
-        inputHost, static_cast<int>(inputHostLen))) {
+        inputHost, static_cast<int>(inputHostLen), etldMatcher)) {
       contextOption =
         static_cast<FilterOption>(contextOption | FOThirdParty);
     } else {
@@ -809,7 +824,7 @@ bool AdBlockClient::matches(const char* input, FilterOption contextOption,
   if (!hasMatch) {
     bloomFilterMiss = bloomFilter
       && !bloomFilter->substringExists(input, AdBlockClient::kFingerprintSize);
-    hostAnchoredHashSetMiss = isHostAnchoredHashSetMiss(input, inputLen,
+    hostAnchoredHashSetMiss = isHostAnchoredHashSetMiss(this, input, inputLen,
         hostAnchoredHashSet, inputHost, inputHostLen,
         contextOption, contextDomain, matchedFilter);
     if (bloomFilterMiss && hostAnchoredHashSetMiss) {
@@ -883,9 +898,9 @@ bool AdBlockClient::matches(const char* input, FilterOption contextOption,
     && !exceptionBloomFilter->substringExists(input,
         AdBlockClient::kFingerprintSize);
   bool hostAnchoredExceptionHashSetMiss =
-    isHostAnchoredHashSetMiss(input, inputLen, hostAnchoredExceptionHashSet,
-        inputHost, inputHostLen, contextOption, contextDomain,
-        matchedExceptionFilter);
+    isHostAnchoredHashSetMiss(this, input, inputLen,
+        hostAnchoredExceptionHashSet, inputHost, inputHostLen,
+        contextOption, contextDomain);
 
   // Now that we have a matching rule, we should check if no exception rule
   // hits, if none hits, we should block
@@ -946,7 +961,7 @@ bool AdBlockClient::findMatchingFilters(const char *input,
   if (contextDomain) {
     contextDomainLen = static_cast<int>(strlen(contextDomain));
     if (isThirdPartyHost(contextDomain, contextDomainLen,
-        inputHost, static_cast<int>(inputHostLen))) {
+        inputHost, static_cast<int>(inputHostLen), etldMatcher)) {
       contextOption =
         static_cast<FilterOption>(contextOption | FOThirdParty);
     } else {
@@ -981,7 +996,7 @@ bool AdBlockClient::findMatchingFilters(const char *input,
   }
 
   if (!*matchingFilter) {
-    isHostAnchoredHashSetMiss(input, inputLen,
+    isHostAnchoredHashSetMiss(this, input, inputLen,
       hostAnchoredHashSet, inputHost, inputHostLen,
       contextOption, contextDomain, matchingFilter);
   }
@@ -1010,9 +1025,9 @@ bool AdBlockClient::findMatchingFilters(const char *input,
   }
 
   if (!*matchingExceptionFilter) {
-    isHostAnchoredHashSetMiss(input, inputLen, hostAnchoredExceptionHashSet,
-        inputHost, inputHostLen, contextOption, contextDomain,
-        matchingExceptionFilter);
+    isHostAnchoredHashSetMiss(this, input, inputLen,
+        hostAnchoredExceptionHashSet, inputHost, inputHostLen, contextOption,
+        contextDomain, matchingExceptionFilter);
   }
 
   if (!*matchingExceptionFilter) {
@@ -1055,7 +1070,7 @@ void setFilterBorrowedMemory(Filter *filters, int numFilters) {
 }
 
 // Parses the filter data into a few collections of filters and enables
-// efficent querying.
+// efficient querying.
 bool AdBlockClient::parse(const char *input, bool preserveRules) {
   // If the user is parsing and we have regex support,
   // then we can determine the fingerprints for the bloom filter.
@@ -1365,6 +1380,7 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
           &simpleCosmeticFilters,
           preserveRules);
       if (!f.hasUnsupportedOptions()) {
+        f.setEtldMatcher(etldMatcher);
         switch (f.filterType & FTListTypesMask) {
           case FTException:
             if (f.filterType & FTHostOnly) {
@@ -1439,6 +1455,14 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
 #endif
 
   return true;
+}
+
+void AdBlockClient::parsePublicSuffixRules(const char *input) {
+  if (etldMatcher != nullptr) {
+    delete etldMatcher;
+  }
+
+  etldMatcher = new Matcher(std::string(input));
 }
 
 // Fills the specified buffer if specified, returns the number of characters
@@ -1542,10 +1566,20 @@ char * AdBlockClient::serialize(int *totalSize,
           &noFingerprintAntiDomainExceptionHashSetSize);
   }
 
+  
+  SerializedBuffer serializedMatcherBuffer;
+  int serializedMatcherBufSize;
+  if (etldMatcher == nullptr) {
+    etldMatcher = new Matcher();
+  }
+  SerializationResult matcherSerializationResult = etldMatcher->Serialize();
+  serializedMatcherBuffer = matcherSerializationResult.buffer;
+  serializedMatcherBufSize = static_cast<int>(serializedMatcherBuffer.size());
+
   // Get the number of bytes that we'll need
   char sz[512];
   *totalSize += 1 + snprintf(sz, sizeof(sz),
-      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
+      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
       numFilters,
       numExceptionFilters, adjustedNumCosmeticFilters, adjustedNumHtmlFilters,
       numNoFingerprintFilters, numNoFingerprintExceptionFilters,
@@ -1554,13 +1588,16 @@ char * AdBlockClient::serialize(int *totalSize,
       numNoFingerprintDomainOnlyExceptionFilters,
       numNoFingerprintAntiDomainOnlyExceptionFilters,
       numHostAnchoredFilters, numHostAnchoredExceptionFilters,
-      bloomFilter ? bloomFilter->getByteBufferSize() : 0, exceptionBloomFilter
-        ? exceptionBloomFilter->getByteBufferSize() : 0,
-        hostAnchoredHashSetSize, hostAnchoredExceptionHashSetSize,
-        noFingerprintDomainHashSetSize,
-        noFingerprintAntiDomainHashSetSize,
-        noFingerprintDomainExceptionHashSetSize,
-        noFingerprintAntiDomainExceptionHashSetSize);
+      bloomFilter ? bloomFilter->getByteBufferSize() : 0,
+      exceptionBloomFilter ? exceptionBloomFilter->getByteBufferSize() : 0,
+      hostAnchoredHashSetSize,
+      hostAnchoredExceptionHashSetSize,
+      noFingerprintDomainHashSetSize,
+      noFingerprintAntiDomainHashSetSize,
+      noFingerprintDomainExceptionHashSetSize,
+      noFingerprintAntiDomainExceptionHashSetSize,
+      serializedMatcherBufSize);
+
   *totalSize += serializeFilters(nullptr, 0, filters, numFilters) +
     serializeFilters(nullptr, 0, exceptionFilters, numExceptionFilters) +
     serializeFilters(nullptr, 0, cosmeticFilters, adjustedNumCosmeticFilters) +
@@ -1588,6 +1625,7 @@ char * AdBlockClient::serialize(int *totalSize,
   *totalSize += noFingerprintAntiDomainHashSetSize;
   *totalSize += noFingerprintDomainExceptionHashSetSize;
   *totalSize += noFingerprintAntiDomainExceptionHashSetSize;
+  *totalSize += serializedMatcherBufSize;
 
   // Allocate it
   int pos = 0;
@@ -1667,6 +1705,12 @@ char * AdBlockClient::serialize(int *totalSize,
     delete[] noFingerprintAntiDomainExceptionHashSetBuffer;
   }
 
+  if (serializedMatcherBufSize > 0) {
+    memcpy(buffer + pos, serializedMatcherBuffer.c_str(),
+        serializedMatcherBufSize);
+    pos += serializedMatcherBufSize;
+  }
+
   return buffer;
 }
 
@@ -1717,24 +1761,32 @@ bool AdBlockClient::deserialize(char *buffer) {
       noFingerprintDomainHashSetSize = 0,
       noFingerprintAntiDomainHashSetSize = 0,
       noFingerprintDomainExceptionHashSetSize = 0,
-      noFingerprintAntiDomainExceptionHashSetSize = 0;
+      noFingerprintAntiDomainExceptionHashSetSize = 0,
+      etldMatcherBufSize = 0;
   int pos = 0;
   sscanf(buffer + pos,
-      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
+      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
       &numFilters,
-      &numExceptionFilters, &numCosmeticFilters, &numHtmlFilters,
-      &numNoFingerprintFilters, &numNoFingerprintExceptionFilters,
+      &numExceptionFilters,
+      &numCosmeticFilters,
+      &numHtmlFilters,
+      &numNoFingerprintFilters,
+      &numNoFingerprintExceptionFilters,
       &numNoFingerprintDomainOnlyFilters,
       &numNoFingerprintAntiDomainOnlyFilters,
       &numNoFingerprintDomainOnlyExceptionFilters,
       &numNoFingerprintAntiDomainOnlyExceptionFilters,
-      &numHostAnchoredFilters, &numHostAnchoredExceptionFilters,
-      &bloomFilterSize, &exceptionBloomFilterSize,
-      &hostAnchoredHashSetSize, &hostAnchoredExceptionHashSetSize,
+      &numHostAnchoredFilters,
+      &numHostAnchoredExceptionFilters,
+      &bloomFilterSize,
+      &exceptionBloomFilterSize,
+      &hostAnchoredHashSetSize,
+      &hostAnchoredExceptionHashSetSize,
       &noFingerprintDomainHashSetSize,
       &noFingerprintAntiDomainHashSetSize,
       &noFingerprintDomainExceptionHashSetSize,
-      &noFingerprintAntiDomainExceptionHashSetSize);
+      &noFingerprintAntiDomainExceptionHashSetSize,
+      &etldMatcherBufSize);
   pos += static_cast<int>(strlen(buffer + pos)) + 1;
 
   filters = new Filter[numFilters];
@@ -1783,39 +1835,52 @@ bool AdBlockClient::deserialize(char *buffer) {
   pos += exceptionBloomFilterSize;
   if (!initHashSet(&hostAnchoredHashSet,
         buffer + pos, hostAnchoredHashSetSize)) {
-      return false;
+    return false;
   }
   pos += hostAnchoredHashSetSize;
   if (!initHashSet(&hostAnchoredExceptionHashSet,
         buffer + pos, hostAnchoredExceptionHashSetSize)) {
-      return false;
+    return false;
   }
   pos += hostAnchoredExceptionHashSetSize;
 
 
   if (!initHashSet(&noFingerprintDomainHashSet,
         buffer + pos, noFingerprintDomainHashSetSize)) {
-      return false;
+    return false;
   }
   pos += noFingerprintDomainHashSetSize;
 
   if (!initHashSet(&noFingerprintAntiDomainHashSet,
         buffer + pos, noFingerprintAntiDomainHashSetSize)) {
-      return false;
+    return false;
   }
   pos += noFingerprintAntiDomainHashSetSize;
 
   if (!initHashSet(&noFingerprintDomainExceptionHashSet,
         buffer + pos, noFingerprintDomainExceptionHashSetSize)) {
-      return false;
+    return false;
   }
   pos += noFingerprintDomainExceptionHashSetSize;
 
   if (!initHashSet(&noFingerprintAntiDomainExceptionHashSet,
         buffer + pos, noFingerprintAntiDomainExceptionHashSetSize)) {
-      return false;
+    return false;
   }
   pos += noFingerprintAntiDomainExceptionHashSetSize;
+
+  if (etldMatcher != nullptr) {
+    delete etldMatcher;
+  }
+
+  if (etldMatcherBufSize == 0) {
+    etldMatcher = new Matcher();
+  } else {
+    SerializedBuffer serializedmatcherBuffer = std::string(
+      buffer + pos, etldMatcherBufSize);
+    Matcher newMatcher = matcher_from_serialization(serializedmatcherBuffer);
+    etldMatcher = new Matcher(newMatcher);
+  }
 
   return true;
 }

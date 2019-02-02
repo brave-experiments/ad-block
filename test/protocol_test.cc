@@ -42,8 +42,8 @@ TEST(isBlockableProtocol, basic) {
   // Each of the following should fail, since they are each non supported /
   // blockable protocols.
 
-  // To short example
-  CHECK(isBlockableProtocol("htt", 3) == true);
+  // Too short example
+  CHECK(isBlockableProtocol("htt", 3) == false);
 
   // Bad protocol example.
   CHECK(isBlockableProtocol("htttp://example.com", 25) == false);

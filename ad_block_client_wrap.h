@@ -28,6 +28,8 @@ class AdBlockClientWrap : public AdBlockClient, public node::ObjectWrap {
 
   static void Clear(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void Parse(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ParsePublicSuffixRules(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
   static void Matches(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void Serialize(const v8::FunctionCallbackInfo<v8::Value>& args);
   static void Deserialize(const v8::FunctionCallbackInfo<v8::Value>& args);

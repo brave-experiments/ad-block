@@ -1,40 +1,73 @@
-/* Copyright (c) 2015 Brian R. Bondy. Distributed under the MPL2 license.
- * This Source Code Form is subject to the terms of the Mozilla Public
+/* Copyright (c) 2019 The Brave Software Team. Distributed under the MPL2
+ * license. This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef BRAVE_ETLD_PUBLIC_SUFFIX_RULE_H_
-#define BRAVE_ETLD_PUBLIC_SUFFIX_RULE_H_
+#ifndef ETLD_PUBLIC_SUFFIX_RULE_H_
+#define ETLD_PUBLIC_SUFFIX_RULE_H_
 
 #include <string>
 #include <vector>
-#include "./domain.h"
-#include "./types.h"
+#include "etld/domain.h"
+#include "etld/types.h"
+#include "etld/serialization.h"
 
-namespace Brave {
-namespace eTLD {
+using std::unique_ptr;
 
-class PublicSuffixRule {
-  public:
-    PublicSuffixRule(const std::string &raw_text);
+namespace brave_etld {
 
-    bool matches(const Domain &domain) const;
-    bool isException() const {
-      return is_exception_;
-    };
-    bool isWildcard() const {
-      return is_wildcard_;
-    }
+class PublicSuffixRuleInputException : public std::exception {
+ public:
+  explicit PublicSuffixRuleInputException(const char * message) :
+    msg_(message) {}
+  explicit PublicSuffixRuleInputException(const std::string &message) :
+    msg_(message) {}
+  virtual const char* what() const throw() {
+    return msg_.c_str();
+  }
+  virtual ~PublicSuffixRuleInputException() throw() {}
 
-  protected:
-    void parseRule(const std::string &rule_text);
-
-    std::vector<Label> labels_;
-    bool is_exception_;
-    bool is_wildcard_;
+ protected:
+  std::string msg_;
 };
 
-}
-}
+class PublicSuffixRule {
+ public:
+  PublicSuffixRule();
+  PublicSuffixRule(const PublicSuffixRule &rule);
+  explicit PublicSuffixRule(const std::string &rule_text);
+  PublicSuffixRule(
+    const std::vector<Label> &labels,
+    bool is_exception = false,
+    bool is_wildcard = false);
 
-#endif
+  SerializationResult Serialize() const;
+
+  bool Equals(const PublicSuffixRule &rule) const;
+  bool Matches(const Domain &domain) const;
+  DomainInfo Apply(const Domain &domain) const;
+  std::string ToString() const;
+  std::string DomainString() const;
+
+  std::vector<Label> Labels() const;
+  size_t Length() const;
+
+  bool IsException() const {
+    return is_exception_;
+  }
+  bool IsWildcard() const {
+    return is_wildcard_;
+  }
+
+ protected:
+  std::vector<Label> labels_;
+  bool is_exception_ = false;
+  bool is_wildcard_ = false;
+};
+
+PublicSuffixRule rule_from_serialization(const SerializedBuffer &buffer);
+std::vector<Label> parse_labels(const std::string &label_text);
+
+}  // namespace brave_etld
+
+#endif  // ETLD_PUBLIC_SUFFIX_RULE_H_

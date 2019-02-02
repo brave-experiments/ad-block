@@ -3,6 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 /* global describe, before, it */
 
+const fs = require('fs')
 const assert = require('assert')
 const {AdBlockClient} = require('../..')
 const {FilterOptions} = require('../..')
@@ -460,6 +461,8 @@ describe('matching', function () {
     before(function () {
       this.client = new AdBlockClient()
       this.client.parse('||bannersnack.com^$third-party')
+      const etldRules = fs.readFileSync('./test/data/public_suffix_list.dat', 'utf8')
+      this.client.parsePublicSuffixRules(etldRules)
     })
     it('consider eTLD+1 domains as 1p', function () {
       const altSubDomainQuery = this.client.findMatchingFilters(
