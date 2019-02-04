@@ -323,6 +323,13 @@ void AdBlockClientWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
       String::NewFromUtf8(isolate, "Wrong number of arguments")));
     return;
   }
+
+  if (!args[0]->IsArrayBufferView()) {
+    isolate->ThrowException(v8::Exception::Error(
+      String::NewFromUtf8(isolate, "Provided string is not valid, serialized DAT data")));
+    return;
+  }
+
   unsigned char *buf = (unsigned char *)node::Buffer::Data(args[0]);
   size_t length = node::Buffer::Length(args[0]);
   const char *oldDeserializedData = obj->getDeserializedBuffer();

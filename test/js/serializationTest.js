@@ -45,12 +45,32 @@ describe('serialization', function () {
     assert(this.data.equals(data2))
   })
   it('deserializes with the same number of filters', function () {
-    const nonComentFilterCount = 11
-    assert.equal(this.client.getParsingStats().numFilters, nonComentFilterCount)
-    assert.equal(this.client2.getParsingStats().numFilters, nonComentFilterCount)
+    const nonCommentFilterCount = 11
+    assert.equal(this.client.getParsingStats().numFilters, nonCommentFilterCount)
+    assert.equal(this.client2.getParsingStats().numFilters, nonCommentFilterCount)
   })
   it('serialized data does not include comment data', function () {
     assert(!this.data.toString().includes('comment'))
     assert(!this.data.toString().includes('Adblock Plus'))
+  })
+
+  describe("deserializing input", function () {
+    it('does not throw on valid input', function () {
+      const client = new AdBlockClient()
+      client.deserialize(this.data)
+    })
+
+    it('throws on invalid input', function () {
+      const badInput = "not-good-data"
+      let caughtError = false
+      const newClient = new AdBlockClient()
+      // Check to make sure the below doesn't throw
+      try {
+        newClient.deserialize(badInput)
+      } catch (_) {
+        caughtError = true
+      }
+      assert(caughtError)
+    })
   })
 })
