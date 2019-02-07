@@ -89,4 +89,32 @@ describe('parsing', function () {
       })
     })
   })
+  describe('regex parsing', function () {
+    // See https://github.com/brave/ad-block/issues/173 for details
+    it('regex should not check last character of input buffer', function (cb) {
+      makeAdBlockClientFromString('/filter1\nfilter2/').then((client) => {
+        // regex are considered noFingerprintFilters
+        assert.equal(client.getFilters('filters').length, 2)
+        cb()
+      })
+    })
+    it('regex should not be a no fingerprint filter', function (cb) {
+      makeAdBlockClientFromString('/filter1/\nfilter2/').then((client) => {
+        // regex are considered noFingerprintFilters
+        assert.equal(client.getFilters('filters').length, 1)
+        assert.equal(client.getFilters('noFingerprintFilters').length, 1)
+        cb()
+      })
+    })
+    // See https://github.com/brave/ad-block/issues/173 for details
+    it('should serialize correctly', function (cb) {
+      makeAdBlockClientFromString('/filter1\nfilter2/\n').then((client) => {
+        makeAdBlockClientFromString('/filter1\nfilter2/').then((client2) => {
+          // regex are considered noFingerprintFilters
+          assert.equal(client.serialize().length, client2.serialize().length)
+          cb()
+        })
+      })
+    })
+  })
 })
