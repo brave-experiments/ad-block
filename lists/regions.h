@@ -20,10 +20,10 @@ const std::vector<FilterList> region_lists = {
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnbHn298ZQjKnWlC6NgkvS3Dr7Neu87d1h8s3b9GTlc1QNDWiYgY5IfWVq/1FBw2nUFE/v8fNJg8quq8Z2nS8dYiJDVSGRggiCooa0OTCARL0BsGxHZO6s2QROYIcxPVnzISqg5zRIBc+8npE68uVUrDR6q/KdJ8siL2hrR/NybPp+uTK44lHOEIBFm8ih1rC6z+Y5dHfhax0CuL6wlWwVNcFe1macYEcOXShwkUOADh6rEBQZKJmv474xJutmB8nIpGq7C2Hn2HNNyfA6tYmhVlsaeEC44phGITKDai03wFsWWkHQPEU5HwFzKQGIBFwudyO8iigO5m+d3XSzgSZtQIDAQAB"
   }), FilterList({
     "FD176DD1-F9A0-4469-B43E-B1764893DD5C",
-    "http://stanev.org/abp/adblock_bg.txt",
+    "https://stanev.org/abp/adblock_bg.txt",
     "BGR: Bulgarian Adblock list",
     {"bg"},
-    "http://stanev.org/abp/",
+    "https://stanev.org/abp/",
     "coofeapfgmpkchclgdphgpmfhmnplbpn",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAoqpe6QWKketr66AW+hKSxr5qds9gxmU72N20bG/nG8wfbPUdTwEqIG3m5e37Iq1FI0gcQir5UqwZZUgkum5dWJwgCB1SOaVvlZrWZbTbATKFcePswHqAIXMfS+wzMA/Ifoky26dE4k/rs6J/zQEbeXXon/ikjGJ7GxYeHYMBz9DAPQhcUoBlh1C0O0vhvXU+kG5DO4wdIt9W/cXJtv+8OTZ6HiTJw1j0jAliFZI/jhkYB6MW57OBpBYlWJQhMbLbK5opXq6d4ELbjC1amqI1lT3j5bl0g1OpMqL4Jtz6578G79gMJfxE3hA5tL0rGU3vAmwck/jXh7uOOzqetwdBcwIDAQAB"
   }), FilterList({
