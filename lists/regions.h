@@ -248,8 +248,8 @@ const std::vector<FilterList> region_lists = {
     "ROU: Romanian Ad (ROad) Block List Light",
     {"ro"},
     "https://github.com/tcptomato/ROad-Block",
-    "",
-    ""
+    "hojdjlebfkngledgkgecohjkjjojaekd",
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnhLXi2u795hnBUJi/vS8qtMGoTYk9NRefWk+SI6fkqVdiKs/eM6Y8v3To4HgNmtYb4jAoYctcq3/CS3hzGCLEwQbDuL8Y8UP5B6PWgzuiRrAobRl1DtXO1+Q57VIrYTpJVLCqaTulclys7Fka/wD5o78Y0vAfSenBZTzRUXwTZd9Z7SRNwcJyccbi7zL8UDWnJMBnD/dnV7t2q41MHiCgdzimOSuoRZmTBrupVc0QYhqoxy6ePkHFDGL2U25omAZckkzpQbtvJEE2lmg7YqnaSvGDzsmqd+j7hVWjpm/ncArLOWBCbER3MdHwFeOI2rFJWcO7GY5etQsA5128FAv0wIDAQAB"
   }), FilterList({
     "1088D292-2369-4D40-9BDF-C7DC03C05966",
     "https://adguard.com/en/filter-rules.html?id=1",
@@ -283,13 +283,13 @@ const std::vector<FilterList> region_lists = {
     "pdecoifadfkklajdlmndjpkhabpklldh",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2eGyWcTM6Cpmkw6CBBxQbJCgp3Q4jyh+JR/Aqq5G+OFzxFpwlqW0dH9kNuUs30iSt1tt1gMZGYnhPKiGhtX3nV1iYg2K8k82wNqA5+ODfHxnnVn536UoC7rmjXL+mhpymxgkjGCQ+1HVmnCcSC9mxTPy65ihor+YZcRRPo0IhjQTx3NgdpzkGYvpQVjwnw3a5FpRBCbbp3X2x3EGV3DcjvT6DvvxSU/mAUPlXISo9OFHYUpADilqAevXQIs49LSmefSDu4pezGyR/JoRLh7QR4N3fC17V2E0GazWxvn2U985hPE3tvFcH+LM3EypVRCl6E9AiUZCeumqMBffyXw1AwIDAQAB"
   }), FilterList({
-      "1FEAF960-F377-11E8-8EB2-F2801F1B9FD1",
-      "https://filters.adtidy.org/extension/ublock/filters/9.txt",
-      "spa, por: Adguard Spanish/Portuguese",
-      {"es", "pt"},
-      "https://github.com/AdguardTeam/AdguardFilters#adguard-filters",
-      "",
-      ""
+    "1FEAF960-F377-11E8-8EB2-F2801F1B9FD1",
+    "https://filters.adtidy.org/extension/ublock/filters/9.txt",
+    "spa, por: Adguard Spanish/Portuguese",
+    {"es", "pt"},
+    "https://github.com/AdguardTeam/AdguardFilters#adguard-filters",
+    "jpolmkeojnkicccihhepfbkhcbicimpa",
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs1E/bf3s1EQeJY10IT5/ZMCzfMAm6SKyWUCeHBkWZLcfwyYLJww84EC2jCLeYgwukOmZjwtnDrasVhUyKOif7dKIBEZizsvSldi8tzHqTbX3PFKsLhRXCETbU0kkOlArGRGLaBIhgT07qPtlehYCZoDdowk42025fVtfVEMtZg8yBIqtFT/bDL96lRDQIW+1uAM3uFkzvRtQgsYhoI6JlyqFw6fqowRx8a+zHvtQzAUyIaTGf0OFEHwGCFlHXmTYpcOXlcUAXn4RnJvx+thpeDBtAvT6LubTLNQClBbwjGL5d7NlGNPByYdcZZcvGPmBWX/vnobY5QGP4lWxZvWfFwIDAQAB"
   }), FilterList({
     "418D293D-72A8-4A28-8718-A1EE40A45AAF",
     "https://raw.githubusercontent.com/betterwebleon/slovenian-list/master/filters.txt", // NOLINT
@@ -312,8 +312,8 @@ const std::vector<FilterList> region_lists = {
     "THA: EasyList Thailand",
     {"th"},
     "https://github.com/easylist-thailand/easylist-thailand",
-    "",
-    ""
+    "jplgiejfnpolnfnigblbfeeidoimingd",
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAy4EQ0IdWDAAqRT6ymtxWG32Whfmv5TMxKuEP3rs9LMfa+iU+xiyE/XvWjgA58n4Bs2vQgefCoqY+a9B0TUkqz0nDcrBi371w1EZSxNRySslO5VvLHdRdYwynTMwDsAlHIPZ6pgh9zwprW1Lxz31CC2EHJeBGmBQ/S8My/VRiN8Y2Jj7yZDX1rTvBrYPj5XAwe2MAPAsMJD4lHcx7uClEbVq/4AxNpmNay5kamFaX6qt8/765RyPYuqgneharP7EJ9HToH56l/KR7doOywTyVPQYvEhD+a1mioMfEtYNxvqY4lKDhctTV8aU7RItAgwGTW+msldvdPfs3QWV5o7yrtQIDAQAB"
   }), FilterList({
     "1BE19EFD-9191-4560-878E-30ECA72B5B3C",
     "https://adguard.com/filter-rules.html?id=13",
