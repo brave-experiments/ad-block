@@ -90,8 +90,8 @@ int main(int argc, char**argv) {
   AdBlockClient adBlockClient;
   adBlockClient.parse(easyListTxt.c_str());
   adBlockClient.parse(easyPrivacyTxt.c_str());
-  // adBlockClient.parse(ublockUnblockTxt.c_str());
-  // adBlockClient.parse(braveUnblockTxt.c_str());
+  adBlockClient.parse(ublockUnblockTxt.c_str());
+  adBlockClient.parse(braveUnblockTxt.c_str());
   doSiteList(&adBlockClient, true);
 
   cout << endl

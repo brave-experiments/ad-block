@@ -1048,35 +1048,35 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
   // Otherwise it needs to be done manually via initBloomFilter and
   // initExceptionBloomFilter
   if (!bloomFilter) {
-    bloomFilter = new BloomFilter(15, 80000);
+    bloomFilter = new BloomFilter(15, 110000);
   }
   if (!exceptionBloomFilter) {
-    exceptionBloomFilter = new BloomFilter(10, 20000);
+    exceptionBloomFilter = new BloomFilter(12, 40000);
   }
   if (!hostAnchoredHashSet) {
     // Optimized to be 1:1 with the easylist / easyprivacy
     // number of host anchored hosts.
-    hostAnchoredHashSet = new HashSet<Filter>(18000, false);
+    hostAnchoredHashSet = new HashSet<Filter>(15000, false);
   }
   if (!hostAnchoredExceptionHashSet) {
     // Optimized to be 1:1 with the easylist / easyprivacy
     // number of host anchored exception hosts.
-    hostAnchoredExceptionHashSet = new HashSet<Filter>(2000, false);
+    hostAnchoredExceptionHashSet = new HashSet<Filter>(800, false);
   }
   if (!noFingerprintDomainHashSet) {
-    noFingerprintDomainHashSet = new HashSet<NoFingerprintDomain>(1000, false);
+    noFingerprintDomainHashSet = new HashSet<NoFingerprintDomain>(500, false);
   }
   if (!noFingerprintAntiDomainHashSet) {
     noFingerprintAntiDomainHashSet =
-      new HashSet<NoFingerprintDomain>(100, false);
+      new HashSet<NoFingerprintDomain>(50, false);
   }
   if (!noFingerprintDomainExceptionHashSet) {
     noFingerprintDomainExceptionHashSet =
-      new HashSet<NoFingerprintDomain>(1000, false);
+      new HashSet<NoFingerprintDomain>(700, false);
   }
   if (!noFingerprintAntiDomainExceptionHashSet) {
     noFingerprintAntiDomainExceptionHashSet =
-      new HashSet<NoFingerprintDomain>(100, false);
+      new HashSet<NoFingerprintDomain>(50, false);
   }
 
   const char *p = input;
@@ -1096,7 +1096,7 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
   int newNumHostAnchoredExceptionFilters = 0;
 
   // Simple cosmetic filters apply to all sites without exception
-  HashSet<CosmeticFilter> simpleCosmeticFilters(1000, false);
+  HashSet<CosmeticFilter> simpleCosmeticFilters(20000, false);
 
   // Parsing does 2 passes, one just to determine the type of information we'll
   // need to setup.  Note that the library will be used on a variety of builds
