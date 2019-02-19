@@ -1048,10 +1048,10 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
   // Otherwise it needs to be done manually via initBloomFilter and
   // initExceptionBloomFilter
   if (!bloomFilter) {
-    bloomFilter = new BloomFilter(15, 110000);
+    bloomFilter = new BloomFilter(15, 130000);
   }
   if (!exceptionBloomFilter) {
-    exceptionBloomFilter = new BloomFilter(12, 40000);
+    exceptionBloomFilter = new BloomFilter(12, 30000);
   }
   if (!hostAnchoredHashSet) {
     // Optimized to be 1:1 with the easylist / easyprivacy

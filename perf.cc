@@ -32,23 +32,61 @@ string getFileContents(const char *filename) {
 
 void doSiteList(AdBlockClient *pClient, bool outputPerf) {
   AdBlockClient &client = *pClient;
-  std::string && siteList = getFileContents("./test/data/sitelist.txt");
+  // Assumes the following format in the site list:
+  // Each record consists of 3 lines with no special identifiers:
+  // 1. site (frame) url
+  // 2. request url - the url that is being matched within the frame context
+  // 3. request type (document, stylesheet, image, script, etc)
+  std::string && siteList = getFileContents("./test/data/sitelist-ref-type.txt");
   std::stringstream ss(siteList);
   std::istream_iterator<std::string> begin(ss);
   std::istream_iterator<std::string> end;
-  std::vector<std::string> sites(begin, end);
 
-  // This is the site who's URLs are being checked, not the domain of
-  // the URL being checked.
-  const char *currentPageDomain = "brianbondy.com";
+  std::vector<std::string> lines(begin, end);
+
+  // Build up a tuple of <site_url, request_url, filter_option>
+  std::vector<std::tuple<std::string, std::string, FilterOption> > sites;
+
+  for (auto i = lines.begin(); i != lines.end(); std::advance(i, 3)) {
+
+    const std::string& frameUrl = *i;
+    // cout << "Parsed item " << frameUrl << endl;
+    const std::string& url = *(std::next(i, 1));
+    const std::string& cpt = *(std::next(i, 2));
+
+    FilterOption fo = FONoFilterOption;
+
+    if (cpt == "document" ) {
+      fo = FOSubdocument;
+    } else if (cpt == "stylesheet" ) {
+      fo = FOStylesheet;
+    } else if (cpt == "image" ) {
+      fo = FOImage;
+    } else if (cpt == "media" ) {
+      fo = FOMedia;
+    } else if (cpt == "font" ) {
+      fo = FOFont;
+    } else if (cpt == "script" ) {
+      fo = FOScript;
+    } else if (cpt == "xhr" ) {
+      fo = FOXmlHttpRequest;
+    } else if (cpt == "websocket" ) {
+      fo = FOWebsocket;
+    } else {
+      fo = FOOther;
+    }
+
+    sites.push_back(std::make_tuple(frameUrl, url, fo));
+  }
 
   int numBlocks = 0;
   int numSkips = 0;
   const clock_t beginTime = clock();
-  std::for_each(sites.begin(), sites.end(), [&client, currentPageDomain,
-      &numBlocks, &numSkips](std::string const &urlToCheck) {
-    if (client.matches(urlToCheck.c_str(), FONoFilterOption,
-          currentPageDomain)) {
+  std::for_each(sites.begin(), sites.end(), [&client, &numBlocks,
+    &numSkips](std::tuple<std::string, std::string, FilterOption> const &urlToCheck) {
+    if (client.matches(std::get<1>(urlToCheck).c_str(),
+      std::get<2>(urlToCheck),
+      std::get<0>(urlToCheck).c_str())) {
       ++numBlocks;
     } else {
       ++numSkips;
