@@ -25,7 +25,8 @@ class Matcher {
   explicit Matcher(std::ifstream &rule_file);
   explicit Matcher(const std::string &rule_text);
   explicit Matcher(const PublicSuffixParseResult &rules);
-  Matcher(const PublicSuffixRuleSet &rules, const PublicSuffixRuleSet &exception_rules);
+  Matcher(const PublicSuffixRuleSet &rules,
+    const PublicSuffixRuleSet &exception_rules);
 
   SerializationResult Serialize() const;
 

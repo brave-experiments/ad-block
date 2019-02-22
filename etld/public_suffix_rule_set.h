@@ -8,13 +8,10 @@
 
 #include <string>
 #include <vector>
-#include <memory>
 #include "etld/public_suffix_rule.h"
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
-
-using std::unique_ptr;
 
 namespace brave_etld {
 

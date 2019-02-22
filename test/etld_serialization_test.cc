@@ -73,46 +73,6 @@ TEST(eTLDSerializationMatcher, basic) {
   CHECK(testSerializeMatcher("!one.com\n*.two.com\nthree.com"));
 }
 
-bool testDeserializationCorrectness(const SerializedBuffer &rule_text,
-    int num_rules, int num_exception_rules) {
-  Matcher matcher = matcher_from_serialization(rule_text);
-  int num_matcher_rules = static_cast<int>(matcher.NumRules());
-  if (num_matcher_rules != num_rules) {
-    std::cout << "Expected " << num_rules << " rules from buffer, but received "
-              << num_matcher_rules << " rules." << std::endl;
-    return false;
-  }
-
-  int num_matcher_except_rules = static_cast<int>(matcher.NumExceptionRules());
-  if (num_matcher_except_rules != num_exception_rules) {
-    std::cout << "Expected " << num_rules << " exception rules from buffer, "
-              << "but received " <<  num_exception_rules << " rules."
-              << std::endl;
-    return false;
-  }
-
-  return true;
-}
-
-// TEST(eTLDDeserializationTests, basic) {
-//   CHECK(testDeserializationCorrectness(
-//     "47:42:29:ff||not-matching-anything.com8:fftrees^0:", 2, 0));
-// }
-
-bool testSerializationCorrectness(const string &rule_text,
-    const SerializedBuffer &serialized) {
-  Matcher matcher(rule_text);
-  SerializationResult result = matcher.Serialize();
-  return result.buffer.compare(serialized) == 0;
-}
-
-// TEST(eTLDSerializationTests, basic) {
-//   const string rules = "||s3.amazonaws.com^$third-party\n"
-//                        "||not-matching-anything.com\n"
-//                        "trees^";
-//   CHECK(testSerializationCorrectness(rules, ));
-// }
-
 bool testMatcherSerializationTransitivity(const string &public_suffix_rules) {
   Matcher orig(public_suffix_rules);
   SerializationResult res = orig.Serialize();
@@ -135,7 +95,7 @@ bool testAdBlockClientSerializationTransitivity(const string &filter_rules,
   AdBlockClient client;
   client.parse(filter_rules.c_str());
   client.parsePublicSuffixRules(public_suffix_rules.c_str());
-  
+
   int size;
   char* buffer = client.serialize(&size);
 

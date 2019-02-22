@@ -13,8 +13,6 @@
 #include "etld/types.h"
 #include "etld/serialization.h"
 
-using std::unique_ptr;
-
 namespace brave_etld {
 
 std::vector<Label> parse_labels(const std::string &label_text) {
@@ -125,8 +123,7 @@ SerializationResult PublicSuffixRule::Serialize() const {
     header_str.c_str(),
     is_exception_ ? 't' : 'f',
     is_wildcard_ ? 't' : 'f',
-    domain_string.c_str()
-  );
+    domain_string.c_str());
 
   info.body_start = body_start;
   info.body_len = body_len;

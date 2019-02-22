@@ -42,7 +42,7 @@ bool isBlockableProtocol(const char *url, int urlLen) {
 
   const char *curChar = url;
   int totalCharsRead = 0;
-  int numCharsReadInState;
+  int numCharsReadInState = 0;
   char lowerChar;
   ProtocolParseState parseState = ProtocolParseStateStart;
 

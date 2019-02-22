@@ -3,7 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <memory>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -11,8 +10,6 @@
 #include "etld/parser.h"
 #include "etld/public_suffix_rule.h"
 #include "etld/types.h"
-
-using std::unique_ptr;
 
 namespace brave_etld {
 

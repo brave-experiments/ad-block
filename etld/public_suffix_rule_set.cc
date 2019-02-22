@@ -6,15 +6,12 @@
 #include <string>
 #include <sstream>
 #include <vector>
-#include <memory>
 #include <iostream>
 #include "etld/public_suffix_rule.h"
 #include "etld/public_suffix_rule_set.h"
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
-
-using std::unique_ptr;
 
 namespace brave_etld {
 
@@ -70,8 +67,7 @@ SerializationResult PublicSuffixRuleSet::Serialize() const {
     buffer_size,
     "%s:%s",
     header_str.c_str(),
-    buffer_body.c_str()
-  );
+    buffer_body.c_str());
 
   SerializationResult info;
   info.body_start = body_start;

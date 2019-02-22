@@ -12,8 +12,6 @@
 #include "etld/types.h"
 #include "etld/serialization.h"
 
-using std::unique_ptr;
-
 namespace brave_etld {
 
 class PublicSuffixRuleInputException : public std::exception {

@@ -9,7 +9,6 @@
 #include "etld/parser.h"
 #include "etld/public_suffix_rule.h"
 #include "etld/matcher.h"
-#include "etld/types.h"
 #include "etld/serialization.h"
 
 namespace brave_etld {
@@ -53,8 +52,7 @@ SerializationResult Matcher::Serialize() const {
     buffer_size,
     "%s:%s",
     header_str.c_str(),
-    buffer_body.c_str()
-  );
+    buffer_body.c_str());
 
   SerializationResult info;
   info.body_start = body_start;
