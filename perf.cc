@@ -81,6 +81,10 @@ int main(int argc, char**argv) {
   std::string && disconnectSimpleMalwareTxt =
     getFileContents("./test/data/disconnect-simple-malware.txt");
 
+  std::ifstream ifs("./test/data/public_suffix_list.dat");
+  const string public_suffix_rules((std::istreambuf_iterator<char>(ifs)),
+                                   (std::istreambuf_iterator<char>()));
+
   cout << endl
     << "-------------\n"
     << "  AD BLOCK   \n"
@@ -92,6 +96,7 @@ int main(int argc, char**argv) {
   adBlockClient.parse(easyPrivacyTxt.c_str());
   adBlockClient.parse(ublockUnblockTxt.c_str());
   adBlockClient.parse(braveUnblockTxt.c_str());
+  adBlockClient.parsePublicSuffixRules(public_suffix_rules.c_str());
   doSiteList(&adBlockClient, true);
 
   cout << endl
@@ -103,6 +108,7 @@ int main(int argc, char**argv) {
   AdBlockClient safeBrowsingClient;
   safeBrowsingClient.parse(spam404MainBlacklistTxt.c_str());
   safeBrowsingClient.parse(disconnectSimpleMalwareTxt.c_str());
+  safeBrowsingClient.parsePublicSuffixRules(public_suffix_rules.c_str());
   doSiteList(&safeBrowsingClient, true);
 
   cout << endl
@@ -118,6 +124,7 @@ int main(int argc, char**argv) {
   allClient.parse(braveUnblockTxt.c_str());
   allClient.parse(spam404MainBlacklistTxt.c_str());
   allClient.parse(disconnectSimpleMalwareTxt.c_str());
+  allClient.parsePublicSuffixRules(public_suffix_rules.c_str());
   doSiteList(&allClient, false);
   allClient.badFingerprintsHashSet->generateHeader("bad_fingerprints.h");
 
