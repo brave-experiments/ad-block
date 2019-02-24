@@ -11,9 +11,9 @@
 #include <vector>
 #include "etld/domain.h"
 #include "etld/types.h"
-#include "etld/parser.h"
-#include "etld/public_suffix_rule.h"
-#include "etld/public_suffix_rule_set.h"
+#include "etld/internal/parser.h"
+#include "etld/internal/public_suffix_rule.h"
+#include "etld/internal/public_suffix_rule_set.h"
 #include "etld/serialization.h"
 
 namespace brave_etld {
@@ -24,14 +24,14 @@ class Matcher {
   Matcher(const Matcher &matcher);
   explicit Matcher(std::ifstream &rule_file);
   explicit Matcher(const std::string &rule_text);
-  explicit Matcher(const PublicSuffixParseResult &rules);
-  Matcher(const PublicSuffixRuleSet &rules,
-    const PublicSuffixRuleSet &exception_rules);
+  explicit Matcher(const internal::PublicSuffixParseResult &rules);
+  Matcher(const internal::PublicSuffixRuleSet &rules,
+    const internal::PublicSuffixRuleSet &exception_rules);
 
   SerializationResult Serialize() const;
 
   bool Equal(const Matcher &matcher) const;
-  void ConsumeParseResult(const PublicSuffixParseResult &result);
+  void ConsumeParseResult(const internal::PublicSuffixParseResult &result);
   DomainInfo Match(const Domain &domain) const;
 
   size_t NumRules() const {
@@ -43,10 +43,8 @@ class Matcher {
   }
 
  private:
-  DomainInfo BuildDomainInfo(const PublicSuffixRule &rule,
-    const Domain &domain) const;
-  PublicSuffixRuleSet rules_;
-  PublicSuffixRuleSet exception_rules_;
+  internal::PublicSuffixRuleSet rules_;
+  internal::PublicSuffixRuleSet exception_rules_;
 };
 
 Matcher matcher_from_serialization(const SerializedBuffer &buffer);

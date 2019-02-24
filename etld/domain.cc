@@ -9,9 +9,11 @@
 
 namespace brave_etld {
 
-Domain::Domain(const Domain &domain) {
-  labels_ = domain.labels_;
-}
+Domain::Domain(const Domain &domain) :
+  labels_(domain.labels_) {}
+
+Domain::Domain(const std::vector<Label> &labels) :
+  labels_(labels) {}
 
 Domain::Domain(const std::string &string) {
   std::size_t current, previous = 0;
@@ -32,12 +34,8 @@ Domain::Domain(const std::string &string) {
   }
 }
 
-Domain::Domain(const std::vector<Label> &labels) {
-  labels_ = labels;
-}
-
 bool Domain::Equals(const Domain &domain) {
-  size_t local_length = Length();
+  const size_t local_length = Length();
   if (local_length != domain.Length()) {
     return false;
   }
@@ -53,7 +51,7 @@ bool Domain::Equals(const Domain &domain) {
 
 std::string Domain::ToString() const {
   std::stringstream as_string;
-  auto num_labels = labels_.size();
+  const size_t num_labels = labels_.size();
   size_t i = 0;
   for (auto &str : labels_) {
     as_string << str;

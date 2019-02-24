@@ -3,21 +3,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ETLD_PUBLIC_SUFFIX_RULE_SET_H_
-#define ETLD_PUBLIC_SUFFIX_RULE_SET_H_
+#ifndef ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_SET_H_
+#define ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_SET_H_
 
 #include <string>
 #include <vector>
-#include "etld/public_suffix_rule.h"
+#include "etld/internal/public_suffix_rule.h"
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
 
 namespace brave_etld {
+namespace internal {
 
 struct PublicSuffixRuleSetMatchResult {
   bool found_match;
-  PublicSuffixRule rule;
+  const PublicSuffixRule * rule;
 };
 
 class PublicSuffixRuleSet {
@@ -30,7 +31,7 @@ class PublicSuffixRuleSet {
   bool Equal(const PublicSuffixRuleSet &rule_set) const;
   PublicSuffixRuleSetMatchResult Match(const Domain &domain) const;
   void AddRule(const PublicSuffixRule &rule);
-  std::vector<PublicSuffixRule> Rules() const;
+  const std::vector<PublicSuffixRule>& Rules() const;
 
  private:
   std::vector<PublicSuffixRule> rules_;
@@ -38,6 +39,7 @@ class PublicSuffixRuleSet {
 
 PublicSuffixRuleSet rule_set_from_serialization(const SerializedBuffer &buffer);
 
+}  // namespace internal
 }  // namespace brave_etld
 
-#endif  // ETLD_PUBLIC_SUFFIX_RULE_SET_H_
+#endif  // ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_SET_H_

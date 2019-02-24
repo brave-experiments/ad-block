@@ -6,19 +6,27 @@
 #include <fstream>
 #include <sstream>
 #include "etld/types.h"
-#include "etld/parser.h"
-#include "etld/public_suffix_rule.h"
+#include "etld/internal/parser.h"
+#include "etld/internal/public_suffix_rule.h"
 #include "etld/matcher.h"
 #include "etld/serialization.h"
 
+using brave_etld::internal::PublicSuffixParseResult;
+using brave_etld::internal::PublicSuffixRuleSetMatchResult;
+
 namespace brave_etld {
 
+DomainInfo build_domain_info_(const internal::PublicSuffixRule * rule,
+  const Domain &domain) {
+  return rule->Apply(domain);
+}
+
 Matcher::Matcher(std::ifstream &rule_file) {
-  ConsumeParseResult(parse_rule_file(rule_file));
+  ConsumeParseResult(internal::parse_rule_file(rule_file));
 }
 
 Matcher::Matcher(const std::string &rule_text) {
-  ConsumeParseResult(parse_rule_text(rule_text));
+  ConsumeParseResult(internal::parse_rule_text(rule_text));
 }
 
 Matcher::Matcher(const PublicSuffixParseResult &rules) {
@@ -29,8 +37,8 @@ Matcher::Matcher(const Matcher &matcher) :
   rules_(matcher.rules_),
   exception_rules_(matcher.exception_rules_) {}
 
-Matcher::Matcher(const PublicSuffixRuleSet &rules,
-    const PublicSuffixRuleSet &exception_rules) :
+Matcher::Matcher(const internal::PublicSuffixRuleSet &rules,
+    const internal::PublicSuffixRuleSet &exception_rules) :
   rules_(rules),
   exception_rules_(exception_rules) {}
 
@@ -54,11 +62,11 @@ SerializationResult Matcher::Serialize() const {
     header_str.c_str(),
     buffer_body.c_str());
 
-  SerializationResult info;
-  info.body_start = body_start;
-  info.body_len = body_len;
-  info.buffer = buffer;
-  return info;
+  return {
+    buffer,
+    body_start,
+    body_len
+  };
 }
 
 bool Matcher::Equal(const Matcher &matcher) const {
@@ -71,21 +79,17 @@ bool Matcher::Equal(const Matcher &matcher) const {
 DomainInfo Matcher::Match(const Domain &domain) const {
   PublicSuffixRuleSetMatchResult except_match = exception_rules_.Match(domain);
   if (except_match.found_match) {
-    return BuildDomainInfo(except_match.rule, domain);
+    return build_domain_info_(except_match.rule, domain);
   }
 
   PublicSuffixRuleSetMatchResult rule_match = rules_.Match(domain);
   if (rule_match.found_match) {
-    return BuildDomainInfo(rule_match.rule, domain);
+    return build_domain_info_(rule_match.rule, domain);
   }
 
-  return BuildDomainInfo(PublicSuffixRule("*"), domain);
+  return build_domain_info_(internal::PublicSuffixRule::root_rule, domain);
 }
 
-DomainInfo Matcher::BuildDomainInfo(const PublicSuffixRule &rule,
-    const Domain &domain) const {
-  return rule.Apply(domain);
-}
 
 void Matcher::ConsumeParseResult(const PublicSuffixParseResult &result) {
   for (auto &elm : result.Rules()) {
@@ -100,8 +104,8 @@ void Matcher::ConsumeParseResult(const PublicSuffixParseResult &result) {
 Matcher matcher_from_serialization(const SerializedBuffer &buffer) {
   SerializedChildBuffers child_buffers = deserialize_buffer(buffer);
   return {
-    rule_set_from_serialization(child_buffers[0]),
-    rule_set_from_serialization(child_buffers[1])
+    internal::rule_set_from_serialization(child_buffers[0]),
+    internal::rule_set_from_serialization(child_buffers[1])
   };
 }
 

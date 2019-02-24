@@ -7,24 +7,25 @@
 #include <sstream>
 #include <vector>
 #include <iostream>
-#include "etld/public_suffix_rule.h"
-#include "etld/public_suffix_rule_set.h"
+#include "etld/internal/public_suffix_rule.h"
+#include "etld/internal/public_suffix_rule_set.h"
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
 
+using brave_etld::internal::PublicSuffixRuleSetMatchResult;
+
 namespace brave_etld {
+namespace internal {
 
 PublicSuffixRuleSet::PublicSuffixRuleSet() {}
 
-PublicSuffixRuleSet::PublicSuffixRuleSet(const PublicSuffixRuleSet &rule_set) {
-  rules_ = rule_set.Rules();
-}
+PublicSuffixRuleSet::PublicSuffixRuleSet(const PublicSuffixRuleSet &rule_set) :
+  rules_(rule_set.Rules()) {}
 
 PublicSuffixRuleSet::PublicSuffixRuleSet(
-    const std::vector<PublicSuffixRule> &rules) {
-  rules_ = rules;
-}
+    const std::vector<PublicSuffixRule> &rules) : 
+  rules_(rules) {}
 
 bool PublicSuffixRuleSet::Equal(const PublicSuffixRuleSet &rule_set) const {
   if (rules_.size() != rule_set.rules_.size()) {
@@ -69,45 +70,40 @@ SerializationResult PublicSuffixRuleSet::Serialize() const {
     header_str.c_str(),
     buffer_body.c_str());
 
-  SerializationResult info;
-  info.body_start = body_start;
-  info.body_len = body_len;
-  info.buffer = buffer;
-  return info;
+  return {
+    buffer,
+    body_start,
+    body_len
+  };
 }
 
 PublicSuffixRuleSetMatchResult PublicSuffixRuleSet::Match(
     const Domain &domain) const {
   int longest_length = -1;
   int found_length;
-  PublicSuffixRule longest_rule;
+  const PublicSuffixRule * longest_rule;
   for (auto &elm : rules_) {
     if (elm.Matches(domain)) {
       found_length = elm.Labels().size();
       if (found_length > longest_length) {
-        longest_rule = elm;
+        longest_rule = &elm;
         longest_length = found_length;
       }
     }
   }
 
-  PublicSuffixRuleSetMatchResult result;
-
   if (longest_length == -1) {
-    result.found_match = false;
-    return result;
+    return {false, nullptr};
   }
 
-  result.found_match = true;
-  result.rule = longest_rule;
-  return result;
+  return {true, longest_rule};
 }
 
 void PublicSuffixRuleSet::AddRule(const PublicSuffixRule &rule) {
   rules_.push_back(rule);
 }
 
-std::vector<PublicSuffixRule> PublicSuffixRuleSet::Rules() const {
+const std::vector<PublicSuffixRule>& PublicSuffixRuleSet::Rules() const {
   return rules_;
 }
 
@@ -120,4 +116,5 @@ PublicSuffixRuleSet rule_set_from_serialization(
   return PublicSuffixRuleSet(rules);
 }
 
+}  // namespace internal
 }  // namespace brave_etld

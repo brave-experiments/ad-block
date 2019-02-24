@@ -7,31 +7,32 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
-#include "etld/parser.h"
-#include "etld/public_suffix_rule.h"
+#include "etld/internal/parser.h"
+#include "etld/internal/public_suffix_rule.h"
 #include "etld/types.h"
 
 namespace brave_etld {
+namespace internal {
 
 PublicSuffixParseResult::PublicSuffixParseResult() {}
 
 PublicSuffixParseResult::PublicSuffixParseResult(
-    const PublicSuffixParseResult &results) {
-  num_whitespace_lines_ = results.num_whitespace_lines_;
-  num_comment_lines_ = results.num_comment_lines_;
-  num_invalid_rules_ = results.num_invalid_rules_;
-  rules_ = results.rules_;
-}
+    const PublicSuffixParseResult &results) :
+  num_whitespace_lines_(results.num_whitespace_lines_),
+  num_comment_lines_(results.num_comment_lines_),
+  num_invalid_rules_(results.num_invalid_rules_),
+  rules_(results.rules_) {}
 
-std::vector<PublicSuffixRule> PublicSuffixParseResult::Rules() const {
+const std::vector<PublicSuffixRule>& PublicSuffixParseResult::Rules() const {
   return rules_;
 }
 
-void PublicSuffixParseResult::AddParseResult(
+void PublicSuffixParseResult::ConsumeParseResult(
     const PublicSuffixTextLineParseResult &result) {
   switch (result.type) {
     case PublicSuffixTextLineTypeRule:
-      rules_.push_back(result.rule);
+      rules_.push_back(*(result.rule));
+      delete result.rule;
       break;
 
     case PublicSuffixTextLineTypeWhitespace:
@@ -54,10 +55,8 @@ void PublicSuffixParseResult::AddParseResult(
 PublicSuffixParseResult parse_rule_file(std::ifstream &rule_file) {
   std::string line;
   PublicSuffixParseResult results;
-  PublicSuffixTextLineParseResult line_result;
   while (std::getline(rule_file, line)) {
-    line_result = parse_rule_line(line);
-    results.AddParseResult(line_result);
+    results.ConsumeParseResult(parse_rule_line(line));
   }
 
   return results;
@@ -67,39 +66,34 @@ PublicSuffixParseResult parse_rule_text(const std::string &text) {
   std::istringstream stream(text);
   std::string line;
   PublicSuffixParseResult results;
-  PublicSuffixTextLineParseResult line_result;
   while (std::getline(stream, line)) {
-    line_result = parse_rule_line(line);
-    results.AddParseResult(line_result);
+    results.ConsumeParseResult(parse_rule_line(line));
   }
 
   return results;
 }
 
 PublicSuffixTextLineParseResult parse_rule_line(const std::string &line) {
-  PublicSuffixTextLineParseResult result;
-
   // Check to see if this is a comment line.  If so, process no further.
   if (line.find("//") == 0) {
-    result.type = PublicSuffixTextLineTypeComment;
-    return result;
+    return PublicSuffixTextLineParseResult(PublicSuffixTextLineTypeComment);
   }
 
-  std::size_t first_non_white_space_char = line.find_first_not_of(" ");
+  const size_t first_non_white_space_char = line.find_first_not_of(" ");
   // Next, check to see if the line is only whitespace.
   if (first_non_white_space_char == std::string::npos) {
-    result.type = PublicSuffixTextLineTypeWhitespace;
-    return result;
+    return PublicSuffixTextLineParseResult(PublicSuffixTextLineTypeWhitespace);
   }
 
   try {
-    result.rule = PublicSuffixRule(line);
-    result.type = PublicSuffixTextLineTypeRule;
+    return PublicSuffixTextLineParseResult(
+      PublicSuffixTextLineTypeRule,
+      new PublicSuffixRule(line)
+    );
   } catch (PublicSuffixRuleInputException error) {
-    result.type = PublicSuffixTextLineTypeInvalidRule;
+    return PublicSuffixTextLineParseResult(PublicSuffixTextLineTypeInvalidRule);
   }
-
-  return result;
 }
 
+}  // namespace internal
 }  // namespace brave_etld

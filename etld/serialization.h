@@ -14,16 +14,16 @@ namespace brave_etld {
 typedef std::string SerializedBuffer;
 typedef std::vector<SerializedBuffer> SerializedChildBuffers;
 
+struct SerializationResult {
+  const SerializedBuffer buffer;
+  size_t body_start;
+  size_t body_len;
+};
+
 struct SerializedBufferInfo {
   size_t body_len;
   size_t body_start;
   size_t buffer_len;
-};
-
-struct SerializationResult {
-  SerializedBuffer buffer;
-  size_t body_len;
-  size_t body_start;
 };
 
 SerializedBufferInfo extract_buffer_info(const SerializedBuffer &buffer);

@@ -11,14 +11,6 @@
 #include "./CppUnitLite/TestHarness.h"
 #include "./CppUnitLite/Test.h"
 #include "./ad_block_client.h"
-#include "./filter.h"
-#include "./etld/types.h"
-#include "./etld/matcher.h"
-#include "./etld/parser.h"
-#include "./etld/domain.h"
-#include "./etld/public_suffix_rule.h"
-#include "./etld/public_suffix_rule_set.h"
-#include "./etld/serialization.h"
 
 using std::string;
 

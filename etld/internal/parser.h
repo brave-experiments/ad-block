@@ -3,16 +3,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ETLD_PARSER_H_
-#define ETLD_PARSER_H_
+#ifndef ETLD_INTERNAL_PARSER_H_
+#define ETLD_INTERNAL_PARSER_H_
 
 #include <string>
 #include <fstream>
 #include <vector>
-#include "etld/public_suffix_rule.h"
+#include "etld/internal/public_suffix_rule.h"
 #include "etld/types.h"
 
 namespace brave_etld {
+namespace internal {
 
 enum PublicSuffixTextLineType {
   PublicSuffixTextLineTypeNone = 0,
@@ -23,11 +24,13 @@ enum PublicSuffixTextLineType {
 };
 
 struct PublicSuffixTextLineParseResult {
-  PublicSuffixTextLineParseResult() {
-    type = PublicSuffixTextLineTypeNone;
-  }
-  PublicSuffixTextLineType type;
-  PublicSuffixRule rule;
+  PublicSuffixTextLineParseResult(
+      PublicSuffixTextLineType type = PublicSuffixTextLineTypeNone,
+      const PublicSuffixRule * rule = nullptr) : 
+    type(type),
+    rule(rule) {}
+  const PublicSuffixTextLineType type;
+  const PublicSuffixRule* rule;
 };
 
 class PublicSuffixParseResult {
@@ -35,8 +38,8 @@ class PublicSuffixParseResult {
   PublicSuffixParseResult();
   PublicSuffixParseResult(const PublicSuffixParseResult &results);
 
-  std::vector<PublicSuffixRule> Rules() const;
-  void AddParseResult(const PublicSuffixTextLineParseResult &result);
+  const std::vector<PublicSuffixRule>& Rules() const;
+  void ConsumeParseResult(const PublicSuffixTextLineParseResult &result);
 
   int NumWhitespaceLines() const {
     return num_whitespace_lines_;
@@ -63,6 +66,7 @@ PublicSuffixParseResult parse_rule_file(std::ifstream &rule_file);
 PublicSuffixParseResult parse_rule_text(const std::string &rule_text);
 PublicSuffixTextLineParseResult parse_rule_line(const std::string &line);
 
+}  // namespace internal
 }  // namespace brave_etld
 
-#endif  // ETLD_PARSER_H_
+#endif  // ETLD_INTERNAL_PARSER_H_

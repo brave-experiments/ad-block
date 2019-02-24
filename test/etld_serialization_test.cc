@@ -11,22 +11,22 @@
 #include "./CppUnitLite/TestHarness.h"
 #include "./CppUnitLite/Test.h"
 #include "./ad_block_client.h"
+#include "./etld/internal/parser.h"
+#include "./etld/internal/public_suffix_rule.h"
+#include "./etld/internal/public_suffix_rule_set.h"
 #include "./etld/types.h"
 #include "./etld/matcher.h"
-#include "./etld/parser.h"
 #include "./etld/domain.h"
-#include "./etld/public_suffix_rule.h"
-#include "./etld/public_suffix_rule_set.h"
 #include "./etld/serialization.h"
 
 using std::string;
 using std::vector;
-using brave_etld::PublicSuffixRule;
-using brave_etld::PublicSuffixRuleSet;
+using brave_etld::internal::PublicSuffixRule;
+using brave_etld::internal::PublicSuffixRuleSet;
+using brave_etld::internal::rule_from_serialization;
+using brave_etld::internal::rule_set_from_serialization;
 using brave_etld::Matcher;
 using brave_etld::SerializationResult;
-using brave_etld::rule_from_serialization;
-using brave_etld::rule_set_from_serialization;
 using brave_etld::matcher_from_serialization;
 using brave_etld::SerializedBuffer;
 

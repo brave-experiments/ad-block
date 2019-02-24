@@ -11,13 +11,13 @@
 
 namespace brave_etld {
 
-typedef std::string Label;
-
 struct DomainInfo {
-  std::string tld;
-  std::string domain;
-  std::string subdomain;
+  const std::string tld;
+  const std::string domain;
+  const std::string subdomain;
 };
+
+typedef std::string Label;
 
 }  // namespace brave_etld
 

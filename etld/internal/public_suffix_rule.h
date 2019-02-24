@@ -3,8 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#ifndef ETLD_PUBLIC_SUFFIX_RULE_H_
-#define ETLD_PUBLIC_SUFFIX_RULE_H_
+#ifndef ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_H_
+#define ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_H_
 
 #include <string>
 #include <vector>
@@ -13,6 +13,7 @@
 #include "etld/serialization.h"
 
 namespace brave_etld {
+namespace internal {
 
 class PublicSuffixRuleInputException : public std::exception {
  public:
@@ -31,6 +32,7 @@ class PublicSuffixRuleInputException : public std::exception {
 
 class PublicSuffixRule {
  public:
+  static const PublicSuffixRule * root_rule;
   PublicSuffixRule();
   PublicSuffixRule(const PublicSuffixRule &rule);
   explicit PublicSuffixRule(const std::string &rule_text);
@@ -47,7 +49,7 @@ class PublicSuffixRule {
   std::string ToString() const;
   std::string DomainString() const;
 
-  std::vector<Label> Labels() const;
+  const std::vector<Label>& Labels() const;
   size_t Length() const;
 
   bool IsException() const {
@@ -66,6 +68,7 @@ class PublicSuffixRule {
 PublicSuffixRule rule_from_serialization(const SerializedBuffer &buffer);
 std::vector<Label> parse_labels(const std::string &label_text);
 
+}  // namespace internal
 }  // namespace brave_etld
 
-#endif  // ETLD_PUBLIC_SUFFIX_RULE_H_
+#endif  // ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_H_

@@ -10,31 +10,30 @@
 #include <fstream>
 #include "./CppUnitLite/TestHarness.h"
 #include "./CppUnitLite/Test.h"
+#include "./etld/internal/parser.h"
+#include "./etld/internal/public_suffix_rule.h"
+#include "./etld/internal/public_suffix_rule_set.h"
 #include "./etld/types.h"
 #include "./etld/matcher.h"
-#include "./etld/parser.h"
 #include "./etld/domain.h"
-#include "./etld/public_suffix_rule.h"
-#include "./etld/public_suffix_rule_set.h"
 
 using std::string;
 using std::cout;
 using std::endl;
 
-using brave_etld::PublicSuffixTextLineType;
-using brave_etld::PublicSuffixTextLineParseResult;
-using brave_etld::PublicSuffixRuleInputException;
-using brave_etld::PublicSuffixRuleSetMatchResult;
-using brave_etld::PublicSuffixRule;
-using brave_etld::PublicSuffixRuleSet;
+using brave_etld::internal::PublicSuffixTextLineType;
+using brave_etld::internal::PublicSuffixTextLineParseResult;
+using brave_etld::internal::PublicSuffixRuleInputException;
+using brave_etld::internal::PublicSuffixRuleSetMatchResult;
+using brave_etld::internal::PublicSuffixRule;
+using brave_etld::internal::PublicSuffixRuleSet;
+using brave_etld::internal::PublicSuffixParseResult;
+using brave_etld::internal::parse_rule_line;
+using brave_etld::internal::parse_rule_text;
+using brave_etld::internal::parse_rule_file;
 using brave_etld::Domain;
 using brave_etld::Matcher;
 using brave_etld::DomainInfo;
-using brave_etld::PublicSuffixParseResult;
-using brave_etld::parse_rule_line;
-using brave_etld::parse_rule_text;
-using brave_etld::parse_rule_file;
-
 
 bool testParsePublicSuffixTestLineNoOps(const string &line,
     PublicSuffixTextLineType expectedType) {
@@ -214,11 +213,37 @@ bool testPublicSuffixRuleSetMatch(const std::vector<string> &rules,
 
   Domain test_domain(domain_str);
   PublicSuffixRuleSetMatchResult match_result = rule_set.Match(test_domain);
-  string result_string = match_result.rule.DomainString();
+  if (match_result.found_match == false) {
+    cout << "Expected rule: '" << expected_match << "' "
+         << "to find a match, but received none." << endl;
+    return false;
+  }
+
+  string result_string = match_result.rule->DomainString();
   if (result_string != expected_match) {
     cout << "Expected rule: '" << expected_match << "' "
          << "to match '" << domain_str << "' "
          << "but received '" << result_string << "'" << endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool testPublicSuffixRuleSetNoMatch(const std::vector<string> &rules,
+    const string &domain_str) {
+  PublicSuffixRuleSet rule_set;
+  PublicSuffixRule rule;
+  for (auto &elm : rules) {
+    rule = PublicSuffixRule(elm);
+    rule_set.AddRule(rule);
+  }
+
+  Domain test_domain(domain_str);
+  PublicSuffixRuleSetMatchResult match_result = rule_set.Match(test_domain);
+  if (match_result.found_match == true) {
+    cout << "Did not expect rule: '" << domain_str << "' to match any "
+         << "rules, but found a match." << endl;
     return false;
   }
 
@@ -296,15 +321,15 @@ bool testPublicSuffixRuleFileApply(const string &file_path,
 TEST(eTLDParseRulesLine, basic) {
   CHECK(testParsePublicSuffixTestLineNoOps(
     "// this is an option",
-    brave_etld::PublicSuffixTextLineTypeComment));
+    brave_etld::internal::PublicSuffixTextLineTypeComment));
 
   CHECK(testParsePublicSuffixTestLineNoOps(
     "this.is.a.invalid..rule",
-    brave_etld::PublicSuffixTextLineTypeInvalidRule));
+    brave_etld::internal::PublicSuffixTextLineTypeInvalidRule));
 
   CHECK(testParsePublicSuffixTestLineNoOps(
     "",
-    brave_etld::PublicSuffixTextLineTypeWhitespace));
+    brave_etld::internal::PublicSuffixTextLineTypeWhitespace));
 
   // Since we read until the first white space, this will be read
   // as "example.", which is invalid because rules cannot hae empty labels
@@ -417,10 +442,9 @@ TEST(eTLDPublicSuffixRuleSetMatchTests, basic) {
     {"com", "*.jp", "*.hokkaido.jp"},
     "pete.hokkaido.jp",
     "*.hokkaido.jp"));
-  CHECK(testPublicSuffixRuleSetMatch(
+  CHECK(testPublicSuffixRuleSetNoMatch(
     {"com", "*.jp", "*.hokkaido.jp"},
-    "horse.shoes",
-    ""));
+    "horse.shoes"));
 }
 
 TEST(eTLDPublicSuffixRuleApplyTestTests, basic) {
