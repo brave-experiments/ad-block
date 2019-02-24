@@ -979,3 +979,39 @@ TEST(findMatchingFilters, basic) {
   CHECK(!strcmp(matchingFilter->data, "googlesyndication.com/safeframe/"));
   CHECK(!strcmp(matchingExceptionFilter->data, "safeframe"));
 }
+
+// Testing matchingFilter
+TEST(matchesWithFilterInfo, basic) {
+  AdBlockClient client;
+  client.parse("||googlesyndication.com/safeframe/$third-party\n"
+      "||brianbondy.com/ads");
+  const char *urlToCheck =
+    "http://tpc.googlesyndication.com/safeframe/1-0-2/html/container.html";
+  const char *currentPageDomain = "slashdot.org";
+
+  Filter none;
+  Filter *matchingFilter = &none;
+  Filter *matchingExceptionFilter = &none;
+
+  // Test finds a match
+  CHECK(client.matches(urlToCheck, FOScript, currentPageDomain,
+    &matchingFilter, &matchingExceptionFilter));
+  CHECK(matchingFilter)
+  CHECK(matchingExceptionFilter == nullptr)
+  CHECK(!strcmp(matchingFilter->data, "googlesyndication.com/safeframe/"));
+
+  // Test when no filter is found, returns false and sets out params to nullptr
+  CHECK(!client.matches("ssafsdf.com", FOScript, currentPageDomain,
+    &matchingFilter, &matchingExceptionFilter));
+  CHECK(matchingFilter == nullptr)
+  CHECK(matchingExceptionFilter == nullptr)
+
+  // Parse that it finds exception filters correctly
+  client.parse("@@safeframe\n");
+  CHECK(!client.matches(urlToCheck, FOScript, currentPageDomain,
+    &matchingFilter, &matchingExceptionFilter));
+  CHECK(matchingFilter)
+  CHECK(matchingExceptionFilter)
+  CHECK(!strcmp(matchingFilter->data, "googlesyndication.com/safeframe/"));
+  CHECK(!strcmp(matchingExceptionFilter->data, "safeframe"));
+}

@@ -26,9 +26,11 @@ class AdBlockClient {
   void clear();
 //   bool parse(const char *input);
   bool parse(const char *input, bool preserveRules = false);
-  bool matches(const char *input,
+  bool matches(const char* input,
       FilterOption contextOption = FONoFilterOption,
-      const char *contextDomain = nullptr);
+      const char* contextDomain = nullptr,
+      Filter** matchedFilter = nullptr,
+      Filter** matchedExceptionFilter = nullptr);
   bool findMatchingFilters(const char *input,
       FilterOption contextOption,
       const char *contextDomain,
