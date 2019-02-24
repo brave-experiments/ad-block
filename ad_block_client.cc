@@ -734,8 +734,15 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
   return result;
 }
 
-bool AdBlockClient::matches(const char *input, FilterOption contextOption,
-    const char *contextDomain) {
+bool AdBlockClient::matches(const char* input, FilterOption contextOption,
+    const char* contextDomain, Filter** matchedFilter,
+    Filter** matchedExceptionFilter) {
+  if (matchedFilter) {
+    *matchedFilter = nullptr;
+  }
+  if (matchedExceptionFilter) {
+    *matchedExceptionFilter = nullptr;
+  }
   int inputLen = static_cast<int>(strlen(input));
 
   if (!isBlockableProtocol(input, inputLen)) {
@@ -776,19 +783,22 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
         noFingerprintDomainHashSet, contextDomain, contextDomainLen)) {
     hasMatch = hasMatch || hasMatchingFilters(noFingerprintDomainOnlyFilters,
         numNoFingerprintDomainOnlyFilters, input, inputLen, contextOption,
-        contextDomain, &inputBloomFilter, inputHost, inputHostLen);
+        contextDomain, &inputBloomFilter, inputHost, inputHostLen,
+        matchedFilter);
   }
   if (isNoFingerprintDomainHashSetMiss(
         noFingerprintAntiDomainHashSet, contextDomain, contextDomainLen)) {
     hasMatch = hasMatch ||
       hasMatchingFilters(noFingerprintAntiDomainOnlyFilters,
         numNoFingerprintAntiDomainOnlyFilters, input, inputLen, contextOption,
-        contextDomain, &inputBloomFilter, inputHost, inputHostLen);
+        contextDomain, &inputBloomFilter, inputHost, inputHostLen,
+        matchedFilter);
   }
 
   hasMatch = hasMatch || hasMatchingFilters(noFingerprintFilters,
       numNoFingerprintFilters, input, inputLen, contextOption,
-      contextDomain, &inputBloomFilter, inputHost, inputHostLen);
+      contextDomain, &inputBloomFilter, inputHost, inputHostLen,
+      matchedFilter);
 
   // If no noFingerprintFilters were hit, check the bloom filter substring
   // fingerprint for the normal
@@ -801,7 +811,7 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
       && !bloomFilter->substringExists(input, AdBlockClient::kFingerprintSize);
     hostAnchoredHashSetMiss = isHostAnchoredHashSetMiss(input, inputLen,
         hostAnchoredHashSet, inputHost, inputHostLen,
-        contextOption, contextDomain);
+        contextOption, contextDomain, matchedFilter);
     if (bloomFilterMiss && hostAnchoredHashSetMiss) {
       if (bloomFilterMiss) {
         numBloomFilterSaves++;
@@ -820,7 +830,7 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   if (!hasMatch && !bloomFilterMiss) {
     hasMatch = hasMatchingFilters(filters, numFilters, input, inputLen,
         contextOption, contextDomain, &inputBloomFilter,
-        inputHost, inputHostLen);
+        inputHost, inputHostLen, matchedFilter);
     // If there's still no match after checking the block filters, then no need
     // to try to block this because there is a false positive.
     if (!hasMatch) {
@@ -844,22 +854,24 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
       hasMatchingFilters(noFingerprintDomainOnlyExceptionFilters,
         numNoFingerprintDomainOnlyExceptionFilters, input, inputLen,
         contextOption, contextDomain, &inputBloomFilter, inputHost,
-        inputHostLen);
+        inputHostLen, matchedExceptionFilter);
   }
 
   if (isNoFingerprintDomainHashSetMiss(
         noFingerprintAntiDomainExceptionHashSet, contextDomain,
-        contextDomainLen)) {
+        contextDomainLen )) {
     hasExceptionMatch = hasExceptionMatch ||
     hasMatchingFilters(noFingerprintAntiDomainOnlyExceptionFilters,
       numNoFingerprintAntiDomainOnlyExceptionFilters, input, inputLen,
-      contextOption, contextDomain, &inputBloomFilter, inputHost, inputHostLen);
+      contextOption, contextDomain, &inputBloomFilter, inputHost, inputHostLen,
+      matchedExceptionFilter);
   }
 
   hasExceptionMatch = hasExceptionMatch ||
     hasMatchingFilters(noFingerprintExceptionFilters,
       numNoFingerprintExceptionFilters, input, inputLen, contextOption,
-      contextDomain, &inputBloomFilter, inputHost, inputHostLen);
+      contextDomain, &inputBloomFilter, inputHost, inputHostLen,
+      matchedExceptionFilter);
 
   // If there's a matching no fingerprint exception then we can just return
   // right away because we shouldn't block
@@ -872,7 +884,8 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
         AdBlockClient::kFingerprintSize);
   bool hostAnchoredExceptionHashSetMiss =
     isHostAnchoredHashSetMiss(input, inputLen, hostAnchoredExceptionHashSet,
-        inputHost, inputHostLen, contextOption, contextDomain);
+        inputHost, inputHostLen, contextOption, contextDomain,
+        matchedExceptionFilter);
 
   // Now that we have a matching rule, we should check if no exception rule
   // hits, if none hits, we should block
@@ -896,7 +909,8 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   if (!bloomExceptionFilterMiss) {
     if (!hasMatchingFilters(exceptionFilters, numExceptionFilters, input,
           inputLen, contextOption, contextDomain,
-          &inputBloomFilter, inputHost, inputHostLen)) {
+          &inputBloomFilter, inputHost, inputHostLen,
+          matchedExceptionFilter)) {
       // False positive on the exception filter list
       numExceptionFalsePositives++;
       // cout << "exception false positive for input: " << input << endl;
