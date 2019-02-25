@@ -51,7 +51,7 @@ std::string trim_to_whitespace(std::string const& str) {
     return str;
   }
 
-  std::size_t first_scan = str.find_first_of(' ');
+  const size_t first_scan = str.find_first_of(' ');
   if (first_scan == std::string::npos) {
     return str;
   }
@@ -62,7 +62,7 @@ std::string trim_to_whitespace(std::string const& str) {
 PublicSuffixRule::PublicSuffixRule() {}
 
 PublicSuffixRule::PublicSuffixRule(const PublicSuffixRule &rule) :
-  labels_(rule.Labels()),
+  labels_(rule.labels_),
   is_exception_(rule.IsException()),
   is_wildcard_(rule.IsWildcard()) {}
 
@@ -73,7 +73,7 @@ PublicSuffixRule::PublicSuffixRule(const std::string &rule_text) {
       "Cannot create PublicSuffixRule from an empty string");
   }
 
-  std::size_t current = 0;
+  size_t current = 0;
   switch (trimmed_rule_text[0]) {
     case '*':
       is_wildcard_ = true;

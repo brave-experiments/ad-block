@@ -24,7 +24,7 @@ class Domain {
     return labels_.size();
   }
 
-  const Label& Get(std::size_t idx) const {
+  const Label& Get(size_t idx) const {
     return labels_[idx];
   }
 

@@ -8,33 +8,60 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "etld/internal/public_suffix_rule.h"
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
 
+using std::unique_ptr;
+
 namespace brave_etld {
 namespace internal {
 
 struct PublicSuffixRuleSetMatchResult {
-  bool found_match;
-  const PublicSuffixRule * rule;
+  const bool found_match;
+  const PublicSuffixRule* rule;
+};
+
+struct PublicSuffixRuleMapNode {
+  PublicSuffixRuleMapNode() {
+    children = new std::map<std::string, PublicSuffixRuleMapNode*>();
+  }
+  ~PublicSuffixRuleMapNode() {
+    for (auto &elm : *children) {
+      delete elm.second;
+    }
+    if (rule != nullptr) {
+      delete rule;
+    }
+  }
+  const PublicSuffixRule* rule = nullptr;
+  std::map<std::string, PublicSuffixRuleMapNode*>* children = nullptr;
 };
 
 class PublicSuffixRuleSet {
  public:
   PublicSuffixRuleSet();
+  ~PublicSuffixRuleSet();
   PublicSuffixRuleSet(const std::vector<PublicSuffixRule> &rules);
   PublicSuffixRuleSet(const PublicSuffixRuleSet &rule_set);
 
   SerializationResult Serialize() const;
   bool Equal(const PublicSuffixRuleSet &rule_set) const;
   PublicSuffixRuleSetMatchResult Match(const Domain &domain) const;
-  void AddRule(const PublicSuffixRule &rule);
-  const std::vector<PublicSuffixRule>& Rules() const;
+  void AddRule(const PublicSuffixRule& rule);
 
  private:
-  std::vector<PublicSuffixRule> rules_;
+  void AddRule(const PublicSuffixRule& rule, const size_t label_index,
+    PublicSuffixRuleMapNode* node);
+  void MatchRecursions(const Domain &domain,
+      const size_t label_index,
+      std::vector<const PublicSuffixRule*>* matches,
+      PublicSuffixRuleMapNode * node) const;
+
+  PublicSuffixRuleMapNode* root_ = nullptr;
+  std::vector<PublicSuffixRule*> rules_;
 };
 
 PublicSuffixRuleSet rule_set_from_serialization(const SerializedBuffer &buffer);

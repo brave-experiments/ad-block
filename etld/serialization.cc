@@ -9,6 +9,7 @@
 #include "etld/serialization.h"
 
 namespace brave_etld {
+namespace internal {
 
 SerializedBufferInfo extract_buffer_info(const SerializedBuffer &buffer) {
   SerializedBufferInfo info;
@@ -47,4 +48,5 @@ SerializedChildBuffers deserialize_buffer(const SerializedBuffer &buffer) {
   return child_buffers;
 }
 
+}  // namespace internal
 }  // namespace brave_etld

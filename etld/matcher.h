@@ -27,22 +27,14 @@ class Matcher {
   explicit Matcher(const internal::PublicSuffixParseResult &rules);
   Matcher(const internal::PublicSuffixRuleSet &rules,
     const internal::PublicSuffixRuleSet &exception_rules);
-
+  
   SerializationResult Serialize() const;
 
   bool Equal(const Matcher &matcher) const;
-  void ConsumeParseResult(const internal::PublicSuffixParseResult &result);
   DomainInfo Match(const Domain &domain) const;
 
-  size_t NumRules() const {
-    return rules_.Rules().size();
-  }
-
-  size_t NumExceptionRules() const {
-    return exception_rules_.Rules().size();
-  }
-
  private:
+  void ConsumeParseResult(const internal::PublicSuffixParseResult &result);
   internal::PublicSuffixRuleSet rules_;
   internal::PublicSuffixRuleSet exception_rules_;
 };

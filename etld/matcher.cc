@@ -13,10 +13,11 @@
 
 using brave_etld::internal::PublicSuffixParseResult;
 using brave_etld::internal::PublicSuffixRuleSetMatchResult;
+using brave_etld::internal::SerializedChildBuffers;
 
 namespace brave_etld {
 
-DomainInfo build_domain_info_(const internal::PublicSuffixRule * rule,
+DomainInfo build_domain_info(const internal::PublicSuffixRule* rule,
   const Domain &domain) {
   return rule->Apply(domain);
 }
@@ -71,7 +72,7 @@ SerializationResult Matcher::Serialize() const {
 
 bool Matcher::Equal(const Matcher &matcher) const {
   return (rules_.Equal(matcher.rules_) &&
-          exception_rules_.Equal(matcher.exception_rules_));
+    exception_rules_.Equal(matcher.exception_rules_));
 }
 
 // Attempts to implement the algoritms described here:
@@ -79,15 +80,15 @@ bool Matcher::Equal(const Matcher &matcher) const {
 DomainInfo Matcher::Match(const Domain &domain) const {
   PublicSuffixRuleSetMatchResult except_match = exception_rules_.Match(domain);
   if (except_match.found_match) {
-    return build_domain_info_(except_match.rule, domain);
+    return build_domain_info(except_match.rule, domain);
   }
 
   PublicSuffixRuleSetMatchResult rule_match = rules_.Match(domain);
   if (rule_match.found_match) {
-    return build_domain_info_(rule_match.rule, domain);
+    return build_domain_info(rule_match.rule, domain);
   }
 
-  return build_domain_info_(internal::PublicSuffixRule::root_rule, domain);
+  return build_domain_info(internal::PublicSuffixRule::root_rule, domain);
 }
 
 
@@ -102,7 +103,7 @@ void Matcher::ConsumeParseResult(const PublicSuffixParseResult &result) {
 }
 
 Matcher matcher_from_serialization(const SerializedBuffer &buffer) {
-  SerializedChildBuffers child_buffers = deserialize_buffer(buffer);
+  SerializedChildBuffers child_buffers = internal::deserialize_buffer(buffer);
   return {
     internal::rule_set_from_serialization(child_buffers[0]),
     internal::rule_set_from_serialization(child_buffers[1])

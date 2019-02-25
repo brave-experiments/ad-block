@@ -51,6 +51,9 @@ class PublicSuffixRule {
 
   const std::vector<Label>& Labels() const;
   size_t Length() const;
+  const Label& Get(size_t idx) const {
+    return labels_[idx];
+  }
 
   bool IsException() const {
     return is_exception_;
