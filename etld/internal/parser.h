@@ -26,7 +26,7 @@ enum PublicSuffixTextLineType {
 struct PublicSuffixTextLineParseResult {
   PublicSuffixTextLineParseResult(
       PublicSuffixTextLineType type = PublicSuffixTextLineTypeNone,
-      const PublicSuffixRule* rule = nullptr) : 
+      const PublicSuffixRule* rule = nullptr) :
     type(type),
     rule(rule) {}
   const PublicSuffixTextLineType type;

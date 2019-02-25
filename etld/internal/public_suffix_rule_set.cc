@@ -72,7 +72,7 @@ SerializationResult PublicSuffixRuleSet::Serialize() const {
   const size_t header_len = header_str.size();
   const size_t body_start = header_len + 1;
   const size_t buffer_size = body_start + body_len + 1;
-  char buffer[buffer_size];
+  char* buffer = reinterpret_cast<char*>(malloc(sizeof(char) * buffer_size));
 
   snprintf(
     buffer,

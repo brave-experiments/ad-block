@@ -3,12 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "etld/matcher.h"
+#include <stdlib.h>
 #include <fstream>
 #include <sstream>
 #include "etld/types.h"
 #include "etld/internal/parser.h"
 #include "etld/internal/public_suffix_rule.h"
-#include "etld/matcher.h"
 #include "etld/serialization.h"
 
 using brave_etld::internal::PublicSuffixParseResult;
@@ -54,7 +55,7 @@ SerializationResult Matcher::Serialize() const {
   const size_t header_len = header_str.size();
   const size_t body_start = header_len + 1;
   const size_t buffer_size = body_start + body_len + 1;
-  char buffer[buffer_size];
+  char* buffer = reinterpret_cast<char*>(malloc(sizeof(char) * buffer_size));
 
   snprintf(
     buffer,

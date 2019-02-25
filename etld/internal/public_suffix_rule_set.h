@@ -44,7 +44,7 @@ class PublicSuffixRuleSet {
  public:
   PublicSuffixRuleSet();
   ~PublicSuffixRuleSet();
-  PublicSuffixRuleSet(const std::vector<PublicSuffixRule>& rules);
+  explicit PublicSuffixRuleSet(const std::vector<PublicSuffixRule>& rules);
   PublicSuffixRuleSet(const PublicSuffixRuleSet& rule_set);
 
   SerializationResult Serialize() const;
