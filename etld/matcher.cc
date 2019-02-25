@@ -3,12 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "etld/matcher.h"
+#include <stdlib.h>
 #include <fstream>
 #include <sstream>
 #include "etld/types.h"
 #include "etld/internal/parser.h"
 #include "etld/internal/public_suffix_rule.h"
-#include "etld/matcher.h"
 #include "etld/serialization.h"
 
 using brave_etld::internal::PublicSuffixParseResult;
@@ -18,28 +19,28 @@ using brave_etld::internal::SerializedChildBuffers;
 namespace brave_etld {
 
 DomainInfo build_domain_info(const internal::PublicSuffixRule* rule,
-  const Domain &domain) {
+  const Domain& domain) {
   return rule->Apply(domain);
 }
 
-Matcher::Matcher(std::ifstream &rule_file) {
+Matcher::Matcher(std::ifstream* rule_file) {
   ConsumeParseResult(internal::parse_rule_file(rule_file));
 }
 
-Matcher::Matcher(const std::string &rule_text) {
+Matcher::Matcher(const std::string& rule_text) {
   ConsumeParseResult(internal::parse_rule_text(rule_text));
 }
 
-Matcher::Matcher(const PublicSuffixParseResult &rules) {
+Matcher::Matcher(const PublicSuffixParseResult& rules) {
   ConsumeParseResult(rules);
 }
 
-Matcher::Matcher(const Matcher &matcher) :
+Matcher::Matcher(const Matcher& matcher) :
   rules_(matcher.rules_),
   exception_rules_(matcher.exception_rules_) {}
 
-Matcher::Matcher(const internal::PublicSuffixRuleSet &rules,
-    const internal::PublicSuffixRuleSet &exception_rules) :
+Matcher::Matcher(const internal::PublicSuffixRuleSet& rules,
+    const internal::PublicSuffixRuleSet& exception_rules) :
   rules_(rules),
   exception_rules_(exception_rules) {}
 
@@ -54,7 +55,7 @@ SerializationResult Matcher::Serialize() const {
   const size_t header_len = header_str.size();
   const size_t body_start = header_len + 1;
   const size_t buffer_size = body_start + body_len + 1;
-  char buffer[buffer_size];
+  char* buffer = reinterpret_cast<char*>(malloc(sizeof(char) * buffer_size));
 
   snprintf(
     buffer,
@@ -70,14 +71,14 @@ SerializationResult Matcher::Serialize() const {
   };
 }
 
-bool Matcher::Equal(const Matcher &matcher) const {
+bool Matcher::Equal(const Matcher& matcher) const {
   return (rules_.Equal(matcher.rules_) &&
     exception_rules_.Equal(matcher.exception_rules_));
 }
 
 // Attempts to implement the algoritms described here:
 //   https://publicsuffix.org/list/
-DomainInfo Matcher::Match(const Domain &domain) const {
+DomainInfo Matcher::Match(const Domain& domain) const {
   PublicSuffixRuleSetMatchResult except_match = exception_rules_.Match(domain);
   if (except_match.found_match) {
     return build_domain_info(except_match.rule, domain);
@@ -91,8 +92,7 @@ DomainInfo Matcher::Match(const Domain &domain) const {
   return build_domain_info(internal::PublicSuffixRule::root_rule, domain);
 }
 
-
-void Matcher::ConsumeParseResult(const PublicSuffixParseResult &result) {
+void Matcher::ConsumeParseResult(const PublicSuffixParseResult& result) {
   for (auto &elm : result.Rules()) {
     if (elm.IsException()) {
       exception_rules_.AddRule(elm);
@@ -102,7 +102,7 @@ void Matcher::ConsumeParseResult(const PublicSuffixParseResult &result) {
   }
 }
 
-Matcher matcher_from_serialization(const SerializedBuffer &buffer) {
+Matcher matcher_from_serialization(const SerializedBuffer& buffer) {
   SerializedChildBuffers child_buffers = internal::deserialize_buffer(buffer);
   return {
     internal::rule_set_from_serialization(child_buffers[0]),

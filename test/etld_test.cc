@@ -172,7 +172,7 @@ bool testParsePublicSuffixFileTest(
     int num_expected_invalid_lines) {
   std::ifstream rule_file;
   rule_file.open(file_path, std::ifstream::in);
-  PublicSuffixParseResult result = parse_rule_file(rule_file);
+  PublicSuffixParseResult result = parse_rule_file(&rule_file);
   return _verifyParsePublicSuffixTest(
     result,
     num_expected_rules,
@@ -288,7 +288,7 @@ bool testPublicSuffixRuleFileApply(const string &file_path,
     const string &domain_str, const DomainInfo &expected) {
   std::ifstream rule_file;
   rule_file.open(file_path, std::ifstream::in);
-  Matcher matcher(rule_file);
+  Matcher matcher(&rule_file);
   DomainInfo extracted = matcher.Match(Domain(domain_str));
 
   if (extracted.tld != expected.tld) {

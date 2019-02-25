@@ -72,7 +72,7 @@ SerializationResult PublicSuffixRuleSet::Serialize() const {
   const size_t header_len = header_str.size();
   const size_t body_start = header_len + 1;
   const size_t buffer_size = body_start + body_len + 1;
-  char buffer[buffer_size];
+  char* buffer = reinterpret_cast<char*>(malloc(sizeof(char) * buffer_size));
 
   snprintf(
     buffer,
@@ -118,7 +118,8 @@ void PublicSuffixRuleSet::MatchRecursions(const Domain& domain,
   if (label_result != node->children->end()) {
     PublicSuffixRuleMapNode* child_node = node->children->at(current_label);
     if (child_node->rule != nullptr) {
-      if (*match == nullptr || child_node->rule->Length() > (*match)->Length()) {
+      if (*match == nullptr ||
+          child_node->rule->Length() > (*match)->Length()) {
         *match = child_node->rule;
       }
     }
@@ -131,7 +132,8 @@ void PublicSuffixRuleSet::MatchRecursions(const Domain& domain,
   if (wildcard_result != node->children->end()) {
     PublicSuffixRuleMapNode* child_node = node->children->at("*");
     if (child_node->rule != nullptr) {
-      if (*match == nullptr || child_node->rule->Length() > (*match)->Length()) {
+      if (*match == nullptr ||
+          child_node->rule->Length() > (*match)->Length()) {
         *match = child_node->rule;
       }
     }
@@ -168,12 +170,12 @@ void PublicSuffixRuleSet::AddRule(const PublicSuffixRule& rule,
     rules_.push_back(new_rule);
     return;
   }
-  
+
   AddRule(rule, label_index - 1, child_node);
 }
 
 PublicSuffixRuleSet rule_set_from_serialization(
-    const SerializedBuffer &buffer) {
+    const SerializedBuffer& buffer) {
   std::vector<PublicSuffixRule> rules;
   for (auto &elm : deserialize_buffer(buffer)) {
     rules.push_back(rule_from_serialization(elm));

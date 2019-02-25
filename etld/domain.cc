@@ -3,20 +3,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "etld/domain.h"
 #include <string>
 #include <sstream>
-#include "etld/domain.h"
 
 namespace brave_etld {
 
-Domain::Domain(const Domain &domain) :
+Domain::Domain(const Domain& domain) :
   labels_(domain.labels_) {}
 
-Domain::Domain(const std::vector<Label> &labels) :
+Domain::Domain(const std::vector<Label>& labels) :
   labels_(labels) {}
 
-Domain::Domain(const std::string &string) {
-  std::size_t current, previous = 0;
+Domain::Domain(const std::string& string) {
+  size_t current, previous = 0;
   current = string.find(".");
   if (current == std::string::npos) {
     labels_.push_back(string);
@@ -34,7 +34,7 @@ Domain::Domain(const std::string &string) {
   }
 }
 
-bool Domain::Equals(const Domain &domain) {
+bool Domain::Equals(const Domain& domain) {
   const size_t local_length = Length();
   if (local_length != domain.Length()) {
     return false;

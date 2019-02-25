@@ -26,7 +26,7 @@ enum PublicSuffixTextLineType {
 struct PublicSuffixTextLineParseResult {
   PublicSuffixTextLineParseResult(
       PublicSuffixTextLineType type = PublicSuffixTextLineTypeNone,
-      const PublicSuffixRule * rule = nullptr) : 
+      const PublicSuffixRule* rule = nullptr) :
     type(type),
     rule(rule) {}
   const PublicSuffixTextLineType type;
@@ -36,10 +36,10 @@ struct PublicSuffixTextLineParseResult {
 class PublicSuffixParseResult {
  public:
   PublicSuffixParseResult();
-  PublicSuffixParseResult(const PublicSuffixParseResult &results);
+  PublicSuffixParseResult(const PublicSuffixParseResult& results);
 
   const std::vector<PublicSuffixRule>& Rules() const;
-  void ConsumeParseResult(const PublicSuffixTextLineParseResult &result);
+  void ConsumeParseResult(const PublicSuffixTextLineParseResult& result);
 
   int NumWhitespaceLines() const {
     return num_whitespace_lines_;
@@ -62,9 +62,9 @@ class PublicSuffixParseResult {
 
 // This attempts to implement the algorithm described here:
 //   https://www.publicsuffix.org/list/
-PublicSuffixParseResult parse_rule_file(std::ifstream &rule_file);
-PublicSuffixParseResult parse_rule_text(const std::string &rule_text);
-PublicSuffixTextLineParseResult parse_rule_line(const std::string &line);
+PublicSuffixParseResult parse_rule_file(std::ifstream* rule_file);
+PublicSuffixParseResult parse_rule_text(const std::string& rule_text);
+PublicSuffixTextLineParseResult parse_rule_line(const std::string& line);
 
 }  // namespace internal
 }  // namespace brave_etld

@@ -3,11 +3,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "etld/internal/parser.h"
 #include <string>
 #include <sstream>
 #include <fstream>
 #include <vector>
-#include "etld/internal/parser.h"
 #include "etld/internal/public_suffix_rule.h"
 #include "etld/types.h"
 
@@ -17,7 +17,7 @@ namespace internal {
 PublicSuffixParseResult::PublicSuffixParseResult() {}
 
 PublicSuffixParseResult::PublicSuffixParseResult(
-    const PublicSuffixParseResult &results) :
+    const PublicSuffixParseResult& results) :
   num_whitespace_lines_(results.num_whitespace_lines_),
   num_comment_lines_(results.num_comment_lines_),
   num_invalid_rules_(results.num_invalid_rules_),
@@ -28,7 +28,7 @@ const std::vector<PublicSuffixRule>& PublicSuffixParseResult::Rules() const {
 }
 
 void PublicSuffixParseResult::ConsumeParseResult(
-    const PublicSuffixTextLineParseResult &result) {
+    const PublicSuffixTextLineParseResult& result) {
   switch (result.type) {
     case PublicSuffixTextLineTypeRule:
       rules_.push_back(*(result.rule));
@@ -52,17 +52,17 @@ void PublicSuffixParseResult::ConsumeParseResult(
   }
 }
 
-PublicSuffixParseResult parse_rule_file(std::ifstream &rule_file) {
+PublicSuffixParseResult parse_rule_file(std::ifstream* rule_file) {
   std::string line;
   PublicSuffixParseResult results;
-  while (std::getline(rule_file, line)) {
+  while (std::getline(*rule_file, line)) {
     results.ConsumeParseResult(parse_rule_line(line));
   }
 
   return results;
 }
 
-PublicSuffixParseResult parse_rule_text(const std::string &text) {
+PublicSuffixParseResult parse_rule_text(const std::string& text) {
   std::istringstream stream(text);
   std::string line;
   PublicSuffixParseResult results;
@@ -73,7 +73,7 @@ PublicSuffixParseResult parse_rule_text(const std::string &text) {
   return results;
 }
 
-PublicSuffixTextLineParseResult parse_rule_line(const std::string &line) {
+PublicSuffixTextLineParseResult parse_rule_line(const std::string& line) {
   // Check to see if this is a comment line.  If so, process no further.
   if (line.find("//") == 0) {
     return PublicSuffixTextLineParseResult(PublicSuffixTextLineTypeComment);
@@ -88,8 +88,7 @@ PublicSuffixTextLineParseResult parse_rule_line(const std::string &line) {
   try {
     return PublicSuffixTextLineParseResult(
       PublicSuffixTextLineTypeRule,
-      new PublicSuffixRule(line)
-    );
+      new PublicSuffixRule(line));
   } catch (PublicSuffixRuleInputException error) {
     return PublicSuffixTextLineParseResult(PublicSuffixTextLineTypeInvalidRule);
   }

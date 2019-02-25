@@ -874,7 +874,7 @@ bool AdBlockClient::matches(const char* input, FilterOption contextOption,
 
   if (isNoFingerprintDomainHashSetMiss(
         noFingerprintAntiDomainExceptionHashSet, contextDomain,
-        contextDomainLen )) {
+        contextDomainLen)) {
     hasExceptionMatch = hasExceptionMatch ||
     hasMatchingFilters(noFingerprintAntiDomainOnlyExceptionFilters,
       numNoFingerprintAntiDomainOnlyExceptionFilters, input, inputLen,
@@ -1566,7 +1566,6 @@ char * AdBlockClient::serialize(int *totalSize,
           &noFingerprintAntiDomainExceptionHashSetSize);
   }
 
-  
   SerializedBuffer serializedMatcherBuffer;
   int serializedMatcherBufSize;
   if (etldMatcher == nullptr) {

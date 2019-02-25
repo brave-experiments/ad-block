@@ -14,9 +14,9 @@ namespace brave_etld {
 
 class Domain {
  public:
-  explicit Domain(const Domain &domain);
-  explicit Domain(const std::string &domain);
-  explicit Domain(const std::vector<Label> &labels);
+  explicit Domain(const Domain& domain);
+  explicit Domain(const std::string& domain);
+  explicit Domain(const std::vector<Label>& labels);
 
   bool Equals(const Domain &domain);
 

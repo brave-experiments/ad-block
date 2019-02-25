@@ -3,34 +3,37 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <iostream>
+#include "etld/serialization.h"
 #include <vector>
 #include <string>
-#include "etld/serialization.h"
 
 namespace brave_etld {
 namespace internal {
 
-SerializedBufferInfo extract_buffer_info(const SerializedBuffer &buffer) {
-  SerializedBufferInfo info;
+SerializedBufferInfo extract_buffer_info(const SerializedBuffer& buffer) {
   const size_t splitter_pos = buffer.find(":");
   if (splitter_pos == std::string::npos) {
-    info.body_len = std::string::npos;
-    info.body_start = std::string::npos;
-    info.buffer_len = 0;
-    return info;
+    return {
+      std::string::npos,
+      std::string::npos,
+      0
+    };
   }
 
   const std::string header_str = buffer.substr(0, splitter_pos);
-  info.body_start = splitter_pos + 1;
-  info.body_len = std::stoi(header_str);
-  info.buffer_len = info.body_start + info.body_len;
-  return info;
+  const size_t body_len = std::stoi(header_str);
+  const size_t body_start = splitter_pos + 1;
+  const size_t buffer_len = body_start + body_len;
+  return {
+    body_len,
+    body_start,
+    buffer_len
+  };
 }
 
-SerializedChildBuffers deserialize_buffer(const SerializedBuffer &buffer) {
+SerializedChildBuffers deserialize_buffer(const SerializedBuffer& buffer) {
   std::vector<SerializedBuffer> child_buffers;
-  SerializedBufferInfo info = extract_buffer_info(buffer);
+  const SerializedBufferInfo info = extract_buffer_info(buffer);
   if (info.body_len == std::string::npos) {
     return child_buffers;
   }
@@ -39,10 +42,11 @@ SerializedChildBuffers deserialize_buffer(const SerializedBuffer &buffer) {
   size_t offset = info.body_start;
   std::string child_buffer;
   while (offset < payload_len) {
-    info = extract_buffer_info(buffer.substr(offset, payload_len - offset));
-    child_buffer = buffer.substr(offset, info.buffer_len);
+    const SerializedBufferInfo child_info = extract_buffer_info(
+      buffer.substr(offset, payload_len - offset));
+    child_buffer = buffer.substr(offset, child_info.buffer_len);
     child_buffers.push_back(child_buffer);
-    offset += info.buffer_len;
+    offset += child_info.buffer_len;
   }
 
   return child_buffers;

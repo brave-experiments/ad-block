@@ -17,7 +17,7 @@ namespace internal {
 
 class PublicSuffixRuleInputException : public std::exception {
  public:
-  explicit PublicSuffixRuleInputException(const char * message) :
+  explicit PublicSuffixRuleInputException(const char* message) :
     msg_(message) {}
   explicit PublicSuffixRuleInputException(const std::string &message) :
     msg_(message) {}
@@ -32,20 +32,20 @@ class PublicSuffixRuleInputException : public std::exception {
 
 class PublicSuffixRule {
  public:
-  static const PublicSuffixRule * root_rule;
+  static const PublicSuffixRule* root_rule;
   PublicSuffixRule();
-  PublicSuffixRule(const PublicSuffixRule &rule);
-  explicit PublicSuffixRule(const std::string &rule_text);
+  PublicSuffixRule(const PublicSuffixRule& rule);
+  explicit PublicSuffixRule(const std::string& rule_text);
   PublicSuffixRule(
-    const std::vector<Label> &labels,
+    const std::vector<Label>& labels,
     bool is_exception = false,
     bool is_wildcard = false);
 
   SerializationResult Serialize() const;
 
-  bool Equals(const PublicSuffixRule &rule) const;
-  bool Matches(const Domain &domain) const;
-  DomainInfo Apply(const Domain &domain) const;
+  bool Equals(const PublicSuffixRule& rule) const;
+  bool Matches(const Domain& domain) const;
+  DomainInfo Apply(const Domain& domain) const;
   std::string ToString() const;
   std::string DomainString() const;
 
@@ -68,8 +68,8 @@ class PublicSuffixRule {
   bool is_wildcard_ = false;
 };
 
-PublicSuffixRule rule_from_serialization(const SerializedBuffer &buffer);
-std::vector<Label> parse_labels(const std::string &label_text);
+PublicSuffixRule rule_from_serialization(const SerializedBuffer& buffer);
+std::vector<Label> parse_labels(const std::string& label_text);
 
 }  // namespace internal
 }  // namespace brave_etld

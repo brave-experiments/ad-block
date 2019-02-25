@@ -15,21 +15,21 @@ typedef std::string SerializedBuffer;
 
 struct SerializationResult {
   const SerializedBuffer buffer;
-  size_t body_start;
-  size_t body_len;
+  const size_t body_start;
+  const size_t body_len;
 };
 
 namespace internal {
 
 struct SerializedBufferInfo {
-  size_t body_len;
-  size_t body_start;
-  size_t buffer_len;
+  const size_t body_len;
+  const size_t body_start;
+  const size_t buffer_len;
 };
 
 typedef std::vector<SerializedBuffer> SerializedChildBuffers;
-SerializedBufferInfo extract_buffer_info(const SerializedBuffer &buffer);
-SerializedChildBuffers deserialize_buffer(const SerializedBuffer &buffer);
+SerializedBufferInfo extract_buffer_info(const SerializedBuffer& buffer);
+SerializedChildBuffers deserialize_buffer(const SerializedBuffer& buffer);
 
 }  // namespace internal
 }  // namespace brave_etld
