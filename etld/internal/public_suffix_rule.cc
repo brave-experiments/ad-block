@@ -16,9 +16,9 @@
 namespace brave_etld {
 namespace internal {
 
-const PublicSuffixRule * PublicSuffixRule::root_rule = new PublicSuffixRule("*");
+const PublicSuffixRule* PublicSuffixRule::root_rule = new PublicSuffixRule("*");
 
-std::vector<Label> parse_labels(const std::string &label_text) {
+std::vector<Label> parse_labels(const std::string& label_text) {
   std::vector<Label> labels;
   size_t previous = 0;
   size_t current = label_text.find(".");
@@ -61,12 +61,12 @@ std::string trim_to_whitespace(std::string const& str) {
 
 PublicSuffixRule::PublicSuffixRule() {}
 
-PublicSuffixRule::PublicSuffixRule(const PublicSuffixRule &rule) :
+PublicSuffixRule::PublicSuffixRule(const PublicSuffixRule& rule) :
   labels_(rule.labels_),
   is_exception_(rule.IsException()),
   is_wildcard_(rule.IsWildcard()) {}
 
-PublicSuffixRule::PublicSuffixRule(const std::string &rule_text) {
+PublicSuffixRule::PublicSuffixRule(const std::string& rule_text) {
   std::string trimmed_rule_text(trim_to_whitespace(rule_text));
   if (trimmed_rule_text.length() == 0) {
     throw PublicSuffixRuleInputException(
@@ -97,7 +97,7 @@ PublicSuffixRule::PublicSuffixRule(const std::string &rule_text) {
   labels_ = parse_labels(labels_view);
 }
 
-PublicSuffixRule::PublicSuffixRule(const std::vector<Label> &labels,
+PublicSuffixRule::PublicSuffixRule(const std::vector<Label>& labels,
   bool is_exception, bool is_wildcard) :
     labels_(labels),
     is_exception_(is_exception),
@@ -129,7 +129,7 @@ SerializationResult PublicSuffixRule::Serialize() const {
   };
 }
 
-bool PublicSuffixRule::Equals(const PublicSuffixRule &rule) const {
+bool PublicSuffixRule::Equals(const PublicSuffixRule& rule) const {
   return (
     labels_ == rule.labels_ &&
     is_exception_ == rule.IsException() &&
@@ -138,7 +138,7 @@ bool PublicSuffixRule::Equals(const PublicSuffixRule &rule) const {
 
 // Implements matching algoritms described here
 //   https://publicsuffix.org/list/
-bool PublicSuffixRule::Matches(const Domain &domain) const {
+bool PublicSuffixRule::Matches(const Domain& domain) const {
   // When the domain and rule are split into corresponding labels, that the
   // domain contains as many or more labels than the rule.
   const size_t num_rule_labels = labels_.size();
@@ -166,8 +166,8 @@ bool PublicSuffixRule::Matches(const Domain &domain) const {
   return true;
 }
 
-DomainInfo PublicSuffixRule::Apply(const Domain &domain) const {
-  auto domain_len = domain.Length();
+DomainInfo PublicSuffixRule::Apply(const Domain& domain) const {
+  const auto domain_len = domain.Length();
   auto rule_len = Length();
   if (IsException()) {
     rule_len -= 1;
@@ -249,7 +249,7 @@ std::string PublicSuffixRule::ToString() const {
   return as_string.str();
 }
 
-PublicSuffixRule rule_from_serialization(const SerializedBuffer &buffer) {
+PublicSuffixRule rule_from_serialization(const SerializedBuffer& buffer) {
   const SerializedBufferInfo info = extract_buffer_info(buffer);
   const std::string body_str = buffer.substr(info.body_start, info.body_len);
   bool is_exception = body_str[0] == 't';

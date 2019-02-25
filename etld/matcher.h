@@ -22,24 +22,24 @@ class Matcher {
  public:
   Matcher() {}
   Matcher(const Matcher &matcher);
-  explicit Matcher(std::ifstream &rule_file);
-  explicit Matcher(const std::string &rule_text);
-  explicit Matcher(const internal::PublicSuffixParseResult &rules);
-  Matcher(const internal::PublicSuffixRuleSet &rules,
-    const internal::PublicSuffixRuleSet &exception_rules);
-  
+  explicit Matcher(std::ifstream* rule_file);
+  explicit Matcher(const std::string& rule_text);
+  explicit Matcher(const internal::PublicSuffixParseResult& rules);
+  Matcher(const internal::PublicSuffixRuleSet& rules,
+    const internal::PublicSuffixRuleSet& exception_rules);
+
   SerializationResult Serialize() const;
 
-  bool Equal(const Matcher &matcher) const;
-  DomainInfo Match(const Domain &domain) const;
+  bool Equal(const Matcher& matcher) const;
+  DomainInfo Match(const Domain& domain) const;
 
  private:
-  void ConsumeParseResult(const internal::PublicSuffixParseResult &result);
+  void ConsumeParseResult(const internal::PublicSuffixParseResult& result);
   internal::PublicSuffixRuleSet rules_;
   internal::PublicSuffixRuleSet exception_rules_;
 };
 
-Matcher matcher_from_serialization(const SerializedBuffer &buffer);
+Matcher matcher_from_serialization(const SerializedBuffer& buffer);
 
 }  // namespace brave_etld
 

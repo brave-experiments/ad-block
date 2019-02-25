@@ -11,7 +11,7 @@
 namespace brave_etld {
 namespace internal {
 
-SerializedBufferInfo extract_buffer_info(const SerializedBuffer &buffer) {
+SerializedBufferInfo extract_buffer_info(const SerializedBuffer& buffer) {
   SerializedBufferInfo info;
   const size_t splitter_pos = buffer.find(":");
   if (splitter_pos == std::string::npos) {
@@ -28,7 +28,7 @@ SerializedBufferInfo extract_buffer_info(const SerializedBuffer &buffer) {
   return info;
 }
 
-SerializedChildBuffers deserialize_buffer(const SerializedBuffer &buffer) {
+SerializedChildBuffers deserialize_buffer(const SerializedBuffer& buffer) {
   std::vector<SerializedBuffer> child_buffers;
   SerializedBufferInfo info = extract_buffer_info(buffer);
   if (info.body_len == std::string::npos) {

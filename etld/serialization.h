@@ -28,8 +28,8 @@ struct SerializedBufferInfo {
 };
 
 typedef std::vector<SerializedBuffer> SerializedChildBuffers;
-SerializedBufferInfo extract_buffer_info(const SerializedBuffer &buffer);
-SerializedChildBuffers deserialize_buffer(const SerializedBuffer &buffer);
+SerializedBufferInfo extract_buffer_info(const SerializedBuffer& buffer);
+SerializedChildBuffers deserialize_buffer(const SerializedBuffer& buffer);
 
 }  // namespace internal
 }  // namespace brave_etld
