@@ -7,6 +7,7 @@
 #include <sstream>
 #include <vector>
 #include <map>
+#include <iostream>
 #include "etld/internal/public_suffix_rule.h"
 #include "etld/internal/public_suffix_rule_set.h"
 #include "etld/domain.h"
@@ -20,14 +21,14 @@ namespace internal {
 
 PublicSuffixRuleSet::PublicSuffixRuleSet() {}
 
-PublicSuffixRuleSet::PublicSuffixRuleSet(const PublicSuffixRuleSet &rule_set) {
+PublicSuffixRuleSet::PublicSuffixRuleSet(const PublicSuffixRuleSet& rule_set) {
   for (auto &elm : rule_set.rules_) {
     AddRule(*elm);
   }
 }
 
 PublicSuffixRuleSet::PublicSuffixRuleSet(
-    const std::vector<PublicSuffixRule> &rules) {
+    const std::vector<PublicSuffixRule>& rules) {
   for (auto &elm : rules) {
     AddRule(elm);
   }
@@ -37,7 +38,7 @@ PublicSuffixRuleSet::~PublicSuffixRuleSet() {
   delete root_;
 }
 
-bool PublicSuffixRuleSet::Equal(const PublicSuffixRuleSet &rule_set) const {
+bool PublicSuffixRuleSet::Equal(const PublicSuffixRuleSet& rule_set) const {
   if (rules_.size() != rule_set.rules_.size()) {
     return false;
   }
@@ -88,7 +89,7 @@ SerializationResult PublicSuffixRuleSet::Serialize() const {
 }
 
 PublicSuffixRuleSetMatchResult PublicSuffixRuleSet::Match(
-    const Domain &domain) const {
+    const Domain& domain) const {
   if (root_ == nullptr) {
     return {false, nullptr};
   }
@@ -98,46 +99,31 @@ PublicSuffixRuleSetMatchResult PublicSuffixRuleSet::Match(
     return {false, nullptr};
   }
 
-  std::vector<const PublicSuffixRule*>* matches = new std::vector<const PublicSuffixRule*>();
-  MatchRecursions(domain, domain_length - 1, matches, root_);
+  const PublicSuffixRule* match = nullptr;
+  MatchRecursions(domain, domain_length - 1, &match, root_);
 
-  if (matches->size() == 0) {
-    delete matches;
+  if (match == nullptr) {
     return {false, nullptr};
   }
 
-  size_t longest_length = 0;
-  size_t found_length;
-  const PublicSuffixRule* longest_match_result = nullptr;
-  for (auto &elm : *matches) {
-    found_length = elm->Length();
-    if (found_length > longest_length) {
-      longest_match_result = elm;
-      longest_length = found_length;
-    }
-  }
-
-  delete matches;
-  if (longest_match_result == nullptr) {
-    return {false, nullptr};
-  }
-
-  return {true, longest_match_result};
+  return {true, match};
 }
 
-void PublicSuffixRuleSet::MatchRecursions(const Domain &domain,
-    const size_t label_index, std::vector<const PublicSuffixRule*>* matches,
-    PublicSuffixRuleMapNode * node) const {
+void PublicSuffixRuleSet::MatchRecursions(const Domain& domain,
+    const size_t label_index, const PublicSuffixRule** match,
+    PublicSuffixRuleMapNode* node) const {
   const Label& current_label = domain.Get(label_index);
 
   const auto label_result = node->children->find(current_label);
   if (label_result != node->children->end()) {
     PublicSuffixRuleMapNode* child_node = node->children->at(current_label);
     if (child_node->rule != nullptr) {
-      matches->push_back(child_node->rule);
+      if (*match == nullptr || child_node->rule->Length() > (*match)->Length()) {
+        *match = child_node->rule;
+      }
     }
     if (label_index > 0) {
-      MatchRecursions(domain, label_index - 1, matches, child_node);
+      MatchRecursions(domain, label_index - 1, match, child_node);
     }
   }
 
@@ -145,10 +131,12 @@ void PublicSuffixRuleSet::MatchRecursions(const Domain &domain,
   if (wildcard_result != node->children->end()) {
     PublicSuffixRuleMapNode* child_node = node->children->at("*");
     if (child_node->rule != nullptr) {
-      matches->push_back(child_node->rule);
+      if (*match == nullptr || child_node->rule->Length() > (*match)->Length()) {
+        *match = child_node->rule;
+      }
     }
     if (label_index > 0) {
-      MatchRecursions(domain, label_index - 1, matches, child_node);
+      MatchRecursions(domain, label_index - 1, match, child_node);
     }
   }
 }

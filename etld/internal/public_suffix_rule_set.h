@@ -44,21 +44,19 @@ class PublicSuffixRuleSet {
  public:
   PublicSuffixRuleSet();
   ~PublicSuffixRuleSet();
-  PublicSuffixRuleSet(const std::vector<PublicSuffixRule> &rules);
-  PublicSuffixRuleSet(const PublicSuffixRuleSet &rule_set);
+  PublicSuffixRuleSet(const std::vector<PublicSuffixRule>& rules);
+  PublicSuffixRuleSet(const PublicSuffixRuleSet& rule_set);
 
   SerializationResult Serialize() const;
-  bool Equal(const PublicSuffixRuleSet &rule_set) const;
-  PublicSuffixRuleSetMatchResult Match(const Domain &domain) const;
+  bool Equal(const PublicSuffixRuleSet& rule_set) const;
+  PublicSuffixRuleSetMatchResult Match(const Domain& domain) const;
   void AddRule(const PublicSuffixRule& rule);
 
  private:
   void AddRule(const PublicSuffixRule& rule, const size_t label_index,
     PublicSuffixRuleMapNode* node);
-  void MatchRecursions(const Domain &domain,
-      const size_t label_index,
-      std::vector<const PublicSuffixRule*>* matches,
-      PublicSuffixRuleMapNode * node) const;
+  void MatchRecursions(const Domain &domain, const size_t label_index,
+      const PublicSuffixRule** match, PublicSuffixRuleMapNode* node) const;
 
   PublicSuffixRuleMapNode* root_ = nullptr;
   std::vector<PublicSuffixRule*> rules_;
