@@ -36,6 +36,9 @@ class AdBlockClient {
       const char *contextDomain,
       Filter **matchingFilter,
       Filter **matchingExceptionFilter);
+  void addTag(const std::string &tag);
+  void removeTag(const std::string &tag);
+  bool tagExists(const std::string &tag) const;
   // Serializes a the parsed data and bloom filter data into a single buffer.
   // The returned buffer should be deleted.
   char * serialize(int *size,
@@ -106,10 +109,19 @@ class AdBlockClient {
       int inputLen, FilterOption contextOption, const char *contextDomain,
       BloomFilter *inputBloomFilter, const char *inputHost, int inputHostLen,
       Filter **matchingFilter = nullptr);
+  bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
+    HashSet<Filter> *hashSet,
+    const char *inputHost,
+    int inputHostLen,
+    FilterOption contextOption,
+    const char *contextDomain,
+    Filter **foundFilter = nullptr);
+
   void initBloomFilter(BloomFilter**, const char *buffer, int len);
   template<class T>
   bool initHashSet(HashSet<T>**, char *buffer, int len);
   char *deserializedBuffer;
+  std::set<std::string> tags;
 };
 
 extern std::set<std::string> unknownOptions;

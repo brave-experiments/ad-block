@@ -73,4 +73,22 @@ describe('serialization', function () {
       assert(caughtError)
     })
   })
+  describe("tags", function () {
+    it('preserves filter tags', function () {
+      const client = new AdBlockClient()
+      client.parse("testfilter$third-party,tag=blah");
+      const filters1 = client.getFilters('filters')
+      console.log('filters1', filters1)
+      assert.equal(filters1.length, 1)
+      assert.equal(filters1[0].tag, "blah")
+
+      const data = client.serialize()
+      const client2 = new AdBlockClient()
+      client2.deserialize(data)
+      const filters2 = client2.getFilters('filters')
+      console.log('filters2', filters2)
+      assert.equal(filters2.length, 1)
+      assert.equal(filters2[0].tag, "blah")
+    })
+  })
 })

@@ -620,10 +620,13 @@ bool AdBlockClient::hasMatchingFilters(Filter *filter, int numFilters,
   for (int i = 0; i < numFilters; i++) {
     if (filter->matches(input, inputLen, contextOption,
           contextDomain, inputBloomFilter, inputHost, inputHostLen)) {
-      if (matchingFilter) {
-        *matchingFilter = filter;
+      if (filter->tagLen == 0 ||
+          tagExists(std::string(filter->tag, filter->tagLen))) {
+        if (matchingFilter) {
+          *matchingFilter = filter;
+        }
+        return true;
       }
-      return true;
     }
     filter++;
   }
@@ -685,13 +688,13 @@ bool isNoFingerprintDomainHashSetMiss(HashSet<NoFingerprintDomain> *hashSet,
       static_cast<int>(host + hostLen - start)));
 }
 
-bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
+bool AdBlockClient::isHostAnchoredHashSetMiss(const char *input, int inputLen,
     HashSet<Filter> *hashSet,
     const char *inputHost,
     int inputHostLen,
     FilterOption contextOption,
     const char *contextDomain,
-    Filter **foundFilter = nullptr) {
+    Filter **foundFilter) {
   if (!hashSet) {
     return false;
   }
@@ -712,10 +715,13 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
             nullptr, start, inputHostLen - (start - inputHost)));
       if (filter && filter->matches(input, inputLen,
             contextOption, contextDomain)) {
-        if (foundFilter) {
-          *foundFilter = filter;
+        if (filter->tagLen == 0 ||
+            tagExists(std::string(filter->tag, filter->tagLen))) {
+          if (foundFilter) {
+            *foundFilter = filter;
+          }
+          return false;
         }
-        return false;
       }
     }
     start--;
@@ -728,8 +734,14 @@ bool isHostAnchoredHashSetMiss(const char *input, int inputLen,
     return true;
   }
   bool result = !filter->matches(input, inputLen, contextOption, contextDomain);
-  if (!result && foundFilter) {
-    *foundFilter = filter;
+  if (!result) {
+    if (filter->tagLen > 0 &&
+        !tagExists(std::string(filter->tag, filter->tagLen))) {
+      return true;
+    }
+    if (foundFilter) {
+      *foundFilter = filter;
+    }
   }
   return result;
 }
@@ -1451,6 +1463,23 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
   return true;
 }
 
+void AdBlockClient::addTag(const std::string &tag) {
+  if (tags.find(tag) == tags.end()) {
+    tags.insert(tag);
+  }
+}
+
+void AdBlockClient::removeTag(const std::string &tag) {
+  auto it = tags.find(tag);
+  if (it != tags.end()) {
+    tags.erase(it);
+  }
+}
+
+bool AdBlockClient::tagExists(const std::string &tag) const {
+  return tags.find(tag) != tags.end();
+}
+
 // Fills the specified buffer if specified, returns the number of characters
 // written or needed
 int serializeFilters(char * buffer, size_t bufferSizeAvail,
@@ -1475,6 +1504,15 @@ int serializeFilters(char * buffer, size_t bufferSizeAvail,
       bufferSize += static_cast<int>(strlen(f->data));
     }
     bufferSize++;
+
+    if (f->tagLen > 0) {
+      if (buffer) {
+        buffer[bufferSize] = '#';
+        memcpy(buffer + bufferSize + 1, f->tag, f->tagLen);
+        buffer[bufferSize + 1 + f->tagLen] = ',';
+      }
+      bufferSize += f->tagLen + 2;
+    }
 
     if (f->domainList) {
       if (buffer) {
@@ -1700,6 +1738,21 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
     }
     pos++;
 
+    // If the domain section starts with a # then we're in a tag
+    // block.
+    if (buffer[pos] == '#') {
+      pos++;
+      f->tag = buffer + pos;
+      f->tagLen = 0;
+      while (buffer[pos + f->tagLen] != '\0') {
+        if (buffer[pos + f->tagLen] == ',') {
+          pos += f->tagLen + 1;
+          break;
+        }
+        f->tagLen++;
+      }
+    }
+
     if (*(buffer + pos) == '\0') {
       f->domainList = nullptr;
     } else {
@@ -1721,6 +1774,7 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
 }
 
 bool AdBlockClient::deserialize(char *buffer) {
+  clear();
   deserializedBuffer = buffer;
   int bloomFilterSize = 0, exceptionBloomFilterSize = 0,
       hostAnchoredHashSetSize = 0, hostAnchoredExceptionHashSetSize = 0,

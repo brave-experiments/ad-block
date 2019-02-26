@@ -7,6 +7,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
 #include <cerrno>
 #include <algorithm>
 #include <iostream>
@@ -18,6 +19,7 @@
 #include "./util.h"
 
 using std::string;
+using std::vector;
 using std::endl;
 using std::set;
 using std::cout;
@@ -261,7 +263,8 @@ TEST(client, parseFilterMatchesFilter) {
 
 bool checkMatch(const char *rules,
     set<string> &&blocked, // NOLINT
-    set<string> &&notBlocked) { // NOLINT
+    set<string> &&notBlocked, // NOLINT
+    vector<string> &&tags) { // NOLINT
   AdBlockClient clients[2];
   char * buffer = nullptr;
   for (int i = 0; i < 2; i++) {
@@ -275,6 +278,10 @@ bool checkMatch(const char *rules,
       delete[] buffer;
       return false;
     }
+    std::for_each(tags.begin(), tags.end(),
+        [&client](string const &tag) {
+      client.addTag(tag);
+    });
 
     bool ret = true;
     string lastChecked;
@@ -311,7 +318,7 @@ TEST(client, exceptionRules) {
       "http://example.com/advert.html"
     }, {
       "http://example.com/advice.html",
-    }));
+    }, {}));
 
   CHECK(checkMatch("@@advice.\n"
                    "adv",
@@ -319,7 +326,7 @@ TEST(client, exceptionRules) {
       "http://example.com/advert.html"
     }, {
       "http://example.com/advice.html"
-    }));
+    }, {}));
   CHECK(checkMatch("@@|http://example.com\n"
                    "@@advice.\n"
                    "adv\n"
@@ -331,18 +338,18 @@ TEST(client, exceptionRules) {
       "http://example.com/advert.html",
       "http://examples.com/advice.html",
       "http://examples.com/#!foo",
-    }));
+    }, {}));
   CHECK(checkMatch("/ads/freewheel/*\n"
                    "@@||turner.com^*/ads/freewheel/*/"
                      "AdManager.js$domain=cnn.com",
     {
     }, {
       "http://z.cdn.turner.com/xslo/cvp/ads/freewheel/js/0/AdManager.js",
-    }));
+    }, {}));
   CHECK(checkMatch("^promotion^",
     {
       "http://yahoo.co.jp/promotion/imgs"
-    }, {}));
+    }, {}, {}));
 
   CHECK(checkMatch("^ads^",
     {
@@ -355,7 +362,45 @@ TEST(client, exceptionRules) {
       "http://yahoo.co.jp/adsx/imgs",
       "http://yahoo.co.jp/adsshmads/imgs",
       "ads://ads.co.ads/aads",
-    }));
+    }, {}));
+}
+
+TEST(client, tagTests) {
+  // No matching tags should not match a tagged filter
+  CHECK(checkMatch("adv$tag=stuff\n"
+                   "somelongpath/test$tag=stuff\n"
+                   "||brianbondy.com/$tag=brian\n"
+                   "||brave.com$tag=brian", {}, {
+    "http://example.com/advert.html",
+    "http://example.com/somelongpath/test/2.html",
+    "https://brianbondy.com/about",
+    "https://brave.com/about"
+  }, {}));
+  // A matching tag should match a tagged filter
+  CHECK(checkMatch("adv$tag=stuff\n"
+                   "somelongpath/test$tag=stuff\n"
+                   "||brianbondy.com/$tag=brian\n"
+                   "||brave.com$tag=brian", {
+    "http://example.com/advert.html",
+    "http://example.com/somelongpath/test/2.html",
+    "https://brianbondy.com/about",
+    "https://brave.com/about"
+  }, {}, {
+    "stuff", "brian"
+  }));
+  // A tag which doesn't match shouldn't match
+  CHECK(checkMatch("adv$tag=stuff\n"
+                   "somelongpath/test$tag=stuff\n"
+                   "||brianbondy.com/$tag=brian\n"
+                   "||brave.com$tag=brian", {
+  }, {
+    "http://example.com/advert.html",
+    "http://example.com/somelongpath/test/2.html",
+    "https://brianbondy.com/about",
+    "https://brave.com/about"
+  }, {
+    "filtertag1", "filtertag2"
+  }));
 }
 
 struct OptionRuleData {
