@@ -3,6 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 /* global describe, before, it */
 
+const fs = require('fs')
 const assert = require('assert')
 const {AdBlockClient} = require('../..')
 const {FilterOptions} = require('../..')
@@ -453,6 +454,39 @@ describe('matching', function () {
         assert.equal(queryResult.matches, true)
         assert.equal(queryResult.matchingFilter, 'analytics.brave.com^')
       })
+    })
+  })
+
+  describe('third-party match', function () {
+    before(function () {
+      this.client = new AdBlockClient()
+      this.client.parse('||bannersnack.com^$third-party')
+      const etldRules = fs.readFileSync('./test/data/public_suffix_list.dat', 'utf8')
+      this.client.parsePublicSuffixRules(etldRules)
+    })
+    it('consider eTLD+1 domains as 1p', function () {
+      const altSubDomainQuery = this.client.findMatchingFilters(
+        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+        FilterOptions.script,
+        'www.bannersnack.com'
+      )
+      assert.equal(altSubDomainQuery.matches, false)
+
+      const bareDomainQuery = this.client.findMatchingFilters(
+        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+        FilterOptions.script,
+        'bannersnack.com'
+      )
+      assert.equal(bareDomainQuery.matches, false)
+    })
+
+    it('consider non eTLD+1 domains as 3p', function () {
+      const queryResult = this.client.findMatchingFilters(
+        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+        FilterOptions.script,
+        'www.example.org'
+      )
+      assert.equal(queryResult.matches, true)
     })
   })
 })

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include "etld/matcher.h"
 
 #ifdef ENABLE_REGEX
 #include <regex> // NOLINT
@@ -23,23 +24,28 @@
 
 static HashFn h(19);
 
+using brave_etld::Domain;
+using brave_etld::Matcher;
+using brave_etld::DomainInfo;
+
+bool Filter::has_psl_warned = false;
+
 const char * getUrlHost(const char *input, int *len);
 
 Filter::Filter() :
-  borrowed_data(false),
-  filterType(FTNoFilterType),
-  filterOption(FONoFilterOption),
-  antiFilterOption(FONoFilterOption),
-  ruleDefinition(nullptr),
-  data(nullptr),
-  dataLen(-1),
-  domainList(nullptr),
-  host(nullptr),
-  hostLen(-1),
-  domains(nullptr),
-  antiDomains(nullptr),
-  domainsParsed(false) {
-}
+    borrowed_data(false),
+    filterType(FTNoFilterType),
+    filterOption(FONoFilterOption),
+    antiFilterOption(FONoFilterOption),
+    ruleDefinition(nullptr),
+    data(nullptr),
+    dataLen(-1),
+    domainList(nullptr),
+    host(nullptr),
+    hostLen(-1),
+    domains(nullptr),
+    antiDomains(nullptr),
+    domainsParsed(false) {}
 
 Filter::~Filter() {
   if (domains) {
@@ -66,22 +72,21 @@ Filter::~Filter() {
 
 Filter::Filter(const char * data, int dataLen, char *domainList,
                const char * host, int hostLen) :
-      borrowed_data(true), filterType(FTNoFilterType),
-      filterOption(FONoFilterOption),
-      antiFilterOption(FONoFilterOption), ruleDefinition(nullptr),
-      data(const_cast<char*>(data)), dataLen(dataLen),
-      domainList(domainList), host(const_cast<char*>(host)),
-      hostLen(hostLen),
-      domains(nullptr),
-      antiDomains(nullptr),
-      domainsParsed(false) {
-  }
+    borrowed_data(true), filterType(FTNoFilterType),
+    filterOption(FONoFilterOption),
+    antiFilterOption(FONoFilterOption), ruleDefinition(nullptr),
+    data(const_cast<char*>(data)), dataLen(dataLen),
+    domainList(domainList), host(const_cast<char*>(host)),
+    hostLen(hostLen),
+    domains(nullptr),
+    antiDomains(nullptr),
+    domainsParsed(false),
+    etldMatcher(nullptr) {}
 
 Filter::Filter(FilterType filterType, FilterOption filterOption,
                FilterOption antiFilterOption,
-               const char * data, int dataLen,
-               char *domainList, const char * host,
-               int hostLen) :
+               const char * data, int dataLen, char *domainList,
+               const char * host, int hostLen) :
       borrowed_data(true), filterType(filterType),
       filterOption(filterOption),
       antiFilterOption(antiFilterOption), ruleDefinition(nullptr),
@@ -90,8 +95,8 @@ Filter::Filter(FilterType filterType, FilterOption filterOption,
       hostLen(hostLen),
       domains(nullptr),
       antiDomains(nullptr),
-      domainsParsed(false) {
-  }
+      domainsParsed(false),
+      etldMatcher(nullptr) {}
 
 Filter::Filter(const Filter &other) {
   borrowed_data = other.borrowed_data;
@@ -103,6 +108,8 @@ Filter::Filter(const Filter &other) {
   domainsParsed = false;
   domains = nullptr;
   antiDomains = nullptr;
+  setEtldMatcher(other.etldMatcher);
+
   if (other.dataLen == -1 && other.data) {
     dataLen = static_cast<int>(strlen(other.data));
   }
@@ -342,18 +349,54 @@ bool endsWith(const char *input, const char *sub, int inputLen, int subLen) {
 }
 
 bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen,
-    const char *testHost, int testHostLen) {
-  if (!endsWith(testHost, baseContextHost, testHostLen, baseContextHostLen)) {
+    const char *testHost, int testHostLen, Matcher * matcher) {
+  std::string baseDomainStr(baseContextHost, baseContextHostLen);
+  Domain baseDomain(baseDomainStr);
+  std::string testDomainStr(testHost, testHostLen);
+  Domain testDomain(testDomainStr);
+
+  if (matcher == nullptr) {
+    if (Filter::has_psl_warned == false) {
+      std::cerr << "!!! Attempting to determine third-party-ness without a "
+                << "parsed Public Suffix List.  Falling back to FQDN, results "
+                << "will be less accurate.\n";
+      Filter::has_psl_warned = true;
+    }
+    return !baseDomain.Equals(testDomain);
+  }
+
+  DomainInfo baseHostDomainInfo = matcher->Match(baseDomain);
+  DomainInfo testHostDomainInfo = matcher->Match(testDomain);
+
+  if (baseHostDomainInfo.tld != testHostDomainInfo.tld ||
+      baseHostDomainInfo.domain != testHostDomainInfo.domain) {
     return true;
   }
 
-  // baseContextHost matches testHost exactly
-  if (testHostLen == baseContextHostLen) {
+  return false;
+}
+
+bool isMatchingHostAnchor(const char *ruleHost, int ruleHostLen,
+    const char *testHost, int testHostLen) {
+  std::string ruleHostStr(ruleHost, ruleHostLen);
+  std::string testHostStr(testHost, testHostLen);
+  size_t lastSubstrIndex = testHostStr.rfind(ruleHostStr);
+  if (lastSubstrIndex == std::string::npos) {
     return false;
   }
 
-  char c = testHost[testHostLen - baseContextHostLen - 1];
-  return c != '.' && testHostLen != baseContextHostLen;
+  // If the domain in the rule does not appear at the end of the given
+  // host, then do not process further.
+  if (static_cast<int>(lastSubstrIndex) + ruleHostLen != testHostLen) {
+    return false;
+  }
+
+  // Finally, check and make sure that the domain in the rule is preceeded by
+  // either a "." or is the first character in the string.
+  if (lastSubstrIndex == 0 || testHostStr[lastSubstrIndex - 1] == '.') {
+    return true;
+  }
+  return false;
 }
 
 bool Filter::hasUnsupportedOptions() const {
@@ -583,7 +626,7 @@ bool Filter::matches(const char *input, int inputLen,
       }
     }
 
-    if (isThirdPartyHost(host, hostLen, currentHost, currentHostLen)) {
+    if (!isMatchingHostAnchor(host, hostLen, currentHost, currentHostLen)) {
       return false;
     }
   }

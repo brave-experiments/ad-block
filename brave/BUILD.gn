@@ -26,6 +26,19 @@ source_set("ad-block") {
     "../no_fingerprint_domain.h",
     "../protocol.cc",
     "../protocol.h",
+    "../etld/domain.cc",
+    "../etld/domain.h",
+    "../etld/matcher.cc",
+    "../etld/matcher.h",
+    "../etld/internal/parser.cc",
+    "../etld/internal/parser.h",
+    "../etld/internal/public_suffix_rule.cc",
+    "../etld/internal/public_suffix_rule.h",
+    "../etld/internal/public_suffix_rule_set.cc",
+    "../etld/internal/public_suffix_rule_set.h",
+    "../etld/serialization.cc",
+    "../etld/serialization.h",
+    "../etld/types.h",
   ]
 
   deps = [

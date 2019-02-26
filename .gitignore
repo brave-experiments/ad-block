@@ -39,6 +39,9 @@ tags
 # output from sample which can be used for importing
 *.dat
 
+# but do inclule the public_suffix_list.dat file, which is used in tests
+!public_suffix_list.dat
+
 # Python compiled files
 *.pyc
 
@@ -48,3 +51,5 @@ out
 
 # VIM temp files
 *.swp
+
+.vscode

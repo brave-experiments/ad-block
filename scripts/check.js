@@ -23,6 +23,8 @@
  * Get stats for a particular adblock list:
  *   node scripts/check.js  --uuid 67F880F5-7602-4042-8A3D-01481FD7437A --stats
 */
+const fsLib = require('fs')
+
 const commander = require('commander')
 const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromListURL, makeAdBlockClientFromString, makeAdBlockClientFromFilePath, readSiteList} = require('../lib/util')
 const {FilterOptions} = require('..')
@@ -42,14 +44,20 @@ commander
   .option('-D, --discover', 'If specified does filter discovery for matched filter')
   .option('-s, --stats', 'If specified outputs parsing stats')
   .option('-C, --cache', 'Optionally cache results and use cached results')
+  .option('-P, --public-suffix-rules-path [file]', 'Optional path to a public suffix rule file for eTLD+1 determination')
   .option('-O, --filter-option [filterOption]', 'Filter option to use', filterStringToFilterOption, FilterOptions.noFilterOption)
   .parse(process.argv)
 
 let p = Promise.reject(new Error('Usage: node check.js --location <location> --host <host> [--uuid <uuid>]'))
 
+const publicSuffixRulesText = commander.publicSuffixRulesPath
+  ? fsLib.readFileSync(commander.publicSuffixRulesPath, "utf8")
+  : false
+
 const ruleDiscovery = commander.discover && !commander.dat
 const parseOptions = {
   keepRuleText: !!ruleDiscovery,
+  publicSuffixRules: publicSuffixRulesText,
 }
 
 if (commander.host && (commander.location || commander.list) || commander.stats) {

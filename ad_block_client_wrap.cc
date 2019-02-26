@@ -104,6 +104,8 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
   // Prototype
   NODE_SET_PROTOTYPE_METHOD(tpl, "clear", AdBlockClientWrap::Clear);
   NODE_SET_PROTOTYPE_METHOD(tpl, "parse", AdBlockClientWrap::Parse);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "parsePublicSuffixRules",
+      AdBlockClientWrap::ParsePublicSuffixRules);
   NODE_SET_PROTOTYPE_METHOD(tpl, "matches", AdBlockClientWrap::Matches);
   NODE_SET_PROTOTYPE_METHOD(tpl, "findMatchingFilters",
       AdBlockClientWrap::FindMatchingFilters);
@@ -230,6 +232,17 @@ void AdBlockClientWrap::Parse(const FunctionCallbackInfo<Value>& args) {
   AdBlockClientWrap* obj =
     ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
   obj->parse(buffer, preserveRules);
+}
+
+void AdBlockClientWrap::ParsePublicSuffixRules(
+    const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  String::Utf8Value str(isolate, args[0]->ToString());
+  const char * buffer = *str;
+
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
+  obj->parsePublicSuffixRules(buffer);
 }
 
 void AdBlockClientWrap::Matches(const FunctionCallbackInfo<Value>& args) {

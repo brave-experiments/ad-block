@@ -10,9 +10,13 @@
 #include <string.h>
 #include "./base.h"
 #include "./context_domain.h"
+#include "etld/matcher.h"
 
 class BloomFilter;
+class AdBlockClient;
 template <typename T> class HashSet;
+
+using brave_etld::Matcher;
 
 enum FilterType {
   FTNoFilterType = 0,
@@ -84,14 +88,15 @@ enum FilterOption {
 class Filter {
 friend class AdBlockClient;
  public:
+  static bool has_psl_warned;
+
   Filter();
   Filter(const Filter &other);
   Filter(const char * data, int dataLen, char *domainList = nullptr,
-      const char * host = nullptr, int hostLen = -1);
+         const char * host = nullptr, int hostLen = -1);
 
   Filter(FilterType filterType, FilterOption filterOption,
-         FilterOption antiFilterOption,
-         const char * data, int dataLen,
+         FilterOption antiFilterOption, const char * data, int dataLen,
          char *domainList = nullptr, const char * host = nullptr,
          int hostLen = -1);
 
@@ -102,7 +107,7 @@ friend class AdBlockClient;
 
   // Checks to see if any filter matches the input but does not match
   // any exception rule You may want to call the first overload to be
-  // slighly more efficient
+  // slightly more efficient
   bool matches(const char *input, int inputLen,
       FilterOption contextOption = FONoFilterOption,
       const char *contextDomain = nullptr,
@@ -124,12 +129,12 @@ friend class AdBlockClient;
   void parseOptions(const char *input);
 
   // Checks to see if the specified context domain is in the
-  // domain (or antiDmomain) list.
+  // domain (or anti-domain) list.
   bool containsDomain(const char* contextDomain, size_t contextDomainLen,
       bool anti = false) const;
   // Returns true if the filter is composed of only domains and no anti domains
   // Note that the set of all domain and anti-domain rules are not mutually
-  // exclusive.  One xapmle is:
+  // exclusive.  One example is:
   // domain=example.com|~foo.example.com restricts the filter to the example.com
   // domain with the exception of "foo.example.com" subdomain.
   bool isDomainOnlyFilter();
@@ -196,6 +201,11 @@ friend class AdBlockClient;
   HashSet<ContextDomain>* antiDomains;
   bool domainsParsed;
 
+  void setEtldMatcher(Matcher * newMatcher) {
+    etldMatcher = newMatcher;
+  }
+  Matcher * etldMatcher = nullptr;
+
  protected:
   // Fills |domains| and |antiDomains| sets
   void parseDomains(const char *domainList);
@@ -205,8 +215,15 @@ friend class AdBlockClient;
   void parseOption(const char *input, int len);
 };
 
-bool isThirdPartyHost(const char *baseContextHost,
+bool isThirdPartyHost(
+    const char *baseContextHost,
     int baseContextHostLen,
+    const char *testHost,
+    int testHostLen,
+    Matcher * matcher = nullptr);
+
+bool isMatchingHostAnchor(const char *ruleHost,
+    int ruleHostLen,
     const char *testHost,
     int testHostLen);
 

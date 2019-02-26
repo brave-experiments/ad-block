@@ -9,6 +9,7 @@
 #include <string>
 #include <set>
 #include "./filter.h"
+#include "etld/matcher.h"
 
 class CosmeticFilter;
 class BloomFilter;
@@ -24,9 +25,9 @@ class AdBlockClient {
   ~AdBlockClient();
 
   void clear();
-//   bool parse(const char *input);
   bool parse(const char *input, bool preserveRules = false);
-  bool matches(const char* input,
+  void parsePublicSuffixRules(const char *input);
+  bool matches(const char *input,
       FilterOption contextOption = FONoFilterOption,
       const char* contextDomain = nullptr,
       Filter** matchedFilter = nullptr,
@@ -110,6 +111,7 @@ class AdBlockClient {
   template<class T>
   bool initHashSet(HashSet<T>**, char *buffer, int len);
   char *deserializedBuffer;
+  brave_etld::Matcher* etldMatcher = nullptr;
 };
 
 extern std::set<std::string> unknownOptions;
