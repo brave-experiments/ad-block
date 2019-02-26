@@ -3,10 +3,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <iostream>
+#include "etld/serialization.h"
 #include <vector>
 #include <string>
-#include "etld/serialization.h"
 
 namespace brave_etld {
 namespace internal {

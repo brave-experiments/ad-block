@@ -3,13 +3,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "etld/internal/public_suffix_rule.h"
 #include <string>
 #include <sstream>
 #include <vector>
 #include <cstdio>
-#include <iostream>
 #include "etld/domain.h"
-#include "etld/internal/public_suffix_rule.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
 

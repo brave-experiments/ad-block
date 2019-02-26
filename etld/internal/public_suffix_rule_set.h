@@ -6,15 +6,13 @@
 #ifndef ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_SET_H_
 #define ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_SET_H_
 
+#include "etld/internal/public_suffix_rule.h"
 #include <string>
 #include <vector>
 #include <map>
-#include "etld/internal/public_suffix_rule.h"
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
-
-using std::unique_ptr;
 
 namespace brave_etld {
 namespace internal {
