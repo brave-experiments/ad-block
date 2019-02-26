@@ -77,7 +77,8 @@ enum FilterOption {
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
     FOObjectSubrequest|FOSubdocument|FODocument|FOOther|FOXBL|FOFont|FOMedia|
     FOWebRTC|FOWebsocket|FOPing,
-  FOUnsupportedSoSkipCheck = FOPopup|FOCSP|FOElemHide|FOGenericHide|FOGenericBlock|FOEmpty|FOUnknown,
+  FOUnsupportedSoSkipCheck = FOPopup|FOCSP|FOElemHide|FOGenericHide|
+    FOGenericBlock|FOEmpty|FOUnknown,
   FOUnsupportedButIgnore = FORedirect|FOImportant
 };
 

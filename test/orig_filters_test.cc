@@ -16,6 +16,8 @@
 #include "./ad_block_client.h"
 #include "./util.h"
 
+#define CHECK_EQ(a, b) CHECK((a) == (b));
+
 using std::cout;
 
 TEST(ruleDefinition, basic) {
@@ -48,9 +50,9 @@ TEST(ruleDefinition, basic) {
   CHECK(client.findMatchingFilters(urlToCheck, FONoFilterOption,
     currentPageDomain, &matchingFilter, &matchingExceptionFilter));
   CHECK(matchingFilter);
-  CHECK(strcmp(matchingFilter->data, "&view=ad&") == 0);
-  CHECK(matchingExceptionFilter == nullptr);
-  CHECK(strcmp(matchingFilter->ruleDefinition, "&view=ad&") == 0);
+  CHECK_EQ(strcmp(matchingFilter->data, "&view=ad&"), 0);
+  CHECK_EQ(matchingExceptionFilter, nullptr);
+  CHECK_EQ(strcmp(matchingFilter->ruleDefinition, "&view=ad&"), 0);
 }
 
 TEST(ruleDefinitionEmptyByDefault, basic) {
@@ -73,9 +75,9 @@ TEST(ruleDefinitionEmptyByDefault, basic) {
   CHECK(client.findMatchingFilters(urlToCheck, FOScript, currentPageDomain,
     &matchingFilter, &matchingExceptionFilter));
   CHECK(matchingFilter);
-  CHECK(strcmp(matchingFilter->data, "-google-analytics.") == 0);
-  CHECK(matchingExceptionFilter == nullptr);
-  CHECK(matchingFilter->ruleDefinition == nullptr);
+  CHECK_EQ(strcmp(matchingFilter->data, "-google-analytics."), 0);
+  CHECK_EQ(matchingExceptionFilter, nullptr);
+  CHECK_EQ(matchingFilter->ruleDefinition, nullptr);
 }
 
 // Test to see if we can parse and restore lines correctly, when there is white
@@ -103,9 +105,9 @@ TEST(ruleDefinitionLeadingWhitespace, basic) {
   CHECK(client.findMatchingFilters(urlToCheck, FONoFilterOption,
     currentPageDomain, &matchingFilter, &matchingExceptionFilter));
   CHECK(matchingFilter);
-  CHECK(strcmp(matchingFilter->data, "&view=ad&") == 0);
-  CHECK(matchingExceptionFilter == nullptr);
-  CHECK(strcmp(matchingFilter->ruleDefinition, "&view=ad&") == 0);
+  CHECK_EQ(strcmp(matchingFilter->data, "&view=ad&"), 0);
+  CHECK_EQ(matchingExceptionFilter, nullptr);
+  CHECK_EQ(strcmp(matchingFilter->ruleDefinition, "&view=ad&"), 0);
 }
 
 
@@ -132,12 +134,9 @@ TEST(ruleDefinitionWithOptions, basic) {
   CHECK(client.findMatchingFilters(urlToCheck, FOScript, currentPageDomain,
     &matchingFilter, &matchingExceptionFilter));
   CHECK(matchingFilter);
-  CHECK(strcmp(matchingFilter->data, "-google-analytics.") == 0);
-  CHECK(matchingExceptionFilter == nullptr);
-  CHECK(
-    strcmp(
-      matchingFilter->ruleDefinition,
-      "-google-analytics.$image,script,xmlhttprequest"
-    ) == 0
-  );
+  CHECK_EQ(strcmp(matchingFilter->data, "-google-analytics."), 0);
+  CHECK_EQ(matchingExceptionFilter, nullptr);
+  CHECK_EQ(strcmp(
+    matchingFilter->ruleDefinition,
+    "-google-analytics.$image,script,xmlhttprequest"), 0);
 }

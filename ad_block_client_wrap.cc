@@ -84,10 +84,12 @@ void GenerateManifestFile(const std::string &name,
   std::ofstream outFile(filename);
   if (outFile.is_open()) {
     outFile << "{" << std::endl;
-    outFile << "  \"description\": \"Brave Ad Block Updater extension\"," << std::endl;
+    outFile << "  \"description\": \"Brave Ad Block Updater extension\","
+      << std::endl;
     outFile << "  \"key\": \"" << base64_public_key << "\"," << std::endl;
     outFile << "  \"manifest_version\": 2," << std::endl;
-    outFile << "  \"name\": \"Brave Ad Block Updater (" << name << ")\"," << std::endl;
+    outFile << "  \"name\": \"Brave Ad Block Updater (" << name << ")\","
+      << std::endl;
     outFile << "  \"version\": \"0.0.0\"" << std::endl;
     outFile << "}" << std::endl;
   }
@@ -326,7 +328,8 @@ void AdBlockClientWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
 
   if (!args[0]->IsArrayBufferView()) {
     isolate->ThrowException(v8::Exception::Error(
-      String::NewFromUtf8(isolate, "Provided string is not valid, serialized DAT data")));
+      String::NewFromUtf8(isolate,
+        "Provided string is not valid, serialized DAT data")));
     return;
   }
 
@@ -578,7 +581,11 @@ void AdBlockClientWrap::GenerateRegionalManifestFiles(
   String::Utf8Value str(isolate, args[0]->ToString());
   const char * dir = *str;
   for (auto& entry : region_lists) {
-    std::string filename = dir + std::string("/") + entry.uuid + std::string("-manifest.json");
+    const std::string filename = (
+      dir +
+      std::string("/") +
+      entry.uuid +
+      std::string("-manifest.json"));
     GenerateManifestFile(entry.title, entry.base64_public_key, filename);
   }
 }

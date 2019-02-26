@@ -859,7 +859,7 @@ bool AdBlockClient::matches(const char* input, FilterOption contextOption,
 
   if (isNoFingerprintDomainHashSetMiss(
         noFingerprintAntiDomainExceptionHashSet, contextDomain,
-        contextDomainLen )) {
+        contextDomainLen)) {
     hasExceptionMatch = hasExceptionMatch ||
     hasMatchingFilters(noFingerprintAntiDomainOnlyExceptionFilters,
       numNoFingerprintAntiDomainOnlyExceptionFilters, input, inputLen,
@@ -1243,7 +1243,6 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
       noFingerprintDomainOnlyExceptionFilters ||
       noFingerprintAntiDomainOnlyFilters ||
       noFingerprintAntiDomainOnlyExceptionFilters) {
-
     // Copy the old data in, we can't simply use memcpy here
     // since filtres manages some pointers that get deleted.
     for (int i = 0; i < numFilters; i++) {
@@ -1262,19 +1261,24 @@ bool AdBlockClient::parse(const char *input, bool preserveRules) {
       newNoFingerprintFilters[i].swapData(&(noFingerprintFilters[i]));
     }
     for (int i = 0; i < numNoFingerprintExceptionFilters; i++) {
-      newNoFingerprintExceptionFilters[i].swapData(&(noFingerprintExceptionFilters[i]));
+      newNoFingerprintExceptionFilters[i].swapData(
+        &(noFingerprintExceptionFilters[i]));
     }
     for (int i = 0; i < numNoFingerprintDomainOnlyFilters; i++) {
-      newNoFingerprintDomainOnlyFilters[i].swapData(&(noFingerprintDomainOnlyFilters[i]));
+      newNoFingerprintDomainOnlyFilters[i].swapData(
+        &(noFingerprintDomainOnlyFilters[i]));
     }
     for (int i = 0; i < numNoFingerprintAntiDomainOnlyFilters; i++) {
-      newNoFingerprintAntiDomainOnlyFilters[i].swapData(&(noFingerprintAntiDomainOnlyFilters[i]));
+      newNoFingerprintAntiDomainOnlyFilters[i].swapData(
+        &(noFingerprintAntiDomainOnlyFilters[i]));
     }
     for (int i = 0; i < numNoFingerprintDomainOnlyExceptionFilters; i++) {
-      newNoFingerprintDomainOnlyExceptionFilters[i].swapData(&(noFingerprintDomainOnlyExceptionFilters[i]));
+      newNoFingerprintDomainOnlyExceptionFilters[i].swapData(
+        &(noFingerprintDomainOnlyExceptionFilters[i]));
     }
     for (int i = 0; i < numNoFingerprintAntiDomainOnlyExceptionFilters; i++) {
-      newNoFingerprintAntiDomainOnlyExceptionFilters[i].swapData(&(noFingerprintAntiDomainOnlyExceptionFilters[i]));
+      newNoFingerprintAntiDomainOnlyExceptionFilters[i].swapData(
+        &(noFingerprintAntiDomainOnlyExceptionFilters[i]));
     }
 
     // Free up the old memory for filter storage
