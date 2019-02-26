@@ -180,7 +180,7 @@ void PublicSuffixRuleSet::AddRule(const PublicSuffixRule& rule,
 PublicSuffixRuleSet rule_set_from_serialization(
     const SerializedBuffer& buffer) {
   std::vector<PublicSuffixRule> rules;
-  for (auto &elm : deserialize_buffer(buffer)) {
+  for (const auto &elm : deserialize_buffer(buffer)) {
     rules.push_back(rule_from_serialization(elm));
   }
   return PublicSuffixRuleSet(rules);

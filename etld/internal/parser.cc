@@ -76,21 +76,19 @@ PublicSuffixParseResult parse_rule_text(const std::string& text) {
 PublicSuffixTextLineParseResult parse_rule_line(const std::string& line) {
   // Check to see if this is a comment line.  If so, process no further.
   if (line.find("//") == 0) {
-    return PublicSuffixTextLineParseResult(PublicSuffixTextLineTypeComment);
+    return {PublicSuffixTextLineTypeComment};
   }
 
   const size_t first_non_white_space_char = line.find_first_not_of(" ");
   // Next, check to see if the line is only whitespace.
   if (first_non_white_space_char == std::string::npos) {
-    return PublicSuffixTextLineParseResult(PublicSuffixTextLineTypeWhitespace);
+    return {PublicSuffixTextLineTypeWhitespace};
   }
 
   try {
-    return PublicSuffixTextLineParseResult(
-      PublicSuffixTextLineTypeRule,
-      new PublicSuffixRule(line));
+    return {PublicSuffixTextLineTypeRule, new PublicSuffixRule(line)};
   } catch (PublicSuffixRuleInputException error) {
-    return PublicSuffixTextLineParseResult(PublicSuffixTextLineTypeInvalidRule);
+    return {PublicSuffixTextLineTypeInvalidRule};
   }
 }
 

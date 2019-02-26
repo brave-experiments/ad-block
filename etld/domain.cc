@@ -53,7 +53,7 @@ std::string Domain::ToString() const {
   std::stringstream as_string;
   const size_t num_labels = labels_.size();
   size_t i = 0;
-  for (auto &str : labels_) {
+  for (const auto &str : labels_) {
     as_string << str;
     if (i != num_labels - 1) {
       as_string << ".";

@@ -96,7 +96,7 @@ DomainInfo Matcher::Match(const Domain& domain) const {
 }
 
 void Matcher::ConsumeParseResult(const PublicSuffixParseResult& result) {
-  for (auto &elm : result.Rules()) {
+  for (const auto &elm : result.Rules()) {
     if (elm.IsException()) {
       exception_rules_.AddRule(elm);
     } else {
