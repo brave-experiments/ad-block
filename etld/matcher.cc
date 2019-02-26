@@ -45,11 +45,11 @@ Matcher::Matcher(const internal::PublicSuffixRuleSet& rules,
   exception_rules_(exception_rules) {}
 
 SerializationResult Matcher::Serialize() const {
-  std::stringstream serialized_buffer;
-  serialized_buffer << rules_.Serialize().buffer;
-  serialized_buffer << exception_rules_.Serialize().buffer;
+  std::stringstream buffer_stream;
+  buffer_stream << rules_.Serialize().buffer;
+  buffer_stream << exception_rules_.Serialize().buffer;
 
-  const std::string buffer_body = serialized_buffer.str();
+  const std::string buffer_body = buffer_stream.str();
   const size_t body_len = buffer_body.size();
   const std::string header_str = std::to_string(body_len);
   const size_t header_len = header_str.size();
@@ -64,8 +64,11 @@ SerializationResult Matcher::Serialize() const {
     header_str.c_str(),
     buffer_body.c_str());
 
+  const std::string serialized_buffer(buffer);
+  free(buffer);
+
   return {
-    buffer,
+    serialized_buffer,
     body_start,
     body_len
   };

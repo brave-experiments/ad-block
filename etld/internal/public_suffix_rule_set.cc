@@ -61,12 +61,12 @@ bool PublicSuffixRuleSet::Equal(const PublicSuffixRuleSet& rule_set) const {
 }
 
 SerializationResult PublicSuffixRuleSet::Serialize() const {
-  std::stringstream serialized_buffer;
+  std::stringstream buffer_stream;
   for (auto &elm : rules_) {
-    serialized_buffer << elm->Serialize().buffer;
+    buffer_stream << elm->Serialize().buffer;
   }
 
-  const std::string buffer_body = serialized_buffer.str();
+  const std::string buffer_body = buffer_stream.str();
   const size_t body_len = buffer_body.size();
   const std::string header_str = std::to_string(body_len);
   const size_t header_len = header_str.size();
@@ -81,8 +81,11 @@ SerializationResult PublicSuffixRuleSet::Serialize() const {
     header_str.c_str(),
     buffer_body.c_str());
 
+  const std::string serialized_buffer(buffer);
+  free(buffer);
+
   return {
-    buffer,
+    serialized_buffer,
     body_start,
     body_len
   };
