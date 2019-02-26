@@ -169,8 +169,8 @@ bool PublicSuffixRule::Matches(const Domain& domain) const {
 }
 
 DomainInfo PublicSuffixRule::Apply(const Domain& domain) const {
-  const auto domain_len = domain.Length();
-  auto rule_len = Length();
+  const size_t domain_len = domain.Length();
+  size_t rule_len = Length();
   if (IsException()) {
     rule_len -= 1;
   }
@@ -221,10 +221,10 @@ DomainInfo PublicSuffixRule::Apply(const Domain& domain) const {
 }
 
 std::string PublicSuffixRule::DomainString() const {
-  auto last_label_index = labels_.size() - 1;
+  const size_t last_label_index = labels_.size() - 1;
   size_t label_index = 0;
   std::stringstream as_string;
-  for (auto &elm : labels_) {
+  for (const auto &elm : labels_) {
     as_string << elm;
     if (label_index != last_label_index) {
       as_string << ".";
@@ -254,11 +254,11 @@ std::string PublicSuffixRule::ToString() const {
 PublicSuffixRule rule_from_serialization(const SerializedBuffer& buffer) {
   const SerializedBufferInfo info = extract_buffer_info(buffer);
   const std::string body_str = buffer.substr(info.body_start, info.body_len);
-  bool is_exception = body_str[0] == 't';
-  bool is_wildcard = body_str[1] == 't';
+  const bool is_exception = body_str[0] == 't';
+  const bool is_wildcard = body_str[1] == 't';
   const std::string label_str(body_str, 2, info.body_len - 2);
   const std::vector<Label> labels = parse_labels(label_str);
-  return PublicSuffixRule(labels, is_exception, is_wildcard);
+  return {labels, is_exception, is_wildcard};
 }
 
 }  // namespace internal
