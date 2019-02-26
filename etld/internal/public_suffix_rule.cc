@@ -121,8 +121,11 @@ SerializationResult PublicSuffixRule::Serialize() const {
     is_wildcard_ ? 't' : 'f',
     domain_string.c_str());
 
+  const std::string serialized_buffer(buffer);
+  free(buffer);
+
   return {
-    buffer,
+    serialized_buffer,
     body_start,
     body_len
   };
