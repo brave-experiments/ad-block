@@ -39,7 +39,7 @@ const std::vector<FilterList> default_lists = {
     ""
   }, {
     "200392E7-9A0F-40DF-86EB-6AF7E4071322",
-    "https://raw.githubusercontent.com/brave/adblock-lists/master/ublock-unbreak.txt", // NOLINT
+    "https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt", // NOLINT
     "uBlock Unbreak",
     {},
     "https://github.com/gorhill/uBlock",
