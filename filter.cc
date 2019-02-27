@@ -3,23 +3,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "./filter.h"
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
 #include <iostream>
 #include <set>
 #include <string>
-
 #ifdef ENABLE_REGEX
 #include <regex> // NOLINT
 #endif
-
-#include "./filter.h"
-#include "hashFn.h"
+#include "./hash_set.h"
 #include "./ad_block_client.h"
-
+#include "hashFn.h"
 #include "BloomFilter.h"
-#include "hash_set.h"
 
 static HashFn h(19);
 
@@ -374,10 +371,11 @@ bool Filter::contextDomainMatchesFilter(const char *contextDomain) {
   size_t contextDomainLen = strlen(contextDomain);
   while (*p != '\0') {
     if (*p == '.') {
-      if (containsDomain(start, contextDomainLen - (start - contextDomain), false)) {
+      const size_t domainLen = contextDomainLen - (start - contextDomain);
+      if (containsDomain(start, domainLen, false)) {
         return true;
       }
-      if (containsDomain(start, contextDomainLen - (start - contextDomain), true)) {
+      if (containsDomain(start, domainLen, true)) {
         return false;
       }
       // Set start to just past the period

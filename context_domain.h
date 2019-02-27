@@ -7,7 +7,7 @@
 #define CONTEXT_DOMAIN_H_
 
 #include <string.h>
-#include "base.h"
+#include "./base.h"
 
 // This class must operate off of borrowed memory
 // Serialization and deserialization is not supported intentionally.

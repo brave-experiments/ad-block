@@ -52,7 +52,9 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType,
   string lastChecked;
   std::for_each(blocked.begin(), blocked.end(),
       [&filter, &ret, &lastChecked, &expectedFilterOption](string const &s) {
-    ret = ret && filter.matches(s.c_str(), (FilterOption)(expectedFilterOption & FOResourcesOnly));
+    const FilterOption filterOptions = static_cast<FilterOption>(
+            expectedFilterOption & FOResourcesOnly);
+    ret = ret && filter.matches(s.c_str(), filterOptions);
     lastChecked = s;
   });
   if (!ret) {
@@ -62,7 +64,9 @@ bool testFilter(const char *rawFilter, FilterType expectedFilterType,
 
   std::for_each(notBlocked.begin(), notBlocked.end(),
       [&filter, &ret, &lastChecked, &expectedFilterOption](string const &s) {
-    ret = ret && !filter.matches(s.c_str(), (FilterOption)(expectedFilterOption & FOResourcesOnly));
+    const auto filterOptions = static_cast<FilterOption>(
+            expectedFilterOption & FOResourcesOnly);
+    ret = ret && !filter.matches(s.c_str(), filterOptions);
     lastChecked = s;
   });
   if (!ret) {

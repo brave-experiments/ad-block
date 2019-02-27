@@ -7,9 +7,10 @@
 #define LISTS_DEFAULT_H_
 
 #include <vector>
+#include <string>
 #include "../filter_list.h"
 
-const std::string kAdBlockDefaultComponentId("cffkpbalmllkdoenhmdmpbkajipdjfam");
+const std::string kAdBlockDefaultComponentId("cffkpbalmllkdoenhmdmpbkajipdjfam");  // NOLINT
 const std::string kAdBlockDefaultBase64PublicKey =
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs0qzJmHSgIiw7IGFCxij"
     "1NnB5hJ5ZQ1LKW9htL4EBOaMJvmqaDs/wfq0nw/goBHWsqqkMBynRTu2Hxxirvdb"
