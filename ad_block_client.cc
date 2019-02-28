@@ -1578,7 +1578,7 @@ char * AdBlockClient::serialize(int *totalSize,
   // Get the number of bytes that we'll need
   char sz[512];
   *totalSize += 1 + snprintf(sz, sizeof(sz),
-      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
+      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
       numFilters,
       numExceptionFilters, adjustedNumCosmeticFilters, adjustedNumHtmlFilters,
       numNoFingerprintFilters, numNoFingerprintExceptionFilters,
@@ -1594,8 +1594,7 @@ char * AdBlockClient::serialize(int *totalSize,
       noFingerprintDomainHashSetSize,
       noFingerprintAntiDomainHashSetSize,
       noFingerprintDomainExceptionHashSetSize,
-      noFingerprintAntiDomainExceptionHashSetSize,
-      serializedMatcherBufSize);
+      noFingerprintAntiDomainExceptionHashSetSize);
 
   *totalSize += serializeFilters(nullptr, 0, filters, numFilters) +
     serializeFilters(nullptr, 0, exceptionFilters, numExceptionFilters) +
@@ -1704,12 +1703,6 @@ char * AdBlockClient::serialize(int *totalSize,
     delete[] noFingerprintAntiDomainExceptionHashSetBuffer;
   }
 
-  if (serializedMatcherBufSize > 0) {
-    memcpy(buffer + pos, serializedMatcherBuffer.c_str(),
-        serializedMatcherBufSize);
-    pos += serializedMatcherBufSize;
-  }
-
   return buffer;
 }
 
@@ -1760,11 +1753,10 @@ bool AdBlockClient::deserialize(char *buffer) {
       noFingerprintDomainHashSetSize = 0,
       noFingerprintAntiDomainHashSetSize = 0,
       noFingerprintDomainExceptionHashSetSize = 0,
-      noFingerprintAntiDomainExceptionHashSetSize = 0,
-      etldMatcherBufSize = 0;
+      noFingerprintAntiDomainExceptionHashSetSize = 0;
   int pos = 0;
   sscanf(buffer + pos,
-      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
+      "%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x,%x",
       &numFilters,
       &numExceptionFilters,
       &numCosmeticFilters,
@@ -1784,8 +1776,7 @@ bool AdBlockClient::deserialize(char *buffer) {
       &noFingerprintDomainHashSetSize,
       &noFingerprintAntiDomainHashSetSize,
       &noFingerprintDomainExceptionHashSetSize,
-      &noFingerprintAntiDomainExceptionHashSetSize,
-      &etldMatcherBufSize);
+      &noFingerprintAntiDomainExceptionHashSetSize);
   pos += static_cast<int>(strlen(buffer + pos)) + 1;
 
   filters = new Filter[numFilters];
@@ -1870,15 +1861,6 @@ bool AdBlockClient::deserialize(char *buffer) {
 
   if (etldMatcher != nullptr) {
     delete etldMatcher;
-  }
-
-  if (etldMatcherBufSize == 0) {
-    etldMatcher = new Matcher();
-  } else {
-    SerializedBuffer serializedmatcherBuffer = std::string(
-      buffer + pos, etldMatcherBufSize);
-    Matcher newMatcher = matcher_from_serialization(serializedmatcherBuffer);
-    etldMatcher = new Matcher(newMatcher);
   }
 
   return true;

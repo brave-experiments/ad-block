@@ -458,35 +458,110 @@ describe('matching', function () {
   })
 
   describe('third-party match', function () {
-    before(function () {
-      this.client = new AdBlockClient()
-      this.client.parse('||bannersnack.com^$third-party')
-      const etldRules = fs.readFileSync('./test/data/public_suffix_list.dat', 'utf8')
-      this.client.parsePublicSuffixRules(etldRules)
-    })
-    it('consider eTLD+1 domains as 1p', function () {
-      const altSubDomainQuery = this.client.findMatchingFilters(
-        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
-        FilterOptions.script,
-        'www.bannersnack.com'
-      )
-      assert.equal(altSubDomainQuery.matches, false)
+    describe('when parsing public suffix list', function () {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('||bannersnack.com^$third-party')
+        const etldRules = fs.readFileSync('./test/data/public_suffix_list.dat', 'utf8')
+        this.client.parsePublicSuffixRules(etldRules)
+      })
+      it('eTLD+1 should not be3p', function () {
+        const altSummaryResult = this.client.matches(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'www.bannersnack.com'
+        )
+        assert.equal(altSummaryResult, false)
 
-      const bareDomainQuery = this.client.findMatchingFilters(
-        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
-        FilterOptions.script,
-        'bannersnack.com'
-      )
-      assert.equal(bareDomainQuery.matches, false)
+        const altSubDomainQuery = this.client.findMatchingFilters(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'www.bannersnack.com'
+        )
+        assert.equal(altSubDomainQuery.matches, false)
+
+        const bareDomainRs = this.client.matches(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'bannersnack.com'
+        )
+        assert.equal(bareDomainRs, false)
+
+        const bareDomainQuery = this.client.findMatchingFilters(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'bannersnack.com'
+        )
+        assert.equal(bareDomainQuery.matches, false)
+      })
+
+      it('consider non eTLD+1 domains as 3p', function () {
+        const matchesRs = this.client.matches(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'www.example.org'
+        )
+        assert.equal(matchesRs, true)
+
+        const queryResult = this.client.findMatchingFilters(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'www.example.org'
+        )
+        assert.equal(queryResult.matches, true)
+      })
     })
 
-    it('consider non eTLD+1 domains as 3p', function () {
-      const queryResult = this.client.findMatchingFilters(
-        'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
-        FilterOptions.script,
-        'www.example.org'
-      )
-      assert.equal(queryResult.matches, true)
+    describe('when falling back to FQDN', function () {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('||bannersnack.com^$third-party')
+      })
+      it('eTLD+1 domains should be 3p', function () {
+        const altSummaryResult = this.client.matches(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'www.bannersnack.com'
+        )
+        assert.equal(altSummaryResult, true)
+
+        const altSubDomainQuery = this.client.findMatchingFilters(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'www.bannersnack.com'
+        )
+        assert.equal(altSubDomainQuery.matches, true)
+
+        const bareDomainRs = this.client.matches(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'bannersnack.com'
+        )
+        assert.equal(bareDomainRs, true)
+
+        const bareDomainQuery = this.client.findMatchingFilters(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'bannersnack.com'
+        )
+        assert.equal(bareDomainQuery.matches, true)
+      })
+
+      it('non-eTLD+1 should still be 3p', function () {
+        const matchesRs = this.client.matches(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'www.example.org'
+        )
+        assert.equal(matchesRs, true)
+
+        const queryResult = this.client.findMatchingFilters(
+          'https://cdn.bannersnack.com/public/texts/en.js?v=6.10.16',
+          FilterOptions.script,
+          'www.example.org'
+        )
+        assert.equal(queryResult.matches, true)
+      })
     })
   })
 })

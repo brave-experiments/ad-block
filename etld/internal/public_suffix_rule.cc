@@ -199,8 +199,8 @@ PublicSuffixRule rule_from_serialization(const SerializedBuffer& buffer) {
   const bool is_exception = body_str[0] == 't';
   const bool is_wildcard = body_str[1] == 't';
   const string label_str(body_str, 2, info.body_len - 2);
-  const auto label_result = parse_labels(label_str);
-  return {label_result.labels, is_exception, is_wildcard};
+  const PublicSuffixTextLabelsParseResult label_rs = parse_labels(label_str);
+  return {label_rs.labels, is_exception, is_wildcard};
 }
 
 }  // namespace internal

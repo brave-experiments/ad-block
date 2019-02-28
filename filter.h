@@ -204,7 +204,7 @@ friend class AdBlockClient;
   void setEtldMatcher(Matcher * newMatcher) {
     etldMatcher = newMatcher;
   }
-  Matcher * etldMatcher = nullptr;
+  Matcher* etldMatcher = nullptr;
 
  protected:
   // Fills |domains| and |antiDomains| sets
@@ -216,15 +216,15 @@ friend class AdBlockClient;
 };
 
 bool isThirdPartyHost(
-    const char *baseContextHost,
+    const char* baseContextHost,
     int baseContextHostLen,
-    const char *testHost,
+    const char* testHost,
     int testHostLen,
-    Matcher * matcher = nullptr);
+    Matcher* matcher = nullptr);
 
-bool isMatchingHostAnchor(const char *ruleHost,
+bool isMatchingHostAnchor(const char* ruleHost,
     int ruleHostLen,
-    const char *testHost,
+    const char* testHost,
     int testHostLen);
 
 static inline bool isEndOfLine(char c) {

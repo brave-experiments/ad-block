@@ -307,7 +307,7 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
     std::string option(pStart, len);
     if (unknownOptions.find(option) == unknownOptions.end()) {
-      std::cout << "Unrecognized filter option: " << option << std::endl;
+      std::cerr << "Unrecognized filter option: " << option << std::endl;
       unknownOptions.insert(option);
     }
   }
@@ -348,8 +348,8 @@ bool endsWith(const char *input, const char *sub, int inputLen, int subLen) {
   return true;
 }
 
-bool isThirdPartyHost(const char *baseContextHost, int baseContextHostLen,
-    const char *testHost, int testHostLen, Matcher * matcher) {
+bool isThirdPartyHost(const char* baseContextHost, int baseContextHostLen,
+    const char* testHost, int testHostLen, Matcher* matcher) {
   std::string baseDomainStr(baseContextHost, baseContextHostLen);
   Domain baseDomain(baseDomainStr);
   std::string testDomainStr(testHost, testHostLen);
