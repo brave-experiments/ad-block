@@ -7,23 +7,24 @@
 #include <string>
 #include <sstream>
 
+using ::std::string;
+using ::std::stringstream;
+using ::std::vector;
+
 namespace brave_etld {
 
-Domain::Domain(const Domain& domain) :
-  labels_(domain.labels_) {}
-
-Domain::Domain(const std::vector<Label>& labels) :
+Domain::Domain(const vector<Label>& labels) :
   labels_(labels) {}
 
-Domain::Domain(const std::string& string) {
+Domain::Domain(const string& string) {
   size_t current, previous = 0;
   current = string.find(".");
-  if (current == std::string::npos) {
+  if (current == string::npos) {
     labels_.push_back(string);
     return;
   }
 
-  while (current != std::string::npos) {
+  while (current != string::npos) {
     labels_.push_back(string.substr(previous, current - previous));
     previous = current + 1;
     current = string.find(".", previous);
@@ -49,8 +50,8 @@ bool Domain::Equals(const Domain& domain) {
   return true;
 }
 
-std::string Domain::ToString() const {
-  std::stringstream as_string;
+string Domain::ToString() const {
+  stringstream as_string;
   const size_t num_labels = labels_.size();
   size_t i = 0;
   for (const auto &str : labels_) {

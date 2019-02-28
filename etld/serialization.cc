@@ -7,21 +7,23 @@
 #include <vector>
 #include <string>
 
+using ::std::string;
+
 namespace brave_etld {
 namespace internal {
 
 SerializedBufferInfo extract_buffer_info(const SerializedBuffer& buffer) {
   const size_t splitter_pos = buffer.find(":");
-  if (splitter_pos == std::string::npos) {
+  if (splitter_pos == string::npos) {
     return {
-      std::string::npos,
-      std::string::npos,
+      string::npos,
+      string::npos,
       0
     };
   }
 
-  const std::string header_str = buffer.substr(0, splitter_pos);
-  const size_t body_len = std::stoi(header_str);
+  const string header_str = buffer.substr(0, splitter_pos);
+  const size_t body_len = ::std::stoi(header_str);
   const size_t body_start = splitter_pos + 1;
   const size_t buffer_len = body_start + body_len;
   return {
@@ -34,13 +36,13 @@ SerializedBufferInfo extract_buffer_info(const SerializedBuffer& buffer) {
 SerializedChildBuffers deserialize_buffer(const SerializedBuffer& buffer) {
   std::vector<SerializedBuffer> child_buffers;
   const SerializedBufferInfo info = extract_buffer_info(buffer);
-  if (info.body_len == std::string::npos) {
+  if (info.body_len == string::npos) {
     return child_buffers;
   }
 
   const size_t payload_len = buffer.size();
   size_t offset = info.body_start;
-  std::string child_buffer;
+  string child_buffer;
   while (offset < payload_len) {
     const SerializedBufferInfo child_info = extract_buffer_info(
       buffer.substr(offset, payload_len - offset));

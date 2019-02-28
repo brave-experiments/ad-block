@@ -12,7 +12,9 @@
 #include "./CppUnitLite/Test.h"
 #include "./ad_block_client.h"
 
-using std::string;
+using ::std::cout;
+using ::std::endl;
+using ::std::string;
 
 bool testThirdPartyBlockingWithRulesDomainAndPublixSuffixList(
     const string &rules, const string &url, const string &domain,
@@ -31,9 +33,9 @@ bool testThirdPartyBlockingWithRulesDomainAndPublixSuffixList(
     domain.c_str(), &matching_ptr, &exception_ptr);
 
   if (is_match != should_match) {
-    std::cout << "Expected " << (should_match ? "a match" : "no match")
-              << " but received " << (is_match ? "a match" : "no match")
-              << "." << std::endl;
+    cout << "Expected " << (should_match ? "a match" : "no match")
+         << " but received " << (is_match ? "a match" : "no match")
+         << "." << endl;
     return false;
   }
 
@@ -48,16 +50,16 @@ bool testThirdPartyBlockingWithRulesDomainAndPublixSuffixList(
     return true;
   }
 
-  std::cout << "Did not return the expected matching rule.  Expected '"
-            << expected_rule << "' but received '"
-            << matching_ptr->ruleDefinition << "'" << std::endl;
+  cout << "Did not return the expected matching rule.  Expected '"
+       << expected_rule << "' but received '"
+       << matching_ptr->ruleDefinition << "'" << endl;
   return false;
 }
 
 TEST(etldBlockingTests, basic) {
-  std::ifstream ifs("./test/data/public_suffix_list.dat");
-  const string public_suffix_rules((std::istreambuf_iterator<char>(ifs)),
-                                   (std::istreambuf_iterator<char>()));
+  ::std::ifstream ifs("./test/data/public_suffix_list.dat");
+  const string public_suffix_rules((::std::istreambuf_iterator<char>(ifs)),
+                                   (::std::istreambuf_iterator<char>()));
   const string third_party_rule = "||s3.amazonaws.com^$third-party";
   const string test_url = "http://www.spark-public.s3.amazonaws.com/ads.txt";
 
@@ -132,9 +134,9 @@ bool testAdBlockSerializationWithPublicSuffixList(const string &rules,
 
   // First make sure the first client behaves as expected.
   if (one_match != should_match) {
-    std::cout << "Expected " << (should_match ? "a match" : "no match")
-              << " with the first client, but received "
-              << (one_match ? "a match" : "no match") << "." << std::endl;
+    cout << "Expected " << (should_match ? "a match" : "no match")
+         << " with the first client, but received "
+         << (one_match ? "a match" : "no match") << "." << endl;
     return false;
   }
 
@@ -142,9 +144,9 @@ bool testAdBlockSerializationWithPublicSuffixList(const string &rules,
     bool is_expected_rule = strcmp(
       matching_ptr->ruleDefinition, expected_rule.c_str()) == 0;
     if (!is_expected_rule) {
-      std::cout << "Client one did not return the expected matching rule. "
-                << " Expected '" << expected_rule << "' but received '"
-                << matching_ptr->ruleDefinition << "'" << std::endl;
+      cout << "Client one did not return the expected matching rule. "
+           << " Expected '" << expected_rule << "' but received '"
+           << matching_ptr->ruleDefinition << "'" << endl;
       return false;
     }
   }
@@ -166,9 +168,9 @@ bool testAdBlockSerializationWithPublicSuffixList(const string &rules,
     domain.c_str(), &matching_ptr2, &exception_ptr2);
 
   if (one_match != two_match) {
-    std::cout << "Client one matched the filter correctly, but client two "
-              << "returned " << (two_match ? "a match" : "no match")
-              << ". " << std::endl;
+    cout << "Client one matched the filter correctly, but client two "
+         << "returned " << (two_match ? "a match" : "no match")
+         << ". " << endl;
     return false;
   }
 
@@ -176,11 +178,11 @@ bool testAdBlockSerializationWithPublicSuffixList(const string &rules,
     bool returned_rules_match = strncmp(matching_ptr->data,
       matching_ptr2->data, matching_ptr->dataLen) == 0;
     if (!returned_rules_match) {
-      std::cout << "Client two returned differnet rule data ("
-                << string(matching_ptr2->data, matching_ptr2->dataLen)
-                << ") from client one ("
-                << string(matching_ptr->data, matching_ptr->dataLen)
-                << ")." << std::endl;
+      cout << "Client two returned differnet rule data ("
+           << string(matching_ptr2->data, matching_ptr2->dataLen)
+           << ") from client one ("
+           << string(matching_ptr->data, matching_ptr->dataLen)
+           << ")." << endl;
       return false;
     }
   }
@@ -189,9 +191,9 @@ bool testAdBlockSerializationWithPublicSuffixList(const string &rules,
 }
 
 TEST(etldSerializationTests, basic) {
-  std::ifstream ifs("./test/data/public_suffix_list.dat");
-  const string public_suffix_rules((std::istreambuf_iterator<char>(ifs)),
-                                   (std::istreambuf_iterator<char>()));
+  ::std::ifstream ifs("./test/data/public_suffix_list.dat");
+  const string public_suffix_rules((::std::istreambuf_iterator<char>(ifs)),
+                                   (::std::istreambuf_iterator<char>()));
   const string third_party_rule = "||s3.amazonaws.com^$third-party";
   const string test_url = "http://www.spark-public.s3.amazonaws.com/ads.txt";
 

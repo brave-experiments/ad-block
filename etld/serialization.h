@@ -9,9 +9,12 @@
 #include <string>
 #include <vector>
 
+using ::std::string;
+using ::std::vector;
+
 namespace brave_etld {
 
-typedef std::string SerializedBuffer;
+typedef string SerializedBuffer;
 
 struct SerializationResult {
   const SerializedBuffer buffer;
@@ -27,7 +30,7 @@ struct SerializedBufferInfo {
   const size_t buffer_len;
 };
 
-typedef std::vector<SerializedBuffer> SerializedChildBuffers;
+typedef vector<SerializedBuffer> SerializedChildBuffers;
 SerializedBufferInfo extract_buffer_info(const SerializedBuffer& buffer);
 SerializedChildBuffers deserialize_buffer(const SerializedBuffer& buffer);
 

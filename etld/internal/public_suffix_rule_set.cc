@@ -3,21 +3,37 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "etld/internal/public_suffix_rule_set.h"
 #include <string>
 #include <sstream>
 #include <vector>
 #include <map>
-#include <iostream>
 #include "etld/internal/public_suffix_rule.h"
-#include "etld/internal/public_suffix_rule_set.h"
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
 
+using ::std::stringstream;
+using ::std::vector;
+using ::std::map;
+using ::std::string;
 using brave_etld::internal::PublicSuffixRuleSetMatchResult;
 
 namespace brave_etld {
 namespace internal {
+
+PublicSuffixRuleMapNode::PublicSuffixRuleMapNode() {
+  children = new map<string, PublicSuffixRuleMapNode*>();
+}
+
+PublicSuffixRuleMapNode::~PublicSuffixRuleMapNode() {
+  for (auto &elm : *children) {
+    delete elm.second;
+  }
+  if (rule != nullptr) {
+    delete rule;
+  }
+}
 
 PublicSuffixRuleSet::PublicSuffixRuleSet() {}
 
@@ -28,7 +44,7 @@ PublicSuffixRuleSet::PublicSuffixRuleSet(const PublicSuffixRuleSet& rule_set) {
 }
 
 PublicSuffixRuleSet::PublicSuffixRuleSet(
-    const std::vector<PublicSuffixRule>& rules) {
+    const vector<PublicSuffixRule>& rules) {
   for (auto &elm : rules) {
     AddRule(elm);
   }
@@ -61,14 +77,14 @@ bool PublicSuffixRuleSet::Equal(const PublicSuffixRuleSet& rule_set) const {
 }
 
 SerializationResult PublicSuffixRuleSet::Serialize() const {
-  std::stringstream buffer_stream;
+  stringstream buffer_stream;
   for (auto &elm : rules_) {
     buffer_stream << elm->Serialize().buffer;
   }
 
-  const std::string buffer_body = buffer_stream.str();
+  const string buffer_body = buffer_stream.str();
   const size_t body_len = buffer_body.size();
-  const std::string header_str = std::to_string(body_len);
+  const string header_str = ::std::to_string(body_len);
   const size_t header_len = header_str.size();
   const size_t body_start = header_len + 1;
   const size_t buffer_size = body_start + body_len + 1;
@@ -81,7 +97,7 @@ SerializationResult PublicSuffixRuleSet::Serialize() const {
     header_str.c_str(),
     buffer_body.c_str());
 
-  const std::string serialized_buffer(buffer);
+  const string serialized_buffer(buffer);
   free(buffer);
 
   return {
@@ -179,7 +195,7 @@ void PublicSuffixRuleSet::AddRule(const PublicSuffixRule& rule,
 
 PublicSuffixRuleSet rule_set_from_serialization(
     const SerializedBuffer& buffer) {
-  std::vector<PublicSuffixRule> rules;
+  vector<PublicSuffixRule> rules;
   for (const auto &elm : deserialize_buffer(buffer)) {
     rules.push_back(rule_from_serialization(elm));
   }

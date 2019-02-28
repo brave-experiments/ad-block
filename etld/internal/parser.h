@@ -12,6 +12,10 @@
 #include "etld/internal/public_suffix_rule.h"
 #include "etld/types.h"
 
+using ::std::ifstream;
+using ::std::string;
+using ::std::vector;
+
 namespace brave_etld {
 namespace internal {
 
@@ -23,22 +27,31 @@ enum PublicSuffixTextLineType {
   PublicSuffixTextLineTypeRule,
 };
 
+struct PublicSuffixTextLabelsParseResult {
+  PublicSuffixTextLabelsParseResult(const string error = "");
+  PublicSuffixTextLabelsParseResult(const vector<Label>& labels);
+  const bool is_success = false;
+  const string error;
+  const vector<Label> labels;
+};
+
 struct PublicSuffixTextLineParseResult {
   PublicSuffixTextLineParseResult(
-      PublicSuffixTextLineType type = PublicSuffixTextLineTypeNone,
-      const PublicSuffixRule* rule = nullptr) :
-    type(type),
-    rule(rule) {}
+    PublicSuffixTextLineType type = PublicSuffixTextLineTypeNone,
+    const PublicSuffixRule* rule = nullptr,
+    const string error = "");
   const PublicSuffixTextLineType type;
   const PublicSuffixRule* rule;
+  const string error;
 };
 
 class PublicSuffixParseResult {
  public:
   PublicSuffixParseResult();
-  PublicSuffixParseResult(const PublicSuffixParseResult& results);
+  PublicSuffixParseResult(const PublicSuffixParseResult& results) = default;
+  ~PublicSuffixParseResult() = default;
 
-  const std::vector<PublicSuffixRule>& Rules() const;
+  const vector<PublicSuffixRule>& Rules() const;
   void ConsumeParseResult(const PublicSuffixTextLineParseResult& result);
 
   int NumWhitespaceLines() const {
@@ -57,14 +70,16 @@ class PublicSuffixParseResult {
   int num_whitespace_lines_ = 0;
   int num_comment_lines_ = 0;
   int num_invalid_rules_ = 0;
-  std::vector<PublicSuffixRule> rules_;
+  vector<PublicSuffixRule> rules_;
 };
 
 // This attempts to implement the algorithm described here:
 //   https://www.publicsuffix.org/list/
-PublicSuffixParseResult parse_rule_file(std::ifstream* rule_file);
-PublicSuffixParseResult parse_rule_text(const std::string& rule_text);
-PublicSuffixTextLineParseResult parse_rule_line(const std::string& line);
+PublicSuffixParseResult parse_rule_file(ifstream* rule_file);
+PublicSuffixParseResult parse_rule_text(const string& rule_text);
+PublicSuffixTextLineParseResult parse_rule_line(const string& line);
+string trim_to_whitespace(const string &rule_text);
+PublicSuffixTextLabelsParseResult parse_labels(const string& label_text);
 
 }  // namespace internal
 }  // namespace brave_etld

@@ -16,17 +16,21 @@
 #include "etld/internal/public_suffix_rule_set.h"
 #include "etld/serialization.h"
 
+using ::std::ifstream;
+using ::std::string;
+
 namespace brave_etld {
 
 class Matcher {
  public:
-  Matcher() {}
-  Matcher(const Matcher &matcher);
-  explicit Matcher(std::ifstream* rule_file);
-  explicit Matcher(const std::string& rule_text);
+  Matcher();
+  Matcher(const Matcher &matcher) = default;
+  explicit Matcher(ifstream* rule_file);
+  explicit Matcher(const string& rule_text);
   explicit Matcher(const internal::PublicSuffixParseResult& rules);
   Matcher(const internal::PublicSuffixRuleSet& rules,
     const internal::PublicSuffixRuleSet& exception_rules);
+  ~Matcher() = default;
 
   SerializationResult Serialize() const;
 

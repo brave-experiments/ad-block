@@ -19,8 +19,8 @@
 #include "./etld/domain.h"
 #include "./etld/serialization.h"
 
-using std::string;
-using std::vector;
+using ::std::string;
+using ::std::vector;
 using brave_etld::internal::PublicSuffixRule;
 using brave_etld::internal::PublicSuffixRuleSet;
 using brave_etld::internal::rule_from_serialization;

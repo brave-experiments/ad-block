@@ -6,13 +6,16 @@
 #ifndef ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_SET_H_
 #define ETLD_INTERNAL_PUBLIC_SUFFIX_RULE_SET_H_
 
-#include "etld/internal/public_suffix_rule.h"
 #include <string>
 #include <vector>
 #include <map>
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
+#include "etld/internal/public_suffix_rule.h"
+
+using ::std::vector;
+using ::std::map;
 
 namespace brave_etld {
 namespace internal {
@@ -23,27 +26,18 @@ struct PublicSuffixRuleSetMatchResult {
 };
 
 struct PublicSuffixRuleMapNode {
-  PublicSuffixRuleMapNode() {
-    children = new std::map<std::string, PublicSuffixRuleMapNode*>();
-  }
-  ~PublicSuffixRuleMapNode() {
-    for (auto &elm : *children) {
-      delete elm.second;
-    }
-    if (rule != nullptr) {
-      delete rule;
-    }
-  }
+  PublicSuffixRuleMapNode();
+  ~PublicSuffixRuleMapNode();
   const PublicSuffixRule* rule = nullptr;
-  std::map<std::string, PublicSuffixRuleMapNode*>* children = nullptr;
+  map<string, PublicSuffixRuleMapNode*>* children = nullptr;
 };
 
 class PublicSuffixRuleSet {
  public:
   PublicSuffixRuleSet();
-  ~PublicSuffixRuleSet();
-  explicit PublicSuffixRuleSet(const std::vector<PublicSuffixRule>& rules);
+  explicit PublicSuffixRuleSet(const vector<PublicSuffixRule>& rules);
   PublicSuffixRuleSet(const PublicSuffixRuleSet& rule_set);
+  ~PublicSuffixRuleSet();
 
   SerializationResult Serialize() const;
   bool Equal(const PublicSuffixRuleSet& rule_set) const;
@@ -57,7 +51,7 @@ class PublicSuffixRuleSet {
       const PublicSuffixRule** match, PublicSuffixRuleMapNode* node) const;
 
   PublicSuffixRuleMapNode* root_ = nullptr;
-  std::vector<PublicSuffixRule*> rules_;
+  vector<PublicSuffixRule*> rules_;
 };
 
 PublicSuffixRuleSet rule_set_from_serialization(const SerializedBuffer &buffer);

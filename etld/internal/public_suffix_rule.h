@@ -12,44 +12,32 @@
 #include "etld/types.h"
 #include "etld/serialization.h"
 
+using ::std::string;
+using ::std::vector;
+
 namespace brave_etld {
 namespace internal {
 
-class PublicSuffixRuleInputException : public std::exception {
- public:
-  explicit PublicSuffixRuleInputException(const char* message) :
-    msg_(message) {}
-  explicit PublicSuffixRuleInputException(const std::string &message) :
-    msg_(message) {}
-  virtual const char* what() const throw() {
-    return msg_.c_str();
-  }
-  virtual ~PublicSuffixRuleInputException() throw() {}
-
- protected:
-  std::string msg_;
-};
-
 class PublicSuffixRule {
  public:
-  static const PublicSuffixRule* root_rule;
   PublicSuffixRule();
-  PublicSuffixRule(const PublicSuffixRule& rule);
-  explicit PublicSuffixRule(const std::string& rule_text);
+  explicit PublicSuffixRule(const string& rule_text);
   PublicSuffixRule(
-    const std::vector<Label>& labels,
+    const vector<Label>& labels,
     bool is_exception = false,
     bool is_wildcard = false);
+  PublicSuffixRule(const PublicSuffixRule& rule) = default;
+  ~PublicSuffixRule() = default;
 
   SerializationResult Serialize() const;
 
   bool Equals(const PublicSuffixRule& rule) const;
   bool Matches(const Domain& domain) const;
   DomainInfo Apply(const Domain& domain) const;
-  std::string ToString() const;
-  std::string DomainString() const;
+  string ToString() const;
+  string DomainString() const;
 
-  const std::vector<Label>& Labels() const;
+  const vector<Label>& Labels() const;
   size_t Length() const;
   const Label& Get(size_t idx) const {
     return labels_[idx];
@@ -63,13 +51,12 @@ class PublicSuffixRule {
   }
 
  protected:
-  std::vector<Label> labels_;
+  vector<Label> labels_;
   bool is_exception_ = false;
   bool is_wildcard_ = false;
 };
 
 PublicSuffixRule rule_from_serialization(const SerializedBuffer& buffer);
-std::vector<Label> parse_labels(const std::string& label_text);
 
 }  // namespace internal
 }  // namespace brave_etld

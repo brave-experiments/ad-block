@@ -8,95 +8,37 @@
 #include <sstream>
 #include <vector>
 #include <cstdio>
+#include <iostream>
+#include "etld/internal/parser.h"
 #include "etld/domain.h"
 #include "etld/types.h"
 #include "etld/serialization.h"
 
+using ::std::string;
+using ::std::stringstream;
+using ::std::vector;
+
 namespace brave_etld {
 namespace internal {
 
-const PublicSuffixRule* PublicSuffixRule::root_rule = new PublicSuffixRule("*");
-
-std::vector<Label> parse_labels(const std::string& label_text) {
-  std::vector<Label> labels;
-  size_t previous = 0;
-  size_t current = label_text.find(".");
-  Label current_label;
-  while (current != std::string::npos) {
-    current_label = label_text.substr(previous, current - previous);
-    if (current_label.length() == 0) {
-      throw PublicSuffixRuleInputException(
-        "Rules cannot contain adjectent delimitors: " + label_text);
-    }
-    labels.push_back(current_label);
-    previous = current + 1;
-    current = label_text.find(".", previous);
-  }
-
-  // If don't include any trailing whitespace, if there is any.
-  current_label = label_text.substr(previous, current - previous);
-  if (current_label == "") {
-    throw PublicSuffixRuleInputException(
-      "Rules cannot end with a delimiter: " + label_text);
-  }
-
-  labels.push_back(current_label);
-  return labels;
-}
-
-// Cargo-cult-ed from https://codereview.stackexchange.com/questions/40124/trim-white-space-from-string
-std::string trim_to_whitespace(std::string const& str) {
-  if (str.empty()) {
-    return str;
-  }
-
-  const size_t first_scan = str.find_first_of(' ');
-  if (first_scan == std::string::npos) {
-    return str;
-  }
-
-  return str.substr(0, first_scan);
-}
-
 PublicSuffixRule::PublicSuffixRule() {}
 
-PublicSuffixRule::PublicSuffixRule(const PublicSuffixRule& rule) :
-  labels_(rule.labels_),
-  is_exception_(rule.IsException()),
-  is_wildcard_(rule.IsWildcard()) {}
-
-PublicSuffixRule::PublicSuffixRule(const std::string& rule_text) {
-  std::string trimmed_rule_text(trim_to_whitespace(rule_text));
-  if (trimmed_rule_text.length() == 0) {
-    throw PublicSuffixRuleInputException(
-      "Cannot create PublicSuffixRule from an empty string");
+PublicSuffixRule::PublicSuffixRule(const string& rule_text) {
+  PublicSuffixTextLineParseResult parse_result = parse_rule_line(rule_text);
+  // This will only ever be hit in tests, since external code should never
+  // initialize rules directly, and this initializer receiving
+  // bad rules is guarded by code in the parser.
+  if (parse_result.type != PublicSuffixTextLineTypeRule) {
+    PublicSuffixRule();
+    return;
   }
 
-  size_t current = 0;
-  switch (trimmed_rule_text[0]) {
-    case '*':
-      is_wildcard_ = true;
-      break;
-
-    case '!':
-      is_exception_ = true;
-      current += 1;
-      break;
-
-    case '/':
-      throw PublicSuffixRuleInputException(
-        "Rules cannot start with '/': " + rule_text);
-      break;
-
-    default:
-      break;
-  }
-
-  std::string labels_view(trimmed_rule_text, current);
-  labels_ = parse_labels(labels_view);
+  is_wildcard_ = parse_result.rule->is_wildcard_;
+  is_exception_ = parse_result.rule->is_exception_;
+  labels_ = parse_result.rule->labels_;
 }
 
-PublicSuffixRule::PublicSuffixRule(const std::vector<Label>& labels,
+PublicSuffixRule::PublicSuffixRule(const vector<Label>& labels,
   bool is_exception, bool is_wildcard) :
     labels_(labels),
     is_exception_(is_exception),
@@ -104,9 +46,9 @@ PublicSuffixRule::PublicSuffixRule(const std::vector<Label>& labels,
 }
 
 SerializationResult PublicSuffixRule::Serialize() const {
-  const std::string domain_string = DomainString();
+  const string domain_string = DomainString();
   const size_t body_len = domain_string.size() + 2;
-  const std::string header_str = std::to_string(body_len);
+  const string header_str = ::std::to_string(body_len);
   const size_t header_len = header_str.size();
   const size_t body_start = header_len + 1;
   const uint buffer_size = body_start + body_len + 1;
@@ -121,7 +63,7 @@ SerializationResult PublicSuffixRule::Serialize() const {
     is_wildcard_ ? 't' : 'f',
     domain_string.c_str());
 
-  const std::string serialized_buffer(buffer);
+  const string serialized_buffer(buffer);
   free(buffer);
 
   return {
@@ -176,13 +118,13 @@ DomainInfo PublicSuffixRule::Apply(const Domain& domain) const {
   }
 
   auto tld_seg_len = rule_len;
-  std::stringstream tld_seg;
+  stringstream tld_seg;
 
   auto domain_seg_len = (tld_seg_len == domain_len) ? 0 : 1;
-  std::stringstream domain_seg;
+  stringstream domain_seg;
 
   auto sub_domain_seg_len = domain_len - domain_seg_len - tld_seg_len;
-  std::stringstream sub_domain_seg;
+  stringstream sub_domain_seg;
 
   Label domain_label;
   for (size_t i = 0; i < domain_len; i += 1) {
@@ -220,10 +162,10 @@ DomainInfo PublicSuffixRule::Apply(const Domain& domain) const {
   };
 }
 
-std::string PublicSuffixRule::DomainString() const {
+string PublicSuffixRule::DomainString() const {
   const size_t last_label_index = labels_.size() - 1;
   size_t label_index = 0;
-  std::stringstream as_string;
+  stringstream as_string;
   for (const auto &elm : labels_) {
     as_string << elm;
     if (label_index != last_label_index) {
@@ -243,8 +185,8 @@ size_t PublicSuffixRule::Length() const {
   return labels_.size();
 }
 
-std::string PublicSuffixRule::ToString() const {
-  std::stringstream as_string;
+string PublicSuffixRule::ToString() const {
+  stringstream as_string;
   as_string << "labels: [" << DomainString() << "] ";
   as_string << "is exception: " << (is_exception_ ? "true" : "false") << " ";
   as_string << "is wildcard: " << (is_wildcard_ ? "true" : "false");
@@ -253,12 +195,12 @@ std::string PublicSuffixRule::ToString() const {
 
 PublicSuffixRule rule_from_serialization(const SerializedBuffer& buffer) {
   const SerializedBufferInfo info = extract_buffer_info(buffer);
-  const std::string body_str = buffer.substr(info.body_start, info.body_len);
+  const string body_str = buffer.substr(info.body_start, info.body_len);
   const bool is_exception = body_str[0] == 't';
   const bool is_wildcard = body_str[1] == 't';
-  const std::string label_str(body_str, 2, info.body_len - 2);
-  const std::vector<Label> labels = parse_labels(label_str);
-  return {labels, is_exception, is_wildcard};
+  const string label_str(body_str, 2, info.body_len - 2);
+  const auto label_result = parse_labels(label_str);
+  return {label_result.labels, is_exception, is_wildcard};
 }
 
 }  // namespace internal

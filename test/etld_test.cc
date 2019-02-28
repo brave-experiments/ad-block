@@ -17,13 +17,12 @@
 #include "./etld/matcher.h"
 #include "./etld/domain.h"
 
-using std::string;
-using std::cout;
-using std::endl;
+using ::std::string;
+using ::std::cout;
+using ::std::endl;
 
 using brave_etld::internal::PublicSuffixTextLineType;
 using brave_etld::internal::PublicSuffixTextLineParseResult;
-using brave_etld::internal::PublicSuffixRuleInputException;
 using brave_etld::internal::PublicSuffixRuleSetMatchResult;
 using brave_etld::internal::PublicSuffixRule;
 using brave_etld::internal::PublicSuffixRuleSet;
@@ -48,24 +47,23 @@ bool testParsePublicSuffixTestLineNoOps(const string &line,
 
 bool testParsePublicSuffixTestLineError(const string &line,
     const string &expected_error) {
-  try {
-    PublicSuffixRule rule(line);
-  } catch (PublicSuffixRuleInputException error) {
-    string error_string(error.what());
-    size_t error_substr_pos = error_string.find_first_of(expected_error);
-    if (error_substr_pos == string::npos) {
-      cout << "Caught an unexpected error when parsing " << line << "\n"
-           << "Expected '" << expected_error << "'\n"
-           << "Received '" << error.what() << endl;
-      return false;
-    }
-    return true;
+  PublicSuffixTextLineParseResult result = parse_rule_line(line);
+  if (result.type !=
+      PublicSuffixTextLineType::PublicSuffixTextLineTypeInvalidRule) {
+    cout << "Expected to receive an error when attempting to parse "
+         << "invalid rule '" << line << "' but no error was thrown." << endl;
+    return false;
   }
 
-  cout << "Expected to receive an error when attempting to parse invalid rule '"
-       << line
-       << "' but no error was thrown." << endl;
-  return false;
+  const size_t error_substr_pos = result.error.find_first_of(expected_error);
+  if (error_substr_pos == string::npos) {
+    cout << "Caught an unexpected error when parsing " << line << "\n"
+          << "Expected '" << expected_error << "'\n"
+          << "Received '" << result.error << endl;
+    return false;
+  }
+
+  return true;
 }
 
 bool testParsePublicSuffixTest(

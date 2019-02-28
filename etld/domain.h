@@ -10,13 +10,17 @@
 #include <vector>
 #include "etld/types.h"
 
+using ::std::vector;
+using ::std::string;
+
 namespace brave_etld {
 
 class Domain {
  public:
-  explicit Domain(const Domain& domain);
-  explicit Domain(const std::string& domain);
-  explicit Domain(const std::vector<Label>& labels);
+  explicit Domain(const Domain& domain) = default;
+  explicit Domain(const vector<Label>& labels);
+  explicit Domain(const string& domain);
+  ~Domain() = default;
 
   bool Equals(const Domain &domain);
 
@@ -28,10 +32,10 @@ class Domain {
     return labels_[idx];
   }
 
-  std::string ToString() const;
+  string ToString() const;
 
  protected:
-  std::vector<Label> labels_;
+  vector<Label> labels_;
 };
 
 }  // namespace brave_etld
