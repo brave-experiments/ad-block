@@ -11,6 +11,7 @@
       "../test/protocol_test.cc",
       "../test/orig_filters_test.cc",
       "../test/etld_test.cc",
+      "../test/etld_serialization_test.cc",
       "../test/etld_blocking_test.cc",
       "../test/util.cc",
       "../etld/domain.cc",
