@@ -746,7 +746,8 @@ bool AdBlockClient::matches(const char *input, FilterOption contextOption,
   const char *inputHost = getUrlHost(input, &inputHostLen);
 
   int contextDomainLen = 0;
-  if (contextDomain) {
+  // If neither first party nor third party was specified, try to figure it out
+  if (contextDomain && !(contextOption & (FOThirdParty | FONotThirdParty))) {
     contextDomainLen = static_cast<int>(strlen(contextDomain));
     if (isThirdPartyHost(contextDomain, contextDomainLen,
         inputHost, static_cast<int>(inputHostLen))) {
@@ -927,6 +928,21 @@ bool AdBlockClient::findMatchingFilters(const char *input,
   int inputLen = static_cast<int>(strlen(input));
   int inputHostLen;
   const char *inputHost = getUrlHost(input, &inputHostLen);
+
+  int contextDomainLen = 0;
+  // If neither first party nor third party was specified, try to figure it out
+  if (contextDomain && !(contextOption & (FOThirdParty | FONotThirdParty))) {
+    contextDomainLen = static_cast<int>(strlen(contextDomain));
+    if (isThirdPartyHost(contextDomain, contextDomainLen,
+        inputHost, static_cast<int>(inputHostLen))) {
+      contextOption =
+        static_cast<FilterOption>(contextOption | FOThirdParty);
+    } else {
+      contextOption =
+        static_cast<FilterOption>(contextOption | FONotThirdParty);
+    }
+  }
+
   hasMatchingFilters(noFingerprintFilters,
     numNoFingerprintFilters, input, inputLen, contextOption,
     contextDomain, nullptr,
