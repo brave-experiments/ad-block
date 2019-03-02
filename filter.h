@@ -88,8 +88,6 @@ enum FilterOption {
 class Filter {
 friend class AdBlockClient;
  public:
-  static bool has_psl_warned;
-
   Filter();
   Filter(const Filter &other);
   Filter(const char * data, int dataLen, char *domainList = nullptr,

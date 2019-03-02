@@ -28,7 +28,9 @@ using brave_etld::Domain;
 using brave_etld::Matcher;
 using brave_etld::DomainInfo;
 
-bool Filter::has_psl_warned = false;
+namespace {
+bool has_psl_warned = false;
+}  // namespace
 
 const char * getUrlHost(const char *input, int *len);
 
@@ -356,13 +358,24 @@ bool isThirdPartyHost(const char* baseContextHost, int baseContextHostLen,
   Domain testDomain(testDomainStr);
 
   if (matcher == nullptr) {
-    if (Filter::has_psl_warned == false) {
+    if (has_psl_warned == false) {
       std::cerr << "!!! Attempting to determine third-party-ness without a "
                 << "parsed Public Suffix List.  Falling back to FQDN, results "
                 << "will be less accurate.\n";
-      Filter::has_psl_warned = true;
+      has_psl_warned = true;
     }
-    return !baseDomain.Equals(testDomain);
+
+    if (!endsWith(testHost, baseContextHost, testHostLen, baseContextHostLen)) {
+      return true;
+    }
+
+    // baseContextHost matches testHost exactly
+    if (testHostLen == baseContextHostLen) {
+      return false;
+    }
+
+    const char c = testHost[testHostLen - baseContextHostLen - 1];
+    return c != '.' && testHostLen != baseContextHostLen;
   }
 
   DomainInfo baseHostDomainInfo = matcher->Match(baseDomain);
