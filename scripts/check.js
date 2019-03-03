@@ -49,10 +49,10 @@ let p = Promise.reject(new Error('Usage: node check.js --location <location> --h
 
 const ruleDiscovery = commander.discover && !commander.dat
 const parseOptions = {
-  keepRuleText: !!ruleDiscovery,
+  keepRuleText: !!ruleDiscovery
 }
 
-if (commander.host && (commander.location || commander.list) || commander.stats) {
+if ((commander.host && (commander.location || commander.list)) || commander.stats) {
   p.catch(() => {})
   if (commander.uuid) {
     p = makeAdBlockClientFromListUUID(commander.uuid, parseOptions)
