@@ -71,6 +71,21 @@ describe('matching', function () {
       assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
     })
   })
+  describe('domain only host anchored filters', function () {
+    before(function () {
+      this.client = new AdBlockClient()
+      this.client.parse('||imasdk.googleapis.com^$third-party\n@@||imasdk.googleapis.com/js/sdkloader/ima3.js$domain=cbc.ca|cbsnews.com|cbssports.com')
+      const data = this.client.serialize()
+      this.client2 = new AdBlockClient()
+      this.client2.deserialize(data)
+    })
+    it('should match exception filter from normal parsed list', function () {
+      assert(!this.client2.matches('https://imasdk.googleapis.com/js/sdkloader/ima3.js?v=1.0fc2a9c5e010611944b364a71d43c8b5099f209f', FilterOptions.script, 'www.cbsnews.com'))
+    })
+    it('should match exception filter from deserialized list', function () {
+      assert(!this.client.matches('https://imasdk.googleapis.com/js/sdkloader/ima3.js?v=1.0fc2a9c5e010611944b364a71d43c8b5099f209f', FilterOptions.script, 'www.cbsnews.com'))
+    })
+  })
   describe('host anchored exception with not matching first party exception', function () {
     before(function () {
       this.client = new AdBlockClient()
