@@ -87,6 +87,8 @@ uint32_t NoFingerprintDomain::Deserialize(char *buffer, uint32_t bufferSize) {
   data = buffer + consumed;
   consumed += dataLen;
   borrowed_data = true;
+  // Since we serialize a \0 character, we need to skip past it.
+  consumed++;
   return consumed;
 }
 
