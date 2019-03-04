@@ -753,9 +753,11 @@ bool AdBlockClient::matches(const char* input, FilterOption contextOption,
   const char *inputHost = getUrlHost(input, &inputHostLen);
 
   int contextDomainLen = 0;
+  if (contextDomain) {
+    contextDomainLen = static_cast<int>(strlen(contextDomain));
+  }
   // If neither first party nor third party was specified, try to figure it out
   if (contextDomain && !(contextOption & (FOThirdParty | FONotThirdParty))) {
-    contextDomainLen = static_cast<int>(strlen(contextDomain));
     if (isThirdPartyHost(contextDomain, contextDomainLen,
         inputHost, static_cast<int>(inputHostLen))) {
       contextOption =
@@ -944,9 +946,11 @@ bool AdBlockClient::findMatchingFilters(const char *input,
   const char *inputHost = getUrlHost(input, &inputHostLen);
 
   int contextDomainLen = 0;
+  if (contextDomain) {
+    contextDomainLen = static_cast<int>(strlen(contextDomain));
+  }
   // If neither first party nor third party was specified, try to figure it out
   if (contextDomain && !(contextOption & (FOThirdParty | FONotThirdParty))) {
-    contextDomainLen = static_cast<int>(strlen(contextDomain));
     if (isThirdPartyHost(contextDomain, contextDomainLen,
         inputHost, static_cast<int>(inputHostLen))) {
       contextOption =
