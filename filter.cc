@@ -31,6 +31,8 @@ Filter::Filter() :
   data(nullptr),
   dataLen(-1),
   domainList(nullptr),
+  tag(nullptr),
+  tagLen(0),
   host(nullptr),
   hostLen(-1),
   domains(nullptr),
@@ -55,39 +57,44 @@ Filter::~Filter() {
     if (domainList) {
       delete[] domainList;
     }
+    if (tag) {
+      delete[] tag;
+    }
     if (host) {
       delete[] host;
     }
   }
 }
 
-Filter::Filter(const char * data, int dataLen, char *domainList,
-               const char * host, int hostLen) :
+Filter::Filter(const char * data, int dataLen,
+               char *domainList,
+               const char * host, int hostLen,
+               char *tag, int tagLen) :
       borrowed_data(true), filterType(FTNoFilterType),
       filterOption(FONoFilterOption),
       antiFilterOption(FONoFilterOption), ruleDefinition(nullptr),
       data(const_cast<char*>(data)), dataLen(dataLen),
-      domainList(domainList), host(const_cast<char*>(host)),
-      hostLen(hostLen),
-      domains(nullptr),
-      antiDomains(nullptr),
-      domainsParsed(false) {
+      domainList(domainList),
+      tag(tag), tagLen(tagLen),
+      host(const_cast<char*>(host)),
+      hostLen(hostLen), domains(nullptr),
+      antiDomains(nullptr), domainsParsed(false) {
   }
 
 Filter::Filter(FilterType filterType, FilterOption filterOption,
                FilterOption antiFilterOption,
                const char * data, int dataLen,
-               char *domainList, const char * host,
-               int hostLen) :
+               char *domainList,
+               const char * host, int hostLen,
+               char *tag, int tagLen) :
       borrowed_data(true), filterType(filterType),
       filterOption(filterOption),
       antiFilterOption(antiFilterOption), ruleDefinition(nullptr),
       data(const_cast<char*>(data)), dataLen(dataLen),
-      domainList(domainList), host(const_cast<char *>(host)),
-      hostLen(hostLen),
-      domains(nullptr),
-      antiDomains(nullptr),
-      domainsParsed(false) {
+      domainList(domainList),
+      tag(tag), tagLen(tagLen),
+      host(const_cast<char *>(host)), hostLen(hostLen),
+      domains(nullptr), antiDomains(nullptr), domainsParsed(false) {
   }
 
 Filter::Filter(const Filter &other) {
@@ -107,6 +114,8 @@ Filter::Filter(const Filter &other) {
   if (other.borrowed_data) {
     data = other.data;
     domainList = other.domainList;
+    tag = other.tag;
+    tagLen = other.tagLen;
     host = other.host;
     ruleDefinition = other.ruleDefinition;
   } else {
@@ -122,6 +131,14 @@ Filter::Filter(const Filter &other) {
        snprintf(domainList, len, "%s", other.domainList);
     } else {
       domainList = nullptr;
+    }
+    if (other.tagLen > 0) {
+       tag = new char[other.tagLen + 1];
+       snprintf(tag, other.tagLen + 1, "%s", other.tag);
+       tagLen = other.tagLen;
+    } else {
+      tag = nullptr;
+      tagLen = 0;
     }
     if (other.host) {
       size_t len = strlen(other.host) + 1;
@@ -149,6 +166,8 @@ void Filter::swapData(Filter *other) {
   int tempDataLen = dataLen;
   char *tempRuleDefinition = ruleDefinition;
   char *tempDomainList = domainList;
+  char *temptag = tag;
+  int temptagLen = tagLen;
   char *tempHost = host;
   int tempHostLen = hostLen;
   bool tempDomainsParsed = domainsParsed;
@@ -162,6 +181,8 @@ void Filter::swapData(Filter *other) {
   data = other->data;
   dataLen = other->dataLen;
   domainList = other->domainList;
+  tag = other->tag;
+  tagLen = other->tagLen;
   host = other->host;
   hostLen = other->hostLen;
   domainsParsed = other->domainsParsed;
@@ -175,6 +196,8 @@ void Filter::swapData(Filter *other) {
   other->data = tempData;
   other->dataLen = tempDataLen;
   other->domainList = tempDomainList;
+  other->tag = temptag;
+  other->tagLen = temptagLen;
   other->host = tempHost;
   other->hostLen = tempHostLen;
   other->domainsParsed = tempDomainsParsed;
@@ -235,6 +258,12 @@ void Filter::parseOption(const char *input, int len) {
     domainList = new char[len + 1];
     domainList[len] = '\0';
     memcpy(domainList, pStart + 7, len);
+  } else if (len >= 4 && !strncmp(pStart, "tag=", 4)) {
+    len -= 4;
+    tag = new char[len + 1];
+    tag[len] = '\0';
+    memcpy(tag, pStart + 4, len);
+    tagLen = len;
   } else if (!strncmp(pStart, "script", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOScript);
   } else if (!strncmp(pStart, "image", len)) {
@@ -694,6 +723,16 @@ uint32_t Filter::Serialize(char *buffer) {
   }
   totalSize += 1;
 
+  // Serialize any kind fo list based data here, as long as you can use a
+  // separator between lists which is not \0.  Currently using #
+  if (tagLen > 0) {
+    if (buffer) {
+      buffer[totalSize] = '#';
+      memcpy(buffer + totalSize + 1, tag, tagLen);
+      buffer[totalSize + 1 + tagLen] = ',';
+    }
+    totalSize += tagLen + 2;
+  }
   if (domainList) {
     int domainListLen = static_cast<int>(strlen(domainList));
     if (buffer) {
@@ -739,13 +778,28 @@ uint32_t Filter::Deserialize(char *buffer, uint32_t bufferSize) {
   }
   consumed += hostLen + 1;
 
-  uint32_t domainListLen = static_cast<uint32_t>(strlen(buffer + consumed));
-  if (domainListLen != 0) {
+  // If the domain section starts with a # then we're in a tag
+  // block.
+  if (buffer[consumed] == '#') {
+    consumed++;
+    tag = buffer + consumed;
+    tagLen = 0;
+    while (buffer[consumed + tagLen] != '\0') {
+      if (buffer[consumed + tagLen] == ',') {
+        consumed += tagLen + 1;
+        break;
+      }
+      tagLen++;
+    }
+  }
+
+  uint32_t listSectionLen = static_cast<uint32_t>(strlen(buffer + consumed));
+  if (listSectionLen != 0) {
     domainList = buffer + consumed;
   } else {
     domainList = nullptr;
   }
-  consumed += domainListLen + 1;
+  consumed += listSectionLen + 1;
 
   borrowed_data = true;
   domainsParsed = false;

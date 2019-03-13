@@ -88,13 +88,15 @@ friend class AdBlockClient;
   Filter();
   Filter(const Filter &other);
   Filter(const char * data, int dataLen, char *domainList = nullptr,
-      const char * host = nullptr, int hostLen = -1);
+      const char * host = nullptr, int hostLen = -1,
+      char *tag = nullptr, int tagLen = 0);
 
   Filter(FilterType filterType, FilterOption filterOption,
          FilterOption antiFilterOption,
          const char * data, int dataLen,
-         char *domainList = nullptr, const char * host = nullptr,
-         int hostLen = -1);
+         char *domainList = nullptr,
+         const char * host = nullptr, int hostLen = -1,
+         char *tag = nullptr, int tagLen = 0);
 
   ~Filter();
 
@@ -191,6 +193,10 @@ friend class AdBlockClient;
   char *data;
   int dataLen;
   char *domainList;
+  // A filter tag is used for identifying and tagally including
+  // certain filters in Brave.
+  char *tag;
+  int tagLen;
   char *host;
   int hostLen;
   HashSet<ContextDomain>* domains;

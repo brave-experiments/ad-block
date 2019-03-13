@@ -54,14 +54,14 @@ describe('serialization', function () {
     assert(!this.data.toString().includes('Adblock Plus'))
   })
 
-  describe("deserializing input", function () {
+  describe('deserializing input', function () {
     it('does not throw on valid input', function () {
       const client = new AdBlockClient()
       client.deserialize(this.data)
     })
 
     it('throws on invalid input', function () {
-      const badInput = "not-good-data"
+      const badInput = 'not-good-data'
       let caughtError = false
       const newClient = new AdBlockClient()
       // Check to make sure the below doesn't throw
@@ -71,6 +71,24 @@ describe('serialization', function () {
         caughtError = true
       }
       assert(caughtError)
+    })
+  })
+  describe('tags', function () {
+    it('preserves filter tags', function () {
+      const client = new AdBlockClient()
+      client.parse('testfilter$third-party,tag=blah')
+      const filters1 = client.getFilters('filters')
+      console.log('filters1', filters1)
+      assert.equal(filters1.length, 1)
+      assert.equal(filters1[0].tag, 'blah')
+
+      const data = client.serialize()
+      const client2 = new AdBlockClient()
+      client2.deserialize(data)
+      const filters2 = client2.getFilters('filters')
+      console.log('filters2', filters2)
+      assert.equal(filters2.length, 1)
+      assert.equal(filters2[0].tag, 'blah')
     })
   })
 })

@@ -129,6 +129,8 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "generateRegionalManifestFiles",
     AdBlockClientWrap::GenerateRegionalManifestFiles);
   NODE_SET_PROTOTYPE_METHOD(tpl, "cleanup", AdBlockClientWrap::Cleanup);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "addTag", AdBlockClientWrap::AddTag);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "removeTag", AdBlockClientWrap::RemoveTag);
 
   // filter options
   Local<Object> filterOptions = Object::New(isolate);
@@ -345,6 +347,26 @@ void AdBlockClientWrap::Deserialize(const FunctionCallbackInfo<Value>& args) {
     obj->deserialize(deserializedData)));
 }
 
+void AdBlockClientWrap::AddTag(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  String::Utf8Value str(isolate, args[0]->ToString());
+  const char * buffer = *str;
+
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
+  obj->addTag(buffer);
+}
+
+void AdBlockClientWrap::RemoveTag(const FunctionCallbackInfo<Value>& args) {
+  Isolate* isolate = args.GetIsolate();
+  String::Utf8Value str(isolate, args[0]->ToString());
+  const char * buffer = *str;
+
+  AdBlockClientWrap* obj =
+    ObjectWrap::Unwrap<AdBlockClientWrap>(args.Holder());
+  obj->removeTag(buffer);
+}
+
 void AdBlockClientWrap::GetParsingStats(
     const FunctionCallbackInfo<Value>& args) {
   Isolate* isolate = args.GetIsolate();
@@ -506,6 +528,10 @@ void AdBlockClientWrap::GetFilters(
     result->Set(String::NewFromUtf8(isolate, "domainList"), domain_list);
     result->Set(String::NewFromUtf8(isolate,
           "antiDomainList"), anti_domain_list);
+    result->Set(String::NewFromUtf8(isolate, "tag"),
+        String::NewFromUtf8(isolate,
+          std::string(filter->tagLen > 0 ? filter->tag : "",
+            filter->tagLen).c_str()));
 
     result_list->Set(i, result);
     filter++;
