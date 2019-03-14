@@ -1507,11 +1507,12 @@ int serializeFilters(char * buffer, size_t bufferSizeAvail,
 
     if (f->tagLen > 0) {
       if (buffer) {
-        buffer[bufferSize] = '#';
-        memcpy(buffer + bufferSize + 1, f->tag, f->tagLen);
-        buffer[bufferSize + 1 + f->tagLen] = ',';
+        buffer[bufferSize] = '~';
+        buffer[bufferSize + 1] = '#';
+        memcpy(buffer + bufferSize + 2, f->tag, f->tagLen);
+        buffer[bufferSize + 2 + f->tagLen] = ',';
       }
-      bufferSize += f->tagLen + 2;
+      bufferSize += f->tagLen + 3;
     }
 
     if (f->domainList) {
@@ -1740,8 +1741,8 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
 
     // If the domain section starts with a # then we're in a tag
     // block.
-    if (buffer[pos] == '#') {
-      pos++;
+    if (buffer[pos] == '~' && buffer[pos + 1] == '#') {
+      pos+=2;
       f->tag = buffer + pos;
       f->tagLen = 0;
       while (buffer[pos + f->tagLen] != '\0') {
