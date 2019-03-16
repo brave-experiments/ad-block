@@ -322,6 +322,8 @@ void Filter::parseOption(const char *input, int len) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOWebsocket);
   } else if (!strncmp(pStart, "important", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOImportant);
+  } else if (!strncmp(pStart, "explicitcancel", len)) {
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOExplicitCancel);
   } else {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOUnknown);
     std::string option(pStart, len);
@@ -445,12 +447,12 @@ bool Filter::matchesOptions(const char *input, FilterOption context,
   // blocking a the HTTP level, don't block here because we don't have enough
   // information
   if (context != FONoFilterOption) {
-    if ((filterOption & ~FOThirdParty) != FONoFilterOption
+    if ((filterOption & ~BehavioralFilterOnly) != FONoFilterOption
         && !(filterOption & FOResourcesOnly & context)) {
       return false;
     }
 
-    if ((antiFilterOption & ~FOThirdParty) != FONoFilterOption
+    if ((antiFilterOption & ~BehavioralFilterOnly) != FONoFilterOption
         && (antiFilterOption & FOResourcesOnly & context)) {
       return false;
     }
