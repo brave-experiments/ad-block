@@ -9,6 +9,7 @@
 #include <fstream>
 #include "./bad_fingerprint.h"
 #include "./data_file_version.h"
+#include "./filter.h"
 #include "./filter_list.h"
 #include "./lists/regions.h"
 #include "./lists/malware.h"
@@ -135,51 +136,65 @@ void AdBlockClientWrap::Init(Local<Object> exports) {
   // filter options
   Local<Object> filterOptions = Object::New(isolate);
   filterOptions->Set(String::NewFromUtf8(isolate, "noFilterOption"),
-    Int32::New(isolate, 0));
+    Int32::New(isolate, FONoFilterOption));
   filterOptions->Set(String::NewFromUtf8(isolate, "script"),
-    Int32::New(isolate, 01));
+    Int32::New(isolate, FOScript));
   filterOptions->Set(String::NewFromUtf8(isolate, "image"),
-    Int32::New(isolate, 02));
+    Int32::New(isolate, FOImage));
   filterOptions->Set(String::NewFromUtf8(isolate, "stylesheet"),
-    Int32::New(isolate, 04));
+    Int32::New(isolate, FOStylesheet));
   filterOptions->Set(String::NewFromUtf8(isolate, "object"),
-    Int32::New(isolate, 010));
+    Int32::New(isolate, FOObject));
   filterOptions->Set(String::NewFromUtf8(isolate, "xmlHttpRequest"),
-    Int32::New(isolate, 020));
+    Int32::New(isolate, FOXmlHttpRequest));
   filterOptions->Set(String::NewFromUtf8(isolate, "objectSubrequest"),
-    Int32::New(isolate, 040));
+    Int32::New(isolate, FOObjectSubrequest));
   filterOptions->Set(String::NewFromUtf8(isolate, "subdocument"),
-    Int32::New(isolate, 0100));
+    Int32::New(isolate, FOSubdocument));
   filterOptions->Set(String::NewFromUtf8(isolate, "document"),
-    Int32::New(isolate, 0200));
+    Int32::New(isolate, FODocument));
   filterOptions->Set(String::NewFromUtf8(isolate, "other"),
-    Int32::New(isolate, 0400));
+    Int32::New(isolate, FOOther));
   filterOptions->Set(String::NewFromUtf8(isolate, "xbl"),
-    Int32::New(isolate, 01000));
+    Int32::New(isolate, FOXBL));
   filterOptions->Set(String::NewFromUtf8(isolate, "collapse"),
-    Int32::New(isolate, 02000));
+    Int32::New(isolate, FOCollapse));
   filterOptions->Set(String::NewFromUtf8(isolate, "doNotTrack"),
-    Int32::New(isolate, 04000));
+    Int32::New(isolate, FODoNotTrack));
   filterOptions->Set(String::NewFromUtf8(isolate, "elemHide"),
-    Int32::New(isolate, 010000));
+    Int32::New(isolate, FOElemHide));
   filterOptions->Set(String::NewFromUtf8(isolate, "thirdParty"),
-    Int32::New(isolate, 020000));
+    Int32::New(isolate, FOThirdParty));
   filterOptions->Set(String::NewFromUtf8(isolate, "notThirdParty"),
-    Int32::New(isolate, 040000));
+    Int32::New(isolate, FONotThirdParty));
   filterOptions->Set(String::NewFromUtf8(isolate, "ping"),
-    Int32::New(isolate, 0100000));
+    Int32::New(isolate, FOPing));
   filterOptions->Set(String::NewFromUtf8(isolate, "popup"),
-    Int32::New(isolate, 0200000));
+    Int32::New(isolate, FOPopup));
+  filterOptions->Set(String::NewFromUtf8(isolate, "redirect"),
+    Int32::New(isolate, FORedirect));
+  filterOptions->Set(String::NewFromUtf8(isolate, "csp"),
+    Int32::New(isolate, FOCSP));
   filterOptions->Set(String::NewFromUtf8(isolate, "font"),
-    Int32::New(isolate, 02000000));
+    Int32::New(isolate, FOFont));
   filterOptions->Set(String::NewFromUtf8(isolate, "media"),
-    Int32::New(isolate, 04000000));
+    Int32::New(isolate, FOMedia));
   filterOptions->Set(String::NewFromUtf8(isolate, "webrtc"),
-    Int32::New(isolate, 010000000));
+    Int32::New(isolate, FOWebRTC));
+  filterOptions->Set(String::NewFromUtf8(isolate, "genericblock"),
+    Int32::New(isolate, FOGenericBlock));
+  filterOptions->Set(String::NewFromUtf8(isolate, "generichide"),
+    Int32::New(isolate, FOGenericHide));
   filterOptions->Set(String::NewFromUtf8(isolate, "empty"),
-    Int32::New(isolate, 0100000000));
+    Int32::New(isolate, FOEmpty));
   filterOptions->Set(String::NewFromUtf8(isolate, "websocket"),
-    Int32::New(isolate, 0200000000));
+    Int32::New(isolate, FOWebsocket));
+  filterOptions->Set(String::NewFromUtf8(isolate, "important"),
+    Int32::New(isolate, FOImportant));
+  filterOptions->Set(String::NewFromUtf8(isolate, "explicitcancel"),
+    Int32::New(isolate, FOExplicitCancel));
+  filterOptions->Set(String::NewFromUtf8(isolate, "unknown"),
+    Int32::New(isolate, FOUnknown));
 
   // Adblock lists
   Local<Object> lists = Object::New(isolate);
