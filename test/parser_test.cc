@@ -963,7 +963,7 @@ TEST(misc, misc2) {
 TEST(serializationTests, serializationTests2) {
   AdBlockClient client;
   client.parse(
-      "||googlesyndication.com$third-party\n@@||googlesyndication.ca");
+      "||googlesyndication.com$third-party\n@@||googlesyndication.ca\na$explicitcancel");
   int size;
   char * buffer = client.serialize(&size);
 
@@ -989,7 +989,8 @@ TEST(serializationTests, serializationTests2) {
   CHECK(client2.hostAnchoredExceptionHashSet->Exists(f3));
   CHECK(!client.hostAnchoredExceptionHashSet->Exists(f4));
   CHECK(!client2.hostAnchoredExceptionHashSet->Exists(f4));
-
+  CHECK(client.noFingerprintFilters[0].filterOption & FOExplicitCancel);
+  CHECK(client2.noFingerprintFilters[0].filterOption & FOExplicitCancel);
   delete[] buffer;
 }
 
@@ -1063,4 +1064,22 @@ TEST(matchesWithFilterInfo, basic) {
   CHECK(matchingExceptionFilter)
   CHECK(!strcmp(matchingFilter->data, "googlesyndication.com/safeframe/"));
   CHECK(!strcmp(matchingExceptionFilter->data, "safeframe"));
+
+  // Preserves explicitcancel and important options when matching
+  client.clear();
+  client.parse("||brianbondy.com^$explicitcancel");
+  bool matches = (client.matches("https://brianbondy.com/t", FOScript, "test.com",
+    &matchingFilter, &matchingExceptionFilter));
+  CHECK(matches)
+  CHECK(matchingFilter)
+  CHECK(matchingFilter->filterOption & FOExplicitCancel)
+  CHECK(!matchingExceptionFilter)
+
+  client.clear();
+  client.parse("||brianbondy.com^$important");
+  CHECK(client.matches("https://brianbondy.com/t", FOScript, "test.com",
+    &matchingFilter, &matchingExceptionFilter))
+  CHECK(matchingFilter)
+  CHECK(matchingFilter->filterOption & FOImportant)
+  CHECK(!matchingExceptionFilter)
 }

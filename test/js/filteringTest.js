@@ -38,5 +38,10 @@ describe('filtering', function () {
       const rules = '&ad_channel=\n&ad_classid=\n&ad_height=\n&ad_keyword='
       assert(sanitizeABPInput(`${filteredOutRule}\n&ad_channel=\n${filteredOutRule}\n&ad_classid=\n&ad_height=\n&ad_keyword=`, predicate) === rules)
     })
+    it('Converts ima list to add forcecancel option', function () {
+      const rule = '||imasdk.googleapis.com^$third-party'
+      const mapToRule = '||imasdk.googleapis.com^$third-party,explicitcancel'
+      assert.strictEqual(sanitizeABPInput(rule), mapToRule)
+    })
   })
 })

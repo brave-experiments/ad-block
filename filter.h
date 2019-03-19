@@ -5,7 +5,6 @@
 
 #ifndef FILTER_H_
 #define FILTER_H_
-
 #include <stdint.h>
 #include <string.h>
 #include "./base.h"
@@ -72,6 +71,8 @@ enum FilterOption {
   FOWebsocket = 0200000000,
   // important means to ignore all exception filters (those prefixed with @@).
   FOImportant = 0400000000,
+  // Cancel the request instead of using a 200 OK response
+  FOExplicitCancel = 01000000000,
 
   FOUnknown = 04000000000,
   FOResourcesOnly = FOScript|FOImage|FOStylesheet|FOObject|FOXmlHttpRequest|
@@ -79,7 +80,9 @@ enum FilterOption {
     FOWebRTC|FOWebsocket|FOPing,
   FOUnsupportedSoSkipCheck = FOPopup|FOCSP|FOElemHide|FOGenericHide|
     FOGenericBlock|FOEmpty|FOUnknown,
-  FOUnsupportedButIgnore = FORedirect|FOImportant
+  // Non matching related filters, alters behavior
+  BehavioralFilterOnly = FORedirect|FOImportant|FOExplicitCancel|
+    FOThirdParty|FONotThirdParty
 };
 
 class Filter {
