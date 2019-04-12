@@ -38,9 +38,6 @@ describe('adBlockLists', function () {
     })
   })
   describe('malware', function () {
-    it('contains 2 malware lists', function () {
-      assert.equal(adBlockLists.malware.length, 2)
-    })
     it('does not have langs property', function () {
       adBlockLists.malware.forEach((list) => {
         assert(!list.langs)
