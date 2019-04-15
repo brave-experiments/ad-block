@@ -30,12 +30,5 @@ describe('utilTest', function () {
         cb(err)
       })
     })
-    it('can obtain list from malware list by uuid', function (cb) {
-      makeAdBlockClientFromListUUID('AE08317A-778F-4B95-BC12-7E78C1FB26A3').then(() => {
-        cb()
-      }).catch((e) => {
-        cb(err)
-      })
-    })
   })
 })
