@@ -76,3 +76,69 @@ TEST(preservesTag, hostAnchored) {
   CHECK(filter);
   CHECK(std::string(filter->tag, filter->tagLen) == "blah")
 }
+
+TEST(preservesTag, basicWithDomain) {
+  const char * filterText =
+    "filter$tag=blah,domain=brianbondy.com|slashdot.org\n";
+  const char * currentPageDomain = "slashdot.org";
+  const char * urlToCheck = "http://www.brianbondy.com/filter?c=a&view=ad&b=2";
+
+  AdBlockClient client;
+  client.parse(filterText, true);
+  client.addTag("blah");
+
+  Filter *filter;
+  Filter *exceptionFilter;
+
+  CHECK(client.findMatchingFilters(urlToCheck, FONoFilterOption,
+    currentPageDomain, &filter, &exceptionFilter));
+  CHECK(filter);
+  CHECK(std::string(filter->tag, filter->tagLen) == "blah")
+
+  int size;
+  char* data = client.serialize(&size);
+
+  AdBlockClient client2;
+  client2.addTag("blah");
+  client2.deserialize(data);
+
+  filter = nullptr;
+  exceptionFilter = nullptr;
+  CHECK(client2.findMatchingFilters(urlToCheck, FONoFilterOption,
+    currentPageDomain, &filter, &exceptionFilter));
+  CHECK(filter);
+  CHECK(std::string(filter->tag, filter->tagLen) == "blah")
+}
+
+TEST(preservesTag, hostAnchoredWithDomain) {
+  const char * filterText =
+    "||www.brianbondy.com$domain=brianbondy.com|slashdot.org,tag=blah\n";
+  const char * currentPageDomain = "slashdot.org";
+  const char * urlToCheck = "http://www.brianbondy.com/filter?c=a&view=ad&b=2";
+
+  AdBlockClient client;
+  client.parse(filterText, true);
+  client.addTag("blah");
+
+  Filter *filter;
+  Filter *exceptionFilter;
+
+  CHECK(client.findMatchingFilters(urlToCheck, FONoFilterOption,
+    currentPageDomain, &filter, &exceptionFilter));
+  CHECK(filter);
+  CHECK(std::string(filter->tag, filter->tagLen) == "blah")
+
+  int size;
+  char* data = client.serialize(&size);
+
+  AdBlockClient client2;
+  client2.addTag("blah");
+  client2.deserialize(data);
+
+  filter = nullptr;
+  exceptionFilter = nullptr;
+  CHECK(client2.findMatchingFilters(urlToCheck, FONoFilterOption,
+    currentPageDomain, &filter, &exceptionFilter));
+  CHECK(filter);
+  CHECK(std::string(filter->tag, filter->tagLen) == "blah")
+}
