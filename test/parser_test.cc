@@ -277,6 +277,11 @@ bool checkMatch(const char *rules,
       cout << "Deserialization failed" << endl;
       delete[] buffer;
       return false;
+    // The second else clause is for valgrind only
+    } else if (!client.deserialize(buffer)) {
+      cout << "Deserialization failed" << endl;
+      delete[] buffer;
+      return false;
     }
     std::for_each(tags.begin(), tags.end(),
         [&client](string const &tag) {
@@ -969,6 +974,8 @@ TEST(serializationTests, serializationTests2) {
 
   AdBlockClient client2;
   CHECK(client2.deserialize(buffer));
+  // For valgrind only
+  client2.deserialize(buffer);
 
   Filter f(static_cast<FilterType>(FTHostAnchored | FTHostOnly), FOThirdParty,
       FONoFilterOption, "googlesyndication.com", 21, nullptr,

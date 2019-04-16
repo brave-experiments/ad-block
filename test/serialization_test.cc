@@ -35,6 +35,8 @@ TEST(preservesTag, basic) {
   AdBlockClient client2;
   client2.addTag("blah");
   client2.deserialize(data);
+  // For valgrind only
+  client2.deserialize(data);
 
   filter = nullptr;
   exceptionFilter = nullptr;
@@ -67,6 +69,8 @@ TEST(preservesTag, hostAnchored) {
 
   AdBlockClient client2;
   client2.addTag("blah");
+  client2.deserialize(data);
+  // For valgrind only
   client2.deserialize(data);
 
   filter = nullptr;
@@ -101,6 +105,8 @@ TEST(preservesTag, basicWithDomain) {
   AdBlockClient client2;
   client2.addTag("blah");
   client2.deserialize(data);
+  // For valgrind only
+  client2.deserialize(data);
 
   filter = nullptr;
   exceptionFilter = nullptr;
@@ -133,6 +139,8 @@ TEST(preservesTag, hostAnchoredWithDomain) {
 
   AdBlockClient client2;
   client2.addTag("blah");
+  client2.deserialize(data);
+  // For valgrind only
   client2.deserialize(data);
 
   filter = nullptr;

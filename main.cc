@@ -71,6 +71,13 @@ int checkForClient(AdBlockClient *pClient, const char *outputPath,
     delete[] buffer;
     return 0;
   }
+  // This is only done to help valgrind find memory errors if you
+  // deserialize twice from your client.
+  if (!client2.deserialize(buffer)) {
+    cout << "Could not deserialize";
+    delete[] buffer;
+    return 0;
+  }
   // Prints the same as client.matches would
   std::for_each(urlsToCheck.begin(), urlsToCheck.end(),
       [&client2, currentPageDomain](std::string const &urlToCheck) {

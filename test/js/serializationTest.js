@@ -29,6 +29,8 @@ describe('serialization', function () {
       this.data = this.client.serialize()
       this.client2 = new AdBlockClient()
       this.client2.deserialize(this.data)
+      // Just to make sure things work properly with repeated deserializes
+      this.client2.deserialize(this.data)
       cb()
     })
   })
@@ -40,6 +42,8 @@ describe('serialization', function () {
     assert(!this.client2.matches('http://www.brianbondy.com?c=a&view1=ad&b=2', FilterOptions.image, 'slashdot.org'))
   })
   it('deserialized client serializes the same', function () {
+    this.client2.deserialize(this.data)
+    // Just to make sure things work properly with repeated deserializes
     this.client2.deserialize(this.data)
     const data2 = this.client2.serialize()
     assert(this.data.equals(data2))
@@ -58,6 +62,8 @@ describe('serialization', function () {
     it('does not throw on valid input', function () {
       const client = new AdBlockClient()
       client.deserialize(this.data)
+      // Just to make sure things work properly with repeated deserializes
+      client.deserialize(this.data)
     })
 
     it('throws on invalid input', function () {
@@ -66,6 +72,8 @@ describe('serialization', function () {
       const newClient = new AdBlockClient()
       // Check to make sure the below doesn't throw
       try {
+        newClient.deserialize(badInput)
+        // Just to make sure things work properly with repeated deserializes
         newClient.deserialize(badInput)
       } catch (_) {
         caughtError = true
@@ -84,6 +92,8 @@ describe('serialization', function () {
 
       const data = client.serialize()
       const client2 = new AdBlockClient()
+      client2.deserialize(data)
+      // Just to make sure things work properly with repeated deserializes
       client2.deserialize(data)
       const filters2 = client2.getFilters('filters')
       console.log('filters2', filters2)
