@@ -1742,7 +1742,7 @@ int deserializeFilters(char *buffer, Filter *f, int numFilters) {
     // If the domain section starts with a # then we're in a tag
     // block.
     if (buffer[pos] == '~' && buffer[pos + 1] == '#') {
-      pos+=2;
+      pos += 2;
       f->tag = buffer + pos;
       f->tagLen = 0;
       while (buffer[pos + f->tagLen] != '\0') {

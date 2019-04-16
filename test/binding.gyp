@@ -10,6 +10,7 @@
       "../test/cosmetic_filter_test.cc",
       "../test/protocol_test.cc",
       "../test/orig_filters_test.cc",
+      "../test/serialization_test.cc",
       "../test/util.cc",
       "../protocol.cc",
       "../protocol.h",

@@ -133,8 +133,8 @@ Filter::Filter(const Filter &other) {
       domainList = nullptr;
     }
     if (other.tagLen > 0) {
-       tag = new char[other.tagLen + 1];
-       snprintf(tag, other.tagLen + 1, "%s", other.tag);
+       tag = new char[other.tagLen];
+       memcpy(tag, other.tag, other.tagLen);
        tagLen = other.tagLen;
     } else {
       tag = nullptr;
@@ -260,8 +260,7 @@ void Filter::parseOption(const char *input, int len) {
     memcpy(domainList, pStart + 7, len);
   } else if (len >= 4 && !strncmp(pStart, "tag=", 4)) {
     len -= 4;
-    tag = new char[len + 1];
-    tag[len] = '\0';
+    tag = new char[len];
     memcpy(tag, pStart + 4, len);
     tagLen = len;
   } else if (!strncmp(pStart, "script", len)) {
@@ -729,11 +728,12 @@ uint32_t Filter::Serialize(char *buffer) {
   // separator between lists which is not \0.  Currently using #
   if (tagLen > 0) {
     if (buffer) {
-      buffer[totalSize] = '#';
-      memcpy(buffer + totalSize + 1, tag, tagLen);
-      buffer[totalSize + 1 + tagLen] = ',';
+      buffer[totalSize] = '~';
+      buffer[totalSize+1] = '#';
+      memcpy(buffer + totalSize + 2, tag, tagLen);
+      buffer[totalSize + 2 + tagLen] = ',';
     }
-    totalSize += tagLen + 2;
+    totalSize += tagLen + 3;
   }
   if (domainList) {
     int domainListLen = static_cast<int>(strlen(domainList));
@@ -782,8 +782,8 @@ uint32_t Filter::Deserialize(char *buffer, uint32_t bufferSize) {
 
   // If the domain section starts with a # then we're in a tag
   // block.
-  if (buffer[consumed] == '#') {
-    consumed++;
+  if (buffer[consumed] == '~' && buffer[consumed + 1] == '#') {
+    consumed += 2;
     tag = buffer + consumed;
     tagLen = 0;
     while (buffer[consumed + tagLen] != '\0') {
