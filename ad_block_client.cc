@@ -276,6 +276,11 @@ void parseFilter(const char *input, const char *end, Filter *f,
             p++;
 
             int len = findFirstSeparatorChar(p, end);
+            // It's possible we have a host anchored filter
+            // which also has a right anchored filter.
+            if (len > 0 && p[len - 1] == '|') {
+              len--;
+            }
             f->host = new char[len + 1];
             f->host[len] = '\0';
             memcpy(f->host, p, len);
