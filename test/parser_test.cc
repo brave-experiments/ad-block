@@ -639,10 +639,10 @@ struct ListCounts {
   size_t exceptions;
 };
 
-ListCounts easyList = { 24478, 31144, 0, 5589 };
-ListCounts easyPrivacy = { 11817, 0, 0, 1020 };
-ListCounts ublockUnbreak = { 4, 8, 0, 94 };
-ListCounts braveUnbreak = { 31, 0, 0, 4 };
+ListCounts easyList = { 36343, 32667, 0, 5179 };
+ListCounts easyPrivacy = { 15144, 0, 0, 1202 };
+ListCounts ublockUnbreak = { 133, 106, 0, 494 };
+ListCounts braveUnbreak = { 79, 0, 0, 32 };
 ListCounts disconnectSimpleMalware = { 2450, 0, 0, 0 };
 ListCounts spam404MainBlacklist = { 5629, 166, 0, 0 };
 

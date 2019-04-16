@@ -1,10 +1,7 @@
 ||ntv.io^$third-party
-@@||creative.sonobi.com
-@@||adm.fwmrm.net^*/AdManager.js$domain=msnbc.com|sky.com|cnbc.com
+@@||adm.fwmrm.net^*/AdManager.js$domain=msnbc.com|sky.com|cnbc.com 
 ||novately.com^$third-party
 ||webspectator.com^$third-party
-! Would be nice to find an alt fix, but unbreaks cnet video
-@@||tags.tiqcdn.com/utag/*/utag.js$domain=cnet.com
 ! Twitch main video
 ||cloudfront.net/esf.js$domain=twitch.tv
 ! LA Times forced-whitelisting modal fix
@@ -35,7 +32,6 @@
 ||track.atom-data.io^$third-party
 ||vidazoo.com/aggregate^$third-party
 ||vidazoo.com/proxy^$third-party
-||vidible.tv^$third-party
 ||mediabong.net^$third-party
 ||imprvdosrv.com^$third-party
 ! yt embed exceptions
@@ -43,7 +39,110 @@
 ! fb widget audience, ad and marketing tracking
 ||connect.facebook.net/*/fbevents.js$third-party
 ||facebook.com/tr^$image,third-party
-||graph.facebook.com^$third-party
 ! theatlantic.com anti-blocker filters
 ||theatlantic.blueconic.net$domain=theatlantic.com
 ||theatlantic.com/please-support-us^
+! murdoog submission tracking
+||murdoog.com^$third-party
+! Admiral anti-ad blocking fix 
+||functionalclam.com^$third-party
+||ctnet2.in$third-party
+! adops.com unusable without this
+@@||adops.com^$~third-party
+@@||www.scrumpoker.online^$~third-party
+! fixes for several requests bypassing default blocklists
+||bounceexchange.com^$third-party
+||npttech.com/advertising.js$important,script
+||aolcdn.com/*/adsWrapper.js$script
+||keywee.co$third-party
+||summerhamster.com^
+||zergnet.com^$script,third-party
+! intermediary domains used for malware payload delivery
+||centerbluray.info^
+||newcyclevaults.com^
+! block scripts that profile user behavior using password managers
+||audienceinsights.net^$third-party
+||behavioralengine.com^$third-party
+@@||api.huobi.pro^$domain=www.huobi.pro
+! fixes calls bypassing shields on salon.com
+||salon.com/jobs.js
+||carambo.la^$third-party
+! key logger
+||turner.com/*/keypress.js$domain=cnn.com
+! fixes ad blocking bypass
+||zdbb.net^$third-party
+||adiode.com^$third-party
+! content blocking
+||seattletimes.com/wp-content/plugins/st-user-messaging^$script
+||theatlantic.com/packages/adsjs^$script
+! tracking
+||optimizely.com^$third-party
+! crypto ad network 
+||ctnetload.com^$third-party
+! Internal reddit API that breaks reddit for many users
+@@||gateway.reddit.com^
+! DDG 1P analytics and optimization
+@@||improving.duckduckgo.com^$~third-party
+! Disable PDFJS which we include by default's telemetry
+||pdfjs.robwu.nl
+! Allow 1P piwik since it's no different than server logs
+@@https://analytics.*/piwik.$~third-party
+! Fix for Suicide Prevention Lifeline Chat (brave/brave-browser#3492)
+@@||geoplugin.net/javascript.gp$script,xmlhttprequest,domain=suicidepreventionlifeline.org
+! Block additional trackers
+||sp1.nypost.com$third-party
+||sp.nasdaq.com$third-party
+||assets.lesechos.com/common/js/xtcore.js$third-party
+||y8.com/js/sdkloader/outstream.js$third-party
+! Note that options will be added to exclude these filters soon. They
+! are added both as a blocking rule and as an exception rule so that
+! an exception is hit and will override what's in tracking protection protection.
+! Facebook logins and embeds
+||connect.facebook.com/*/sdk.js$script,tag=fb-embeds
+@@||connect.facebook.com/*/sdk.js$script,tag=fb-embeds
+||connect.facebook.net/*/sdk.js$script,tag=fb-embeds
+@@||connect.facebook.net/*/sdk.js$script,tag=fb-embeds
+||facebook.com/connect/$tag=fb-embeds
+@@||facebook.com/connect/$tag=fb-embeds
+||www.facebook.com/connect$tag=fb-embeds
+@@||www.facebook.com/connect$tag=fb-embeds
+||staticxx.facebook.com/connect/$tag=fb-embeds
+@@||staticxx.facebook.com/connect/$tag=fb-embeds
+||graph.facebook.com/$tag=fb-embeds
+@@||graph.facebook.com/$tag=fb-embeds
+||staticxx.facebook.com/$tag=fb-embeds
+@@||staticxx.facebook.com/$tag=fb-embeds
+||xx.fbcdn.net/$tag=fb-embeds
+@@||xx.fbcdn.net/$tag=fb-embeds
+||www.facebook.com/*/plugin$tag=fb-embeds
+@@||www.facebook.com/*/plugin$tag=fb-embeds
+||www.facebook.com/plugins/$tag=fb-embeds
+@@||www.facebook.com/plugins/$tag=fb-embeds
+||www.facebook.com/rsrc.php$tag=fb-embeds
+@@||www.facebook.com/rsrc.php$tag=fb-embeds
+||www.facebook.com/ajax/bz$tag=fb-embeds
+@@||www.facebook.com/ajax/bz$tag=fb-embeds
+! Twitter embeds
+||platform.twitter.com/$tag=twitter-embeds
+@@||platform.twitter.com/$tag=twitter-embeds
+||syndication.twitter.com/$tag=twitter-embeds
+@@||syndication.twitter.com/$tag=twitter-embeds
+||pbs.twimg.com/$tag=twitter-embeds
+@@||pbs.twimg.com/$tag=twitter-embeds
+||cdn.syndication.twimg.com/$tag=twitter-embeds
+@@||cdn.syndication.twimg.com/$tag=twitter-embeds
+||twitter.com/i/videos/tweet/$tag=twitter-embeds
+@@||twitter.com/i/videos/tweet/$tag=twitter-embeds
+||abs.twimg.com/web-video-player/$tag=twitter-embeds
+@@||abs.twimg.com/web-video-player/$tag=twitter-embeds
+||api.twitter.com/1.1/$tag=twitter-embeds
+@@||api.twitter.com/1.1/$tag=twitter-embeds
+||video.twimg.com/$tag=twitter-embeds
+@@||video.twimg.com/$tag=twitter-embeds
+! LinkedIn in embed
+||platform.linkedin.com/$tag=linked-in-embeds
+@@||platform.linkedin.com/$tag=linked-in-embeds
+||www.linkedin.com/pages-extensions/FollowCompany$tag=linked-in-embeds
+@@||www.linkedin.com/pages-extensions/FollowCompany$tag=linked-in-embeds
+||static.licdn.com/sc/p$tag=linked-in-embeds
+@@||static.licdn.com/sc/p$tag=linked-in-embeds
