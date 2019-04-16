@@ -641,7 +641,7 @@ bool Filter::matches(const char *input, int inputLen,
     }
     newIndex += index;
 
-    if (*filterPartEnd == '\0' || filterPartEnd == data + dataLen) {
+    if (filterPartEnd == data + dataLen || *filterPartEnd == '\0') {
       break;
     }
     const char *temp = getNextPos(filterPartEnd + 1, '*', data + dataLen);
