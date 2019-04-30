@@ -156,9 +156,9 @@ friend class AdBlockClient;
     }
     */
 
-    int hostLen = 0;
+    int hostLen_ = 0;
     if (host) {
-      hostLen = this->hostLen == -1 ?
+      hostLen_ = this->hostLen == -1 ?
         static_cast<int>(strlen(host)) : this->hostLen;
     }
     int rhsHostLen = 0;
@@ -167,11 +167,11 @@ friend class AdBlockClient;
         static_cast<int>(strlen(rhs.host)) : rhs.hostLen;
     }
 
-    if (hostLen != rhsHostLen) {
+    if (hostLen_ != rhsHostLen) {
       return false;
     }
 
-    return !memcmp(host, rhs.host, hostLen);
+    return !memcmp(host, rhs.host, hostLen_);
   }
 
   bool operator!=(const Filter &rhs) const {
