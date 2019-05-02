@@ -4,8 +4,8 @@
 /* global describe, it, before */
 
 const assert = require('assert')
-const {makeAdBlockClientFromString} = require('../../lib/util')
-const {AdBlockClient, FilterOptions} = require('../..')
+const { makeAdBlockClientFromString } = require('../../lib/util')
+const { AdBlockClient, FilterOptions } = require('../..')
 
 describe('serialization', function () {
   before(function (cb) {
@@ -50,8 +50,8 @@ describe('serialization', function () {
   })
   it('deserializes with the same number of filters', function () {
     const nonCommentFilterCount = 11
-    assert.equal(this.client.getParsingStats().numFilters, nonCommentFilterCount)
-    assert.equal(this.client2.getParsingStats().numFilters, nonCommentFilterCount)
+    assert.strictEqual(this.client.getParsingStats().numFilters, nonCommentFilterCount)
+    assert.strictEqual(this.client2.getParsingStats().numFilters, nonCommentFilterCount)
   })
   it('serialized data does not include comment data', function () {
     assert(!this.data.toString().includes('comment'))
@@ -87,8 +87,8 @@ describe('serialization', function () {
       client.parse('testfilter$third-party,tag=blah')
       const filters1 = client.getFilters('filters')
       console.log('filters1', filters1)
-      assert.equal(filters1.length, 1)
-      assert.equal(filters1[0].tag, 'blah')
+      assert.strictEqual(filters1.length, 1)
+      assert.strictEqual(filters1[0].tag, 'blah')
 
       const data = client.serialize()
       const client2 = new AdBlockClient()
@@ -97,8 +97,8 @@ describe('serialization', function () {
       client2.deserialize(data)
       const filters2 = client2.getFilters('filters')
       console.log('filters2', filters2)
-      assert.equal(filters2.length, 1)
-      assert.equal(filters2[0].tag, 'blah')
+      assert.strictEqual(filters2.length, 1)
+      assert.strictEqual(filters2[0].tag, 'blah')
     })
   })
 })

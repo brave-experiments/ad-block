@@ -4,28 +4,28 @@
 /* global describe, it, before */
 
 const assert = require('assert')
-const {AdBlockClient} = require('../..')
+const { AdBlockClient } = require('../..')
 
 describe('getFingerprint', function () {
   before(function () {
     this.adBlockClient = new AdBlockClient()
   })
   it('Extracts simple fingerprint', function () {
-    assert.equal(this.adBlockClient.getFingerprint('fdasfdsafdas'), 'fdasfd')
+    assert.strictEqual(this.adBlockClient.getFingerprint('fdasfdsafdas'), 'fdasfd')
   })
   it('Does not use special characters for fingerprints', function () {
-    assert.equal(this.adBlockClient.getFingerprint('*fdasfdsafdas'), 'fdasfd')
+    assert.strictEqual(this.adBlockClient.getFingerprint('*fdasfdsafdas'), 'fdasfd')
   })
   it('Extracts host anchored filter fingerprint', function () {
-    assert.equal(this.adBlockClient.getFingerprint('||brave.com'), 'brave.')
+    assert.strictEqual(this.adBlockClient.getFingerprint('||brave.com'), 'brave.')
   })
   it('Does not extract a fingerprint for strings that are too short', function () {
-    assert.equal(this.adBlockClient.getFingerprint('prime'), undefined)
+    assert.strictEqual(this.adBlockClient.getFingerprint('prime'), undefined)
   })
   it('Does not extract a fingerprint for blacklisted strings', function () {
-    assert.equal(this.adBlockClient.getFingerprint('https://'), undefined)
+    assert.strictEqual(this.adBlockClient.getFingerprint('https://'), undefined)
   })
   it('Extract a fingerprint for short host anchored filters', function () {
-    assert.equal(this.adBlockClient.getFingerprint('||a.ca/brianbondy'), 'a.ca/b')
+    assert.strictEqual(this.adBlockClient.getFingerprint('||a.ca/brianbondy'), 'a.ca/b')
   })
 })

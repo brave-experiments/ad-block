@@ -2,13 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const {AdBlockClient, FilterOptions} = require('..')
+const { AdBlockClient, FilterOptions } = require('..')
 const path = require('path')
 const fs = require('fs')
 const request = require('request')
 const braveUnbreakPath = './test/data/brave-unbreak.txt'
-const {getListBufferFromURL, getListFilterFunction} = require('../lib/util')
-const {adBlockLists} = require('..')
+const { getListBufferFromURL, getListFilterFunction } = require('../lib/util')
+const { adBlockLists } = require('..')
 
 let totalExceptionFalsePositives = 0
 let totalNumFalsePositives = 0
@@ -38,13 +38,11 @@ const generateDataFileFromURL = (listURL, outputDATFilename, filter) => {
     console.log(`${listURL}...`)
     request.get(listURL, function (error, response, body) {
       if (error) {
-        console.error(`Request error: ${error}`)
-        reject()
+        reject(new Error(`Request error: ${error}`))
         return
       }
       if (response.statusCode !== 200) {
-        console.error(`Error status code ${response.statusCode} returned for URL: ${listURL}`)
-        reject()
+        reject(new Error(`Error status code ${response.statusCode} returned for URL: ${listURL}`))
         return
       }
       const braveUnbreakBody = fs.readFileSync(braveUnbreakPath, 'utf8')

@@ -24,8 +24,8 @@
  *   node scripts/check.js  --uuid 67F880F5-7602-4042-8A3D-01481FD7437A --stats
 */
 const commander = require('commander')
-const {makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromListURL, makeAdBlockClientFromString, makeAdBlockClientFromFilePath, readSiteList} = require('../lib/util')
-const {FilterOptions} = require('..')
+const { makeAdBlockClientFromListUUID, makeAdBlockClientFromDATFile, makeAdBlockClientFromListURL, makeAdBlockClientFromString, makeAdBlockClientFromFilePath, readSiteList } = require('../lib/util')
+const { FilterOptions } = require('..')
 
 const filterStringToFilterOption = (val) => FilterOptions[val]
 

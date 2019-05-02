@@ -25,7 +25,7 @@ npm install --save ad-block
 
 ```javascript
 
-const {AdBlockClient, FilterOptions} = require('ad-block')
+const { AdBlockClient, FilterOptions } = require('ad-block')
 const client = new AdBlockClient()
 client.parse('/public/ad/*$domain=slashdot.org')
 client.parse('/public/ad3/*$script')

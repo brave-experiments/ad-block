@@ -3,7 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 /* global describe, it */
 
-const {makeAdBlockClientFromListUUID} = require('../../lib/util')
+const { makeAdBlockClientFromListUUID } = require('../../lib/util')
 
 const err = new Error()
 describe('utilTest', function () {

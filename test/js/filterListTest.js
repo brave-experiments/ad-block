@@ -4,12 +4,12 @@
 /* global describe, it */
 
 const assert = require('assert')
-const {adBlockLists} = require('../..')
+const { adBlockLists } = require('../..')
 
 describe('adBlockLists', function () {
   describe('default', function () {
     it('contains 4 default lists', function () {
-      assert.equal(adBlockLists.default.length, 5)
+      assert.strictEqual(adBlockLists.default.length, 5)
     })
     it('has uuid property', function () {
       adBlockLists.default.forEach((list) => {

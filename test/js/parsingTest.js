@@ -5,8 +5,8 @@
 
 const assert = require('assert')
 const fs = require('fs')
-const {makeAdBlockClientFromString} = require('../../lib/util')
-const {FilterOptions} = require('../..')
+const { makeAdBlockClientFromString } = require('../../lib/util')
+const { FilterOptions } = require('../..')
 
 describe('parsing', function () {
   describe('newlines', function () {
@@ -23,7 +23,7 @@ describe('parsing', function () {
       ]).then(([client1, client2]) => {
         const buffer1 = client1.serialize()
         const buffer2 = client2.serialize()
-        assert.equal(buffer1.length, buffer2.length)
+        assert.strictEqual(buffer1.length, buffer2.length)
         assert(buffer2.toString() === buffer1.toString().replace(/\n/g, '\r'))
         assert(client1.matches(...this.matchArgs))
         assert(client2.matches(...this.matchArgs))
@@ -41,7 +41,7 @@ describe('parsing', function () {
       ]).then(([client1, client2]) => {
         const buffer1 = client1.serialize()
         const buffer2 = client2.serialize()
-        assert.equal(buffer1.length, buffer2.length)
+        assert.strictEqual(buffer1.length, buffer2.length)
         assert(buffer2.toString() === buffer1.toString().replace(/\n/g, '\r'))
         assert(client1.matches(...this.matchArgs))
         assert(client2.matches(...this.matchArgs))
@@ -94,15 +94,15 @@ describe('parsing', function () {
     it('regex should not check last character of input buffer', function (cb) {
       makeAdBlockClientFromString('/filter1\nfilter2/').then((client) => {
         // regex are considered noFingerprintFilters
-        assert.equal(client.getFilters('filters').length, 2)
+        assert.strictEqual(client.getFilters('filters').length, 2)
         cb()
       })
     })
     it('regex should not be a no fingerprint filter', function (cb) {
       makeAdBlockClientFromString('/filter1/\nfilter2/').then((client) => {
         // regex are considered noFingerprintFilters
-        assert.equal(client.getFilters('filters').length, 1)
-        assert.equal(client.getFilters('noFingerprintFilters').length, 1)
+        assert.strictEqual(client.getFilters('filters').length, 1)
+        assert.strictEqual(client.getFilters('noFingerprintFilters').length, 1)
         cb()
       })
     })
@@ -111,7 +111,7 @@ describe('parsing', function () {
       makeAdBlockClientFromString('/filter1\nfilter2/\n').then((client) => {
         makeAdBlockClientFromString('/filter1\nfilter2/').then((client2) => {
           // regex are considered noFingerprintFilters
-          assert.equal(client.serialize().length, client2.serialize().length)
+          assert.strictEqual(client.serialize().length, client2.serialize().length)
           cb()
         })
       })

@@ -4,11 +4,11 @@
 /* global describe, it */
 
 const assert = require('assert')
-const {sanitizeABPInput, extraConcatRules} = require('../../lib/filtering')
+const { sanitizeABPInput, extraConcatRules } = require('../../lib/filtering')
 const filteredOutRule = '*/test'
 const predicate = (rule) => !rule.startsWith('*')
 
-sanitizeABPInputFiltered = (input, filterPredicate) =>
+const sanitizeABPInputFiltered = (input, filterPredicate) =>
   sanitizeABPInput(input, filterPredicate).split('\n').slice(0, extraConcatRules.length * -1).join('\n')
 
 describe('filtering', function () {

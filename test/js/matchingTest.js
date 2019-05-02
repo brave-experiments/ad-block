@@ -4,8 +4,8 @@
 /* global describe, before, it */
 
 const assert = require('assert')
-const {AdBlockClient} = require('../..')
-const {FilterOptions} = require('../..')
+const { AdBlockClient } = require('../..')
+const { FilterOptions } = require('../..')
 
 describe('matching', function () {
   describe('strange rules', function () {
@@ -68,7 +68,7 @@ describe('matching', function () {
       assert(!this.client.matches('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online'))
     })
     it('detects as a hash set save', function () {
-      assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
+      assert.strictEqual(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
     })
   })
   describe('domain only host anchored filters', function () {
@@ -97,7 +97,7 @@ describe('matching', function () {
       assert(this.client.matches('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.brianbondy.com'))
     })
     it('detects as a hash set save', function () {
-      assert.equal(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
+      assert.strictEqual(this.client.getMatchingStats().numExceptionHashSetSaves, 1)
     })
   })
   describe('no-fingerprint rules', function () {
@@ -139,18 +139,18 @@ describe('matching', function () {
     })
     it('match', function () {
       const queryResult = this.client.findMatchingFilters('https://securepubads.g.doubleclick.net/gpt/pubads_impl_rendering_193.js?cb=194', FilterOptions.script, 'www.cnn.com')
-      assert.equal(queryResult.matches, true)
-      assert.equal(queryResult.matchingFilter, '/pubads_')
+      assert.strictEqual(queryResult.matches, true)
+      assert.strictEqual(queryResult.matchingFilter, '/pubads_')
     })
     it('miss', function () {
       const queryResult = this.client.findMatchingFilters('https://cdn.cnn.com/cnn/.e1mo/img/4.0/logos/menu_entertainment.png', FilterOptions.image, 'www.cnn.com')
-      assert.equal(queryResult.matches, false)
+      assert.strictEqual(queryResult.matches, false)
     })
     it('whitelisted', function () {
       const queryResult = this.client.findMatchingFilters('https://0914.global.ssl.fastly.net/ad2/script/x.js?cb=1523383475084', FilterOptions.script, 'www.cnn.com')
-      assert.equal(queryResult.matches, false)
-      assert.equal(queryResult.matchingFilter, '.net/ad2/')
-      assert.equal(queryResult.matchingExceptionFilter, 'fastly.net/ad2/')
+      assert.strictEqual(queryResult.matches, false)
+      assert.strictEqual(queryResult.matchingFilter, '.net/ad2/')
+      assert.strictEqual(queryResult.matchingExceptionFilter, 'fastly.net/ad2/')
     })
   })
 
@@ -168,17 +168,17 @@ describe('matching', function () {
       })
       it('match rule returned', function () {
         const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online')
-        assert.equal(queryResult.matchingOrigRule, '-google-analytics.')
+        assert.strictEqual(queryResult.matchingOrigRule, '-google-analytics.')
       })
       it('exception rule returned', function () {
         const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online')
-        assert.equal(queryResult.matchingExceptionOrigRule, '@@||www.scrumpoker.online^$~third-party')
+        assert.strictEqual(queryResult.matchingExceptionOrigRule, '@@||www.scrumpoker.online^$~third-party')
       })
       it('rules with multiple options', function () {
         const queryResult = this.client.findMatchingFilters('https://0914.global.ssl.fastly.net/ad2/img/x.gif?cb=1523404173915', FilterOptions.image, 'www.cnn.com')
-        assert.equal(queryResult.matches, false)
-        assert.equal(queryResult.matchingOrigRule, '.net/ad')
-        assert.equal(queryResult.matchingExceptionOrigRule, '@@||fastly.net/ad2/$image,script,xmlhttprequest')
+        assert.strictEqual(queryResult.matches, false)
+        assert.strictEqual(queryResult.matchingOrigRule, '.net/ad')
+        assert.strictEqual(queryResult.matchingExceptionOrigRule, '@@||fastly.net/ad2/$image,script,xmlhttprequest')
       })
     })
     describe('do not return original filter text when not needed / requested', function () {
@@ -194,17 +194,17 @@ describe('matching', function () {
       })
       it('match rule returned', function () {
         const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.scrumpoker.online')
-        assert.equal(queryResult.matchingOrigRule, undefined)
+        assert.strictEqual(queryResult.matchingOrigRule, undefined)
       })
       it('exception rule returned', function () {
         const queryResult = this.client.findMatchingFilters('https://www.scrumpoker.online/js/angular-google-analytics.js', FilterOptions.script, 'www.brianbondy.com')
-        assert.equal(queryResult.matchingExceptionOrigRule, undefined)
+        assert.strictEqual(queryResult.matchingExceptionOrigRule, undefined)
       })
       it('rules with multiple options', function () {
         const queryResult = this.client.findMatchingFilters('https://0914.global.ssl.fastly.net/ad2/img/x.gif?cb=1523404173915', FilterOptions.image, 'www.cnn.com')
-        assert.equal(queryResult.matches, false)
-        assert.equal(queryResult.matchingOrigRule, undefined)
-        assert.equal(queryResult.matchingExceptionOrigRule, undefined)
+        assert.strictEqual(queryResult.matches, false)
+        assert.strictEqual(queryResult.matchingOrigRule, undefined)
+        assert.strictEqual(queryResult.matchingExceptionOrigRule, undefined)
       })
     })
   })
@@ -461,14 +461,14 @@ describe('matching', function () {
       })
       it('findMatchingFilters for same host finds exception', function () {
         const queryResult = this.client.findMatchingFilters('https://analytics.brave.com/piwik.js', FilterOptions.script, 'analytics.brave.com')
-        assert.equal(queryResult.matches, false)
-        assert.equal(queryResult.matchingFilter, 'analytics.brave.com^')
-        assert.equal(queryResult.matchingExceptionFilter, 'https://analytics.*/piwik.')
+        assert.strictEqual(queryResult.matches, false)
+        assert.strictEqual(queryResult.matchingFilter, 'analytics.brave.com^')
+        assert.strictEqual(queryResult.matchingExceptionFilter, 'https://analytics.*/piwik.')
       })
       it('findMatchingFilters for same diff host does not find exception', function () {
         const queryResult = this.client.findMatchingFilters('https://analytics.brave.com/piwik.js', FilterOptions.script, 'batcommunity.org')
-        assert.equal(queryResult.matches, true)
-        assert.equal(queryResult.matchingFilter, 'analytics.brave.com^')
+        assert.strictEqual(queryResult.matches, true)
+        assert.strictEqual(queryResult.matchingFilter, 'analytics.brave.com^')
       })
     })
   })
