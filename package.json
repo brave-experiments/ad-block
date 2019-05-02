@@ -9,16 +9,16 @@
   "dependencies": {
     "bloom-filter-cpp": "^1.2.0",
     "hashset-cpp": "^2.1.0",
-    "nan": "^2.10.0"
+    "nan": "^2.13.2"
   },
   "devDependencies": {
-    "commander": "^2.15.1",
+    "commander": "^2.20.0",
     "cppunitlite": "brave/CppUnitLite",
-    "mocha": "^5.2.0",
-    "node-gyp": "^3.8.0",
+    "mocha": "^6.1.4",
+    "node-gyp": "^4.0.0",
     "pre-commit": "^1.2.2",
     "s3-client": "^4.4.2",
-    "standard": "^11.0.1"
+    "standard": "^12.0.1"
   },
   "scripts": {
     "test": "npm run test-cpp && npm run test-js",
