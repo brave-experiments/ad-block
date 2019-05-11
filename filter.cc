@@ -302,7 +302,7 @@ void Filter::parseOption(const char *input, int len) {
   } else if (!strncmp(pStart, "popup", len)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOPopup);
   } else if (len >= 4 && !strncmp(pStart, "csp=", 4)) {
-    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FORedirect);
+    *pFilterOption = static_cast<FilterOption>(*pFilterOption | FOCSP);
   } else if (len >= 9 && !strncmp(pStart, "redirect=", 9)) {
     *pFilterOption = static_cast<FilterOption>(*pFilterOption | FORedirect);
   } else if (!strncmp(pStart, "font", len)) {

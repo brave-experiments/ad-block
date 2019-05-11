@@ -471,5 +471,17 @@ describe('matching', function () {
         assert.strictEqual(queryResult.matchingFilter, 'analytics.brave.com^')
       })
     })
+
+    describe('CSP rules', function () {
+      before(function () {
+        this.client = new AdBlockClient()
+        this.client.parse('||merriam-webster.com^$csp=script-src "self" * "unsafe-inline"')
+      })
+      it('do not match since they are unsupported', function () {
+        assert(!this.client.matches('https://www.merriam-webster.com/assets/test.min.css',
+          FilterOptions.image, 'www.merriam-webster.com'))
+      })
+    })
+
   })
 })
