@@ -482,6 +482,5 @@ describe('matching', function () {
           FilterOptions.image, 'www.merriam-webster.com'))
       })
     })
-
   })
 })
