@@ -1,3 +1,5 @@
+Deprecated and no longer maintained, use https://github.com/brave/adblock-rust instead!
+
 [![Build Status](https://travis-ci.org/brave/ad-block.svg?branch=master)](https://travis-ci.org/brave/ad-block)
 
 # Brave Ad Block
