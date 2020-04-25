@@ -195,14 +195,6 @@ const std::vector<FilterList> region_lists = {
     "oidcknjcjepjgfpammgdalpnjefekhge",
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvCOljWKWLWfq/k/BE9gIZtI1MstmG+NcgGBGAP0R7xgaUMU5phdSbQf83Zt9ctwDRpisHWlGS6o+tk93zMIoJVj6RMQ2Zee6QPAKAGgwuCXF7A/ciI3lRyX7ts49XV8GAbasu1mBHntz+GpmOVmoiRxcDMUDDEqsSXgckCM9HkYvIyHQWyEgeulKdhQ2HoCptD2Wgmws6NzRTgQ94+DHu2o6J4MsG74h7L/cG3XB8WQNuqlpjjFIQTXftuUWDSkyR3tlmMxGN1PXAH6RZBNmwQTwdgrOAqEup82dWaO3BqoYGZdYeRaUGRc73iPdvvjZb1tvmqLdVSq7Ur1XJjJJTwIDAQAB"
   }), FilterList({
-    "1E6CF01B-AFC4-47D2-AE59-3E32A1ED094F",
-    "https://raw.githubusercontent.com/gfmaster/adblock-korea-contrib/master/filter.txt", // NOLINT
-    "KOR: Korean Adblock List",
-    {"ko"},
-    "https://github.com/gfmaster/adblock-korea-contrib",
-    "jboldinnegecjonfmaahihagfahjceoj",
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArcE90V2GoQ9InvoiVqxsEnhHhdJz68yyWA+HzQBxcxitqfF5Vu6gRiKB3+W/iTJ9XNE449krWrYAjDqVt6GF8ilpieIngwCNsl7jP5RRhrcrk65as4bawSimodit+TVi7ZpIFDWoalj5RIO+rjKfwkkBHujeM7qYr/Vm1NXre57ea80TvbdoA4XgnAYHKY5VV/WstFL8FR3Do+38EyaIzKfoiRrV97BoC440oifNdi0nJQhIgULfNjUolOh9eAQKuymId+WjZeSKSckUyKMQsQ0VVDjCbm5mwRqC5D+MT9L/8sKcdXBXuGrXyaZzp3eOmc41q01VkRLXCTrx37hGQwIDAQAB"
-  }), FilterList({
     "45B3ED40-C607-454F-A623-195FDD084637",
     "https://raw.githubusercontent.com/yous/YousList/master/youslist.txt",
     "KOR: YousList",
